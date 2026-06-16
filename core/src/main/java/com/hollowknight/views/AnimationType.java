@@ -1,8 +1,7 @@
 package com.hollowknight.views;
 
 public enum AnimationType {
-    HOLLOW_KNIGHT_IDLE("animations/idle.png", 60, 8, 8),
-    HOLLOW_KNIGHT_WALK("animations/walk.png", 60, 8, 8);
+    HOLLOW_KNIGHT_IDLE("animation/idle.png", 9, 9, 1);
 
     public final String path;
     public final int frameCount;

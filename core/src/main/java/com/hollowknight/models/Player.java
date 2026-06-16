@@ -26,10 +26,8 @@ public class Player {
 
         if (movingLeft) {
             velocity.x = -500;
-            currentAnimation = AnimationType.HOLLOW_KNIGHT_WALK;
         } else if (movingRight) {
             velocity.x = 500;
-            currentAnimation = AnimationType.HOLLOW_KNIGHT_WALK;
         } else {
             velocity.x = 0;
             currentAnimation = AnimationType.HOLLOW_KNIGHT_IDLE;

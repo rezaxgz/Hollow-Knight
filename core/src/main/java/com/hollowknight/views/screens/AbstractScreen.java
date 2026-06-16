@@ -44,6 +44,7 @@ public abstract class AbstractScreen implements Screen {
         mainStack.add(toastStack);
 
         stage.addActor(mainStack);
+
         Gdx.input.setInputProcessor(stage);
     }
 

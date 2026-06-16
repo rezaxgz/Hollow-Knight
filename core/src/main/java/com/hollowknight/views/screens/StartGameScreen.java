@@ -10,7 +10,7 @@ import com.hollowknight.models.GameSave;
 import com.hollowknight.views.actors.SaveCard;
 import com.hollowknight.views.UiManager;
 
-public class LoadMenuScreen extends AbstractScreen {
+public class StartGameScreen extends AbstractScreen {
     @Override
     public void show() {
         super.show();
