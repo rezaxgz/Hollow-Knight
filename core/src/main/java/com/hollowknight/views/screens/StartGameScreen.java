@@ -1,13 +1,16 @@
 package com.hollowknight.views.screens;
 
+import java.util.List;
+
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.hollowknight.models.GameSave;
 import com.hollowknight.views.actors.SaveCard;
+import com.hollowknight.models.Game;
+import com.hollowknight.models.gamedata.Loader;
 import com.hollowknight.views.UiManager;
 
 public class StartGameScreen extends AbstractScreen {
@@ -29,13 +32,25 @@ public class StartGameScreen extends AbstractScreen {
 
         saveList.setBackground(skin.getDrawable("window"));
 
-        for (int i = 0; i < 20; i++) {
-            SaveCard saveCard = new SaveCard(new GameSave("Save" + i + 1, i));
+        List<Game> loadedSaves = Loader.loadSaves();
+        for (Game g : loadedSaves) {
+            SaveCard saveCard = new SaveCard(g);
             saveList.add(saveCard).growX().row();
         }
+
+        saveList.setBackground(skin.getDrawable("window"));
+
+        TextButton newGameBtn = new TextButton("New Game", skin);
+
         ScrollPane scrollPane = new ScrollPane(saveList);
 
-        saveListWrapper.add(scrollPane).size(300, 200);
+        saveListWrapper.add(newGameBtn)
+                .width(300)
+                .padBottom(10)
+                .row();
+
+        saveListWrapper.add(scrollPane)
+                .size(300, 200);
 
         stack.add(backBtnWrapper);
         stack.add(saveListWrapper);
@@ -46,6 +61,12 @@ public class StartGameScreen extends AbstractScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 UiManager.setScreen(new MainMenuScreen());
+            }
+        });
+        newGameBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                UiManager.setScreen(new GameScreen(new Game()));
             }
         });
     }
