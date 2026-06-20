@@ -6,16 +6,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.hollowknight.models.Game;
+import com.hollowknight.models.GameWorld;
 import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
 import com.hollowknight.views.screens.GameScreen;
 
 public class SaveCard extends Table {
     @SuppressWarnings("unused")
-    private final Game gameSave;
+    private final GameWorld gameSave;
 
-    public SaveCard(Game gameSave) {
+    public SaveCard(GameWorld gameSave) {
         Skin skin = GameAssetManager.skin;
         this.gameSave = gameSave;
 

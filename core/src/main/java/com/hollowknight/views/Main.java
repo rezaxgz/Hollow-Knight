@@ -8,7 +8,7 @@ import com.hollowknight.views.screens.MainMenuScreen;
 public class Main extends Game {
     @Override
     public void create() {
-        Saver.saveGame(new com.hollowknight.models.Game());
+        Saver.saveGame(new com.hollowknight.models.GameWorld());
         GameAssetManager.init();
         UiManager.init(this);
 

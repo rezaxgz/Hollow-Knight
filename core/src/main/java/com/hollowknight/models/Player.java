@@ -8,7 +8,7 @@ public class Player {
     public Vector2 velocity = new Vector2();
     public boolean isOnGround = false;
     public boolean movingLeft = false, movingRight = false;
-    public AnimationType currentAnimation = AnimationType.HOLLOW_KNIGHT_IDLE;
+    public AnimationType currentAnimation = AnimationType.IDLE;
     public float stateTime = 0;
 
     public void update(float delta) {
@@ -18,19 +18,21 @@ public class Player {
             isOnGround = false;
 
         if (!isOnGround) {
-            velocity.y -= 1000 * delta;
+            velocity.y += Constants.GRAVITY * delta;
         } else if (velocity.y < 0.01) {
             velocity.y = 0;
             position.y = 0;
         }
 
         if (movingLeft) {
-            velocity.x = -500;
+            velocity.x = -Constants.PLAYER_MOVE_SPEED;
+            currentAnimation = AnimationType.RUN;
         } else if (movingRight) {
-            velocity.x = 500;
+            velocity.x = Constants.PLAYER_MOVE_SPEED;
+            currentAnimation = AnimationType.RUN;
         } else {
             velocity.x = 0;
-            currentAnimation = AnimationType.HOLLOW_KNIGHT_IDLE;
+            currentAnimation = AnimationType.IDLE;
         }
 
         position.add(velocity.cpy().scl(delta));

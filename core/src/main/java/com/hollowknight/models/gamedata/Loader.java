@@ -6,7 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
-import com.hollowknight.models.Game;
+import com.hollowknight.models.GameWorld;
 import com.hollowknight.models.settings.Settings;
 
 public class Loader {
@@ -29,8 +29,8 @@ public class Loader {
         return settings;
     }
 
-    public static List<Game> loadSaves() {
-        List<Game> saves = new ArrayList<>();
+    public static List<GameWorld> loadSaves() {
+        List<GameWorld> saves = new ArrayList<>();
 
         FileHandle saveDir = Gdx.files.local("gamedata/saves");
 
@@ -43,7 +43,7 @@ public class Loader {
 
         for (FileHandle file : saveDir.list(".json")) {
             try {
-                Game save = json.fromJson(Game.class, file);
+                GameWorld save = json.fromJson(GameWorld.class, file);
                 if (save != null) {
                     saves.add(save);
                 }

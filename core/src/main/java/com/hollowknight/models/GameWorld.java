@@ -1,6 +1,6 @@
 package com.hollowknight.models;
 
-public class Game {
+public class GameWorld {
     private String worldName = "new world";
     public Player player = new Player();
 

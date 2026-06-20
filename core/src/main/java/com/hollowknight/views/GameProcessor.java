@@ -2,14 +2,14 @@ package com.hollowknight.views;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.hollowknight.models.Game;
+import com.hollowknight.models.GameWorld;
 import com.hollowknight.views.actors.modals.PauseModal;
 import com.hollowknight.views.screens.MainMenuScreen;
 
 public class GameProcessor implements InputProcessor {
-    private final Game game;
+    private final GameWorld game;
 
-    public GameProcessor(Game game) {
+    public GameProcessor(GameWorld game) {
         this.game = game;
     }
 

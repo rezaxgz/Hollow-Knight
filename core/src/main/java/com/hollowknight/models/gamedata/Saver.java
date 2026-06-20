@@ -3,7 +3,7 @@ package com.hollowknight.models.gamedata;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
-import com.hollowknight.models.Game;
+import com.hollowknight.models.GameWorld;
 import com.hollowknight.models.settings.Settings;
 
 public class Saver {
@@ -14,7 +14,7 @@ public class Saver {
         file.writeString(saveData, false);
     }
 
-    public static void saveGame(Game game) {
+    public static void saveGame(GameWorld game) {
         Json json = new Json();
         String saveData = json.toJson(game);
         FileHandle file = Gdx.files.local("gamedata/saves/" + game.getWorldName() + ".json");

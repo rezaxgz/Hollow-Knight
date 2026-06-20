@@ -40,7 +40,7 @@ public class GameAssetManager {
         }
 
         Animation<TextureRegion> animation = new Animation<>(1 / 30f, frames);
-        animation.setPlayMode(Animation.PlayMode.LOOP);
+        animation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
 
         animationMap.put(type, animation);
     }
