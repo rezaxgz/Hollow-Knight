@@ -1,6 +1,6 @@
-package com.hollowknight.views;
+package com.hollowknight.models;
 
-public enum AnimationType {
+public enum PlayerState {
     IDLE("animation/Idle.png", 9, 9, 1),
     RUN("animation/Run.png", 13, 13, 1),
     DASH("animation/Dash.png", 12, 12, 1),
@@ -15,7 +15,7 @@ public enum AnimationType {
     public final int colCount;
     public final int rowCount;
 
-    AnimationType(String path, int frameCount, int colCount, int rowCount) {
+    PlayerState(String path, int frameCount, int colCount, int rowCount) {
         this.path = path;
         this.frameCount = frameCount;
         this.colCount = colCount;

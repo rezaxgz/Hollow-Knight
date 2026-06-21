@@ -10,7 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.hollowknight.views.actors.SaveCard;
 import com.hollowknight.models.GameWorld;
-import com.hollowknight.models.GameWorld;
 import com.hollowknight.models.gamedata.Loader;
 import com.hollowknight.views.UiManager;
 

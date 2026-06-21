@@ -5,22 +5,23 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.hollowknight.models.PlayerState;
 
 import java.util.HashMap;
 
 public class GameAssetManager {
     public static Skin skin;
-    public static final HashMap<AnimationType, Animation<TextureRegion>> animationMap = new HashMap<>();
+    public static final HashMap<PlayerState, Animation<TextureRegion>> animationMap = new HashMap<>();
 
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        for (AnimationType type : AnimationType.values()) {
+        for (PlayerState type : PlayerState.values()) {
             loadAnimation(type);
         }
     }
 
-    public static void loadAnimation(AnimationType type) {
+    public static void loadAnimation(PlayerState type) {
         Texture texture = new Texture(type.path);
 
         TextureRegion[][] split = TextureRegion.split(

@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.GameWorld;
+import com.hollowknight.models.PlayerState;
 
 public class GameRenderer {
     SpriteBatch batch;
@@ -51,14 +52,14 @@ public class GameRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        AnimationType currentAnimation = world.player.currentAnimation;
+        PlayerState currentAnimation = world.player.state;
         Animation<TextureRegion> animation = GameAssetManager.animationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.stateTime);
         batch.draw(keyFrame,
                 world.player.position.x, world.player.position.y,
                 keyFrame.getRegionWidth() / 2f, 0,
                 keyFrame.getRegionWidth(), keyFrame.getRegionHeight(),
-                world.player.velocity.x > 0 ? -1 : 1, 1, 0);
+                -world.player.getDirection(), 1, 0);
         batch.end();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
