@@ -11,8 +11,14 @@ public class Player {
     private boolean canDash = true;
     private int facingDirection = Constants.RIGHT_DIRECTION;
     private boolean movingHorizontally = false;
+    private int jumpsRemaining = 2;
+
     public PlayerState state = PlayerState.IDLE;
     public float stateTime = 0;
+
+    private int health = 5; // 1-5
+    private boolean isInvincible = false;
+    private float invincibilityTimer = 0.0f;
 
     public void update(float delta) {
         if (position.y <= 0.001)
@@ -22,6 +28,14 @@ public class Player {
 
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= delta;
+
+        if (invincibilityTimer > 0)
+            invincibilityTimer -= delta;
+
+        if (isInvincible && invincibilityTimer <= 0) {
+            isInvincible = false;
+            invincibilityTimer = 0.0f;
+        }
 
         if (state == PlayerState.DASH) {
             dashTimer -= delta;
@@ -39,8 +53,12 @@ public class Player {
             return;
         }
 
-        if (isOnGround) {
+        if (isOnGround && state != PlayerState.JUMP && state != PlayerState.DOUBLE_JUMP) {
             canDash = true;
+            jumpsRemaining = 2;
+            if (state == PlayerState.FALL) {
+                setSateAfterLanding();
+            }
         }
 
         if (movingHorizontally) {
@@ -48,12 +66,16 @@ public class Player {
         } else {
             velocity.x = 0;
             if (state == PlayerState.RUN) {
-                state = PlayerState.IDLE;
+                setState(PlayerState.IDLE);
             }
         }
 
+        // Gravity
         if (!isOnGround) {
             velocity.y += Constants.GRAVITY * delta;
+            if (velocity.y < 0) {
+                setState(PlayerState.FALL);
+            }
         } else if (velocity.y < 0.01) {
             velocity.y = 0;
             position.y = 0;
@@ -65,15 +87,25 @@ public class Player {
     }
 
     public void jump() {
-        if (isOnGround) {
-            velocity.y = 500;
-            state = PlayerState.JUMP;
+        if (canJump()) {
+            velocity.y = Constants.JUMP_SPEED;
+            jumpsRemaining--;
+
+            if (jumpsRemaining == 0) {
+                setState(PlayerState.DOUBLE_JUMP);
+            } else {
+                setState(PlayerState.JUMP);
+            }
         }
+    }
+
+    private boolean canJump() {
+        return jumpsRemaining > 0 && state != PlayerState.DASH;
     }
 
     private void move() {
         if (isOnGround)
-            state = PlayerState.RUN;
+            setState(PlayerState.RUN);
         movingHorizontally = true;
     }
 
@@ -92,33 +124,67 @@ public class Player {
             return;
         movingHorizontally = false;
         if (isOnGround)
-            state = PlayerState.IDLE;
+            setState(PlayerState.IDLE);
     }
 
     public void dash() {
         if (state != PlayerState.DASH && canDash && dashCooldownTimer <= 0) {
-            state = PlayerState.DASH;
+            setState(PlayerState.DASH);
             canDash = false;
             dashTimer = Constants.DASH_DURATION;
 
             velocity.x = Constants.DASH_SPEED * facingDirection;
             velocity.y = 0;
 
-            state = PlayerState.DASH;
+            setState(PlayerState.DASH);
         }
     }
 
     private void setStateAfterDash() {
         if (isOnGround && !movingHorizontally) {
-            state = PlayerState.IDLE;
+            setState(PlayerState.IDLE);
         } else if (movingHorizontally) {
-            state = PlayerState.JUMP;
+            setState(PlayerState.RUN);
         } else {
-            state = PlayerState.RUN;
+            setState(PlayerState.FALL);
+        }
+    }
+
+    private void setSateAfterLanding() {
+        if (movingHorizontally) {
+            setState(PlayerState.RUN);
+        } else {
+            setState(PlayerState.IDLE);
         }
     }
 
     public int getDirection() {
         return this.facingDirection;
+    }
+
+    private void kill() {
+
+    }
+
+    public boolean isInvinvible() {
+        return isInvincible;
+    }
+
+    public boolean takeDamage() {
+        health--;
+        isInvincible = true;
+        invincibilityTimer = Constants.INVINCIBILITY_TIME;
+        if (health <= 0) {
+            kill();
+            return true;
+        }
+        return false;
+    }
+
+    private void setState(PlayerState newState) {
+        if (state != newState) {
+            state = newState;
+            stateTime = 0;
+        }
     }
 }

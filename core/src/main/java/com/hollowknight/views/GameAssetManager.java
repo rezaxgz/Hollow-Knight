@@ -40,9 +40,17 @@ public class GameAssetManager {
             frames[i] = split[row][col];
         }
 
-        Animation<TextureRegion> animation = new Animation<>(1 / 30f, frames);
-        animation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+        Animation<TextureRegion> animation = new Animation<>(type.frameDuration, frames);
+        switch (type.animationType) {
+            case LOOP ->
+                animation.setPlayMode(Animation.PlayMode.LOOP);
 
+            case LOOP_PINGPONG ->
+                animation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+
+            case ONESHOT ->
+                animation.setPlayMode(Animation.PlayMode.NORMAL);
+        }
         animationMap.put(type, animation);
     }
 }
