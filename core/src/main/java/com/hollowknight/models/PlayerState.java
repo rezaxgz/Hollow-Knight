@@ -7,7 +7,7 @@ public enum PlayerState {
     JUMP("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
     DEAD("animation/Death.png", 18, 18, 1, true, AnimationType.ONESHOT, 0.08f),
     HURT("animation/Idle Hurt.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
-    FALL("animation/Landing.png", 4, 4, 1, true, AnimationType.ONESHOT, 0.08f),
+    FALL("animation/Landing.png", 4, 4, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
     DOUBLE_JUMP("animation/Double Jump.png", 8, 8, 1, false, AnimationType.ONESHOT,
             (Constants.JUMP_SPEED / -Constants.GRAVITY) / 8);
 
