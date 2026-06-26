@@ -1,0 +1,64 @@
+{
+    "activeFile": "untitled.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Forgotten Crossroads.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 419.5,
+                "y": 1559.1666666666665
+            }
+        },
+        "floor corner.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4
+        },
+        "floor.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "start wall.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "untitled.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 313.5,
+                "y": 1236.5
+            }
+        },
+        "wall1.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "G:/code/Hollow Knight/assets/sprites/Architecture & Environment/Area specfic architecture/Forgotten Crossroads",
+    "map.height": 200,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 300,
+    "openFiles": [
+        "untitled.tmx",
+        "wall1.tsx"
+    ],
+    "project": "Forgotten Crossroads.tiled-project",
+    "recentFiles": [
+        "wall1.tsx",
+        "untitled.tmx",
+        "start wall.tsx",
+        "floor.tsx",
+        "floor corner.tsx",
+        "Forgotten Crossroads.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    }
+}
