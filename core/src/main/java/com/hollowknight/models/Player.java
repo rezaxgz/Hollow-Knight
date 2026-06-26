@@ -20,6 +20,14 @@ public class Player {
     private boolean isInvincible = false;
     private float invincibilityTimer = 0.0f;
 
+    public Player() {
+
+    }
+
+    public Player(Vector2 position) {
+        this.position = position;
+    }
+
     public void update(float delta) {
         if (position.y <= 0.001)
             isOnGround = true;

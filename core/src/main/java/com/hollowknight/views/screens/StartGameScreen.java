@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.hollowknight.views.actors.SaveCard;
 import com.hollowknight.models.GameWorld;
+import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.gamedata.Loader;
 import com.hollowknight.views.UiManager;
 
@@ -66,7 +67,7 @@ public class StartGameScreen extends AbstractScreen {
         newGameBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                UiManager.setScreen(new GameScreen(new GameWorld()));
+                UiManager.setScreen(new GameScreen(new GameWorld(GameSave.gameStart())));
             }
         });
     }

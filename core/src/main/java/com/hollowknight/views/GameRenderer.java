@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.GameWorld;
@@ -21,6 +22,8 @@ public class GameRenderer {
     GameProcessor gameProcessor;
     Stage stage;
     GameWorld world;
+
+    private OrthogonalTiledMapRenderer mapRenderer;
 
     public GameRenderer(GameWorld world) {
         this.world = world;
@@ -38,6 +41,8 @@ public class GameRenderer {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(gameProcessor);
         Gdx.input.setInputProcessor(inputMultiplexer);
+
+        mapRenderer = new OrthogonalTiledMapRenderer(world.map);
     }
 
     public void resize(int width, int height) {
@@ -47,6 +52,9 @@ public class GameRenderer {
     public void render() {
         camera.position.set(world.player.position, 0);
         camera.update();
+
+        mapRenderer.setView(camera);
+        mapRenderer.render();
 
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -68,11 +76,6 @@ public class GameRenderer {
         shapeRenderer.setColor(Color.GREEN);
         shapeRenderer.line(0, 0, 0, 100);
         shapeRenderer.rect(world.player.position.x, world.player.position.y, 100, 100);
-        shapeRenderer.end();
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(-1000, -200, 2000, 200);
         shapeRenderer.end();
 
         stage.act();

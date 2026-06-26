@@ -2,13 +2,11 @@ package com.hollowknight.views;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.hollowknight.models.gamedata.Saver;
 import com.hollowknight.views.screens.MainMenuScreen;
 
 public class Main extends Game {
     @Override
     public void create() {
-        Saver.saveGame(new com.hollowknight.models.GameWorld());
         GameAssetManager.init();
         UiManager.init(this);
 
