@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.PlayerState;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class GameAssetManager {
@@ -38,6 +40,10 @@ public class GameAssetManager {
             int row = i / cols;
             int col = i % cols;
             frames[i] = split[row][col];
+        }
+
+        if (type.isReversed) {
+            Collections.reverse(Arrays.asList(frames));
         }
 
         Animation<TextureRegion> animation = new Animation<>(type.frameDuration, frames);

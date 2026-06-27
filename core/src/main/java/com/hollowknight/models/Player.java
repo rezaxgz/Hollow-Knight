@@ -1,5 +1,8 @@
 package com.hollowknight.models;
 
+import java.util.List;
+
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class Player {
@@ -28,15 +31,12 @@ public class Player {
         this.position = position;
     }
 
-    public void update(float delta) {
-        if (position.y <= 0.001)
-            isOnGround = true;
-        else
-            isOnGround = false;
+    public void update(float delta, List<Rectangle> solidBlocks) {
+        // --- 1. HANDLE TIMERS ---
+        stateTime += delta;
 
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= delta;
-
         if (invincibilityTimer > 0)
             invincibilityTimer -= delta;
 
@@ -45,53 +45,70 @@ public class Player {
             invincibilityTimer = 0.0f;
         }
 
+        // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
         if (state == PlayerState.DASH) {
             dashTimer -= delta;
-
             velocity.x = Constants.DASH_SPEED * facingDirection;
             velocity.y = 0; // ignore gravity
 
-            position.add(velocity.cpy().scl(delta));
+            isOnGround = false;
+            updatePosition(delta, solidBlocks);
 
             if (dashTimer <= 0) {
                 setStateAfterDash();
                 dashCooldownTimer = Constants.DASH_COOLDOWN;
             }
-
-            return;
+            stateTime += delta;
+            return; // Exit early so we don't apply normal physics
         }
 
-        if (isOnGround && state != PlayerState.JUMP && state != PlayerState.DOUBLE_JUMP) {
-            canDash = true;
-            jumpsRemaining = 2;
-            if (state == PlayerState.FALL) {
-                setSateAfterLanding();
-            }
-        }
-
+        // --- 3. CALCULATE VELOCITY (Inputs & Gravity) ---
         if (movingHorizontally) {
             velocity.x = facingDirection * Constants.PLAYER_MOVE_SPEED;
         } else {
             velocity.x = 0;
-            if (state == PlayerState.RUN) {
-                setState(PlayerState.IDLE);
-            }
         }
 
-        // Gravity
-        if (!isOnGround) {
-            velocity.y += Constants.GRAVITY * delta;
-            if (velocity.y < 0) {
+        // ALWAYS apply gravity before moving. This pushes the player into
+        // the floor just enough to trigger the collision check next.
+        velocity.y += Constants.GRAVITY * delta;
+
+        // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
+        isOnGround = false;
+        updatePosition(delta, solidBlocks);
+
+        // --- 5. UPDATE PLAYER STATES ---
+        if (isOnGround) {
+            canDash = true;
+            jumpsRemaining = 2;
+            velocity.y = 0;
+
+            // Because of our fix below, the state will ALWAYS be FALL
+            // when hitting the ground from the air.
+            if (state == PlayerState.FALL) {
+                setSateAfterLanding();
+            }
+
+            // Catch-all to clean up horizontal states if the player stopped moving
+            // while the landing animation/logic was processing
+            if (!movingHorizontally && state != PlayerState.IDLE) {
+                setState(PlayerState.IDLE);
+            } else if (movingHorizontally && state != PlayerState.RUN) {
+                setState(PlayerState.RUN);
+            }
+        } else {
+            // FIX: If we are moving downwards, we are falling. Period.
+            // This allows the jump animations to correctly transition into the fall state.
+            if (velocity.y < 0 && state != PlayerState.FALL) {
                 setState(PlayerState.FALL);
             }
-        } else if (velocity.y < 0.01) {
-            velocity.y = 0;
-            position.y = 0;
         }
+    }
 
-        position.add(velocity.cpy().scl(delta));
+    private void updatePosition(float delta, List<Rectangle> solids) {
+        moveX(velocity.x * delta, solids);
 
-        stateTime += delta;
+        moveY(velocity.y * delta, solids);
     }
 
     public void jump() {
@@ -193,6 +210,62 @@ public class Player {
         if (state != newState) {
             state = newState;
             stateTime = 0;
+        }
+    }
+
+    private Rectangle getBounds() {
+        return new Rectangle(
+                position.x,
+                position.y,
+                Constants.PLAYER_HITBOX_WIDTH,
+                Constants.PLAYER_HITBOX_HEIGHT);
+    }
+
+    private void moveX(float amount, List<Rectangle> solids) {
+        position.x += amount;
+
+        Rectangle player = getBounds();
+
+        for (Rectangle solid : solids) {
+            if (player.overlaps(solid)) {
+
+                if (amount > 0) {
+                    position.x = solid.x - player.width;
+                } else {
+                    position.x = solid.x + solid.width;
+                }
+
+                velocity.x = 0;
+                break;
+            }
+        }
+    }
+
+    private void moveY(float amount, List<Rectangle> solids) {
+        position.y += amount;
+
+        Rectangle bounds = getBounds();
+
+        for (Rectangle solid : solids) {
+
+            if (!bounds.overlaps(solid))
+                continue;
+
+            if (amount < 0) { // landing
+
+                position.y = solid.y + solid.height;
+
+                velocity.y = 0;
+                isOnGround = true;
+
+            } else { // ceiling
+
+                position.y = solid.y - bounds.height;
+
+                velocity.y = 0;
+            }
+
+            return;
         }
     }
 }
