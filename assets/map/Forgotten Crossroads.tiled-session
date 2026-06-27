@@ -51,6 +51,7 @@
         "wall1.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
+    "property.type": "bool",
     "recentFiles": [
         "wall1.tsx",
         "untitled.tmx",

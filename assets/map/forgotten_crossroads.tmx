@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="300" height="200" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="21">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="300" height="200" tilewidth="8" tileheight="8" infinite="0" nextlayerid="6" nextobjectid="25">
  <tileset firstgid="1" source="floor.tsx"/>
  <tileset firstgid="259" source="wall1.tsx"/>
  <tileset firstgid="553" source="pit.tsx"/>
@@ -616,7 +616,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="Solid">
+ <objectgroup id="4" name="Solid" visible="0">
   <object id="5" name="floor0" x="0.909091" y="1447.95" width="1151.76" height="152.53"/>
   <object id="8" name="Spawn Point" x="64" y="1400" visible="0">
    <point/>
@@ -626,5 +626,15 @@
   <object id="13" name="higher spikes" x="1396.67" y="1508" width="225.333" height="32.6667"/>
   <object id="14" x="1592" y="1184" width="31.9348" height="365"/>
   <object id="15" x="1519.5" y="1270.14" width="72.3182" height="33.3182"/>
+ </objectgroup>
+ <objectgroup color="#aa0000" id="5" name="Obstacles">
+  <properties>
+   <property name="isInstantDeath" type="bool" value="false"/>
+  </properties>
+  <object id="24" x="1151" y="1475.17" width="441.5" height="124.833">
+   <properties>
+    <property name="isInstantDeath" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
