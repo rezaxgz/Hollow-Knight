@@ -1,4 +1,4 @@
-package com.hollowknight.models;
+package com.hollowknight.models.world;
 
 import com.badlogic.gdx.math.Rectangle;
 

@@ -1,4 +1,4 @@
-package com.hollowknight.models;
+package com.hollowknight.models.world;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.hollowknight.models.gamedata.GameSave;
+import com.hollowknight.models.player.Player;
 
 public class GameWorld {
     private String worldName = "new world";

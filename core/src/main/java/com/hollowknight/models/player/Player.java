@@ -1,9 +1,10 @@
-package com.hollowknight.models;
+package com.hollowknight.models.player;
 
 import java.util.List;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.models.Constants;
 
 public class Player {
     public Vector2 position = new Vector2();

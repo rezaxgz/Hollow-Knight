@@ -1,4 +1,7 @@
-package com.hollowknight.models;
+package com.hollowknight.models.player;
+
+import com.hollowknight.models.Constants;
+import com.hollowknight.models.enums.AnimationType;
 
 public enum PlayerState {
     IDLE("animation/Idle.png", 9, 9, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),

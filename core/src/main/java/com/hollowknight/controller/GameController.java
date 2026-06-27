@@ -1,6 +1,6 @@
 package com.hollowknight.controller;
 
-import com.hollowknight.models.GameWorld;
+import com.hollowknight.models.world.GameWorld;
 
 public class GameController {
     GameWorld world;

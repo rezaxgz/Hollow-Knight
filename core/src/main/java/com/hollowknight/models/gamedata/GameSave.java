@@ -1,7 +1,7 @@
 package com.hollowknight.models.gamedata;
 
-import com.hollowknight.models.Player;
 import com.hollowknight.models.enums.GameLevel;
+import com.hollowknight.models.player.Player;
 
 public class GameSave {
     public GameLevel gameLevel;

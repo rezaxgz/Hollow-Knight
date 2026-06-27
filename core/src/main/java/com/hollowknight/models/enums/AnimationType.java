@@ -1,4 +1,4 @@
-package com.hollowknight.models;
+package com.hollowknight.models.enums;
 
 public enum AnimationType {
     LOOP,

@@ -2,7 +2,7 @@ package com.hollowknight.views;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.hollowknight.models.GameWorld;
+import com.hollowknight.models.world.GameWorld;
 
 public class HUDRenderer {
 

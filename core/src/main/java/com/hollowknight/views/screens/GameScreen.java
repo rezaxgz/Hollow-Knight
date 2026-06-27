@@ -1,7 +1,7 @@
 package com.hollowknight.views.screens;
 
 import com.hollowknight.controller.GameController;
-import com.hollowknight.models.GameWorld;
+import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.GameRenderer;
 
 public class GameScreen extends AbstractScreen {

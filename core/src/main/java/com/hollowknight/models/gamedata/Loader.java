@@ -6,8 +6,8 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
-import com.hollowknight.models.GameWorld;
 import com.hollowknight.models.settings.Settings;
+import com.hollowknight.models.world.GameWorld;
 
 public class Loader {
     public static Settings loadSettings() {
