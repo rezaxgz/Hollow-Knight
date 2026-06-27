@@ -23,9 +23,10 @@ public class GameScreen extends AbstractScreen {
 
     @Override
     public void render(float delta) {
-        controller.update(delta);
+        float cappedDelta = Math.min(delta, 1 / 30f);
+        controller.update(cappedDelta);
         renderer.render();
-        super.render(delta);
+        super.render(cappedDelta);
     }
 
     @Override
