@@ -20,8 +20,7 @@ public class Player {
     public PlayerState state = PlayerState.IDLE;
     public float stateTime = 0;
 
-    private int health = 5;
-    private int maxHealth = 5;
+    private PlayerVitals vitals = new PlayerVitals();
     private boolean isInvincible = false;
     private float invincibilityTimer = 0.0f;
 
@@ -34,6 +33,7 @@ public class Player {
     }
 
     public void update(float delta, List<Rectangle> solidBlocks) {
+        vitals.update(delta);
         // --- 1. HANDLE TIMERS ---
         stateTime += delta;
 
@@ -198,10 +198,10 @@ public class Player {
     }
 
     public boolean takeDamage() {
-        health--;
+        vitals.takeDamage();
         isInvincible = true;
         invincibilityTimer = Constants.INVINCIBILITY_TIME;
-        if (health <= 0) {
+        if (vitals.isDead()) {
             kill();
             return true;
         }
@@ -271,11 +271,7 @@ public class Player {
         }
     }
 
-    public int getHealth() {
-        return health;
-    }
-
-    public int getMaxHealth() {
-        return maxHealth;
+    public PlayerVitals getVitals() {
+        return vitals;
     }
 }

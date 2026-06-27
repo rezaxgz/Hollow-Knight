@@ -1,43 +1,64 @@
 package com.hollowknight.views;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.hollowknight.models.player.HealthMask;
 import com.hollowknight.models.world.GameWorld;
+
+import java.util.List;
 
 public class HUDRenderer {
 
     private final GameWorld world;
-    private final ShapeRenderer shapeRenderer;
+    private final SpriteBatch batch;
+
+    // Layout configuration for the health masks
+    private static final float START_OFFSET_X = 20f;
+    private static final float START_OFFSET_Y = 120f; // Distance down from the top edge
+    private static final float SPACING = 70f; // Horizontal space between masks
+    private static final float MASK_SIZE = 100f; // Width & height to draw the masks
 
     public HUDRenderer(GameWorld world) {
         this.world = world;
-        this.shapeRenderer = new ShapeRenderer();
+        this.batch = new SpriteBatch();
     }
 
     public void render(OrthographicCamera camera) {
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        // Sync the SpriteBatch with the camera's view
+        batch.setProjectionMatrix(camera.combined);
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        batch.begin();
 
-        // TEMP HP BAR
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1f);
-        shapeRenderer.rect(
-                camera.position.x - camera.viewportWidth / 2 + 20,
-                camera.position.y + camera.viewportHeight / 2 - 40,
-                200,
-                20);
+        List<HealthMask> masks = world.player.getVitals().getHealthMasks();
 
-        shapeRenderer.setColor(1, 0, 0, 1);
-        shapeRenderer.rect(
-                camera.position.x - camera.viewportWidth / 2 + 20,
-                camera.position.y + camera.viewportHeight / 2 - 40,
-                world.player.getHealth() * 40,
-                20);
+        // Calculate the top-left starting position based on the camera
+        float startX = camera.position.x - (camera.viewportWidth / 2f) + START_OFFSET_X;
+        float startY = camera.position.y + (camera.viewportHeight / 2f) - START_OFFSET_Y;
 
-        shapeRenderer.end();
+        for (int i = 0; i < masks.size(); i++) {
+            HealthMask mask = masks.get(i);
+
+            // Fetch the animation for the current state (FULL, BREAKING, EMPTY, HEALING)
+            Animation<TextureRegion> animation = GameAssetManager.healthAnimationMap.get(mask.state);
+
+            if (animation != null) {
+                // Determine the correct frame using the elapsed stateTime
+                TextureRegion currentFrame = animation.getKeyFrame(mask.stateTime);
+
+                // Calculate the X position for this specific slot
+                float drawX = startX + (i * SPACING);
+
+                // Render the frame
+                batch.draw(currentFrame, drawX, startY, MASK_SIZE, MASK_SIZE);
+            }
+        }
+
+        batch.end();
     }
 
     public void dispose() {
-        shapeRenderer.dispose();
+        batch.dispose();
     }
 }

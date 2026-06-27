@@ -88,7 +88,7 @@ public class GameRenderer {
         // 2. Render the Player
         batch.begin();
         PlayerState currentAnimation = world.player.state;
-        Animation<TextureRegion> animation = GameAssetManager.animationMap.get(currentAnimation);
+        Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.stateTime);
         float spriteWidth = keyFrame.getRegionWidth();
         float spriteHeight = keyFrame.getRegionHeight();
