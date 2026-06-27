@@ -60,6 +60,7 @@
         "floor corner.tsx",
         "Forgotten Crossroads.tmx"
     ],
+    "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 8,
