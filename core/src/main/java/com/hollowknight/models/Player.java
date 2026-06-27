@@ -19,7 +19,8 @@ public class Player {
     public PlayerState state = PlayerState.IDLE;
     public float stateTime = 0;
 
-    private int health = 5; // 1-5
+    private int health = 5;
+    private int maxHealth = 5;
     private boolean isInvincible = false;
     private float invincibilityTimer = 0.0f;
 
@@ -267,5 +268,13 @@ public class Player {
 
             return;
         }
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
     }
 }

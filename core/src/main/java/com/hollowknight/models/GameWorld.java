@@ -16,6 +16,7 @@ public class GameWorld {
     public TiledMap map;
     public Player player = new Player();
     private List<Rectangle> solidBlocks = new ArrayList<>();
+    private List<Obstacle> obstacles = new ArrayList<>();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -28,6 +29,15 @@ public class GameWorld {
                 continue;
             Rectangle rect = ((RectangleMapObject) (obj)).getRectangle();
             solidBlocks.add(rect);
+        }
+
+        MapLayer obsticleLayer = map.getLayers().get("Obstacles");
+        for (MapObject obj : obsticleLayer.getObjects()) {
+            if (!(obj instanceof RectangleMapObject))
+                continue;
+            Rectangle rect = ((RectangleMapObject) (obj)).getRectangle();
+            boolean isInstantDeath = (boolean) obj.getProperties().get("isInstantDeath");
+            obstacles.add(new Obstacle(rect, isInstantDeath));
         }
     }
 

@@ -26,6 +26,13 @@ public class GameRenderer {
 
     private OrthogonalTiledMapRenderer mapRenderer;
 
+    private HUDRenderer hudRenderer;
+    private OrthographicCamera hudCamera;
+
+    // Arrays to hold the layer indices
+    private int[] backgroundLayers;
+    private int[] foregroundLayers;
+
     public GameRenderer(GameWorld world) {
         this.world = world;
     }
@@ -44,6 +51,22 @@ public class GameRenderer {
         Gdx.input.setInputProcessor(inputMultiplexer);
 
         mapRenderer = new OrthogonalTiledMapRenderer(world.map);
+
+        // Define your layers here.
+        backgroundLayers = new int[] {
+                world.map.getLayers().getIndex("background"),
+                world.map.getLayers().getIndex("main")
+        };
+
+        foregroundLayers = new int[] {
+                world.map.getLayers().getIndex("foreground")
+        };
+
+        hudRenderer = new HUDRenderer(world);
+        hudCamera = new OrthographicCamera();
+        hudCamera.setToOrtho(false,
+                Gdx.graphics.getWidth(),
+                Gdx.graphics.getHeight());
     }
 
     public void resize(int width, int height) {
@@ -55,11 +78,14 @@ public class GameRenderer {
         camera.update();
 
         mapRenderer.setView(camera);
-        mapRenderer.render();
+
+        // 1. Render Background and Main map layers FIRST
+        mapRenderer.render(backgroundLayers);
 
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
+        // 2. Render the Player
         batch.begin();
         PlayerState currentAnimation = world.player.state;
         Animation<TextureRegion> animation = GameAssetManager.animationMap.get(currentAnimation);
@@ -75,6 +101,14 @@ public class GameRenderer {
                 -world.player.getDirection(), 1, 0); // Flip horizontally if moving left
         batch.end();
 
+        // 3. Render the Foreground map layer OVER the player
+        mapRenderer.render(foregroundLayers);
+
+        // 4. render HUD
+        hudCamera.update();
+        hudRenderer.render(hudCamera);
+
+        // 5. Render Debug Shapes
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
         shapeRenderer.line(0, 0, 100, 0);
@@ -84,6 +118,8 @@ public class GameRenderer {
                 Constants.PLAYER_HITBOX_HEIGHT);
         shapeRenderer.end();
 
+        // 6. Update and Draw Stage (UI)
         stage.act();
+        stage.draw();
     }
 }
