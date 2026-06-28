@@ -1,7 +1,5 @@
 package com.hollowknight.views;
 
-import java.security.Key;
-
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.hollowknight.models.Constants;

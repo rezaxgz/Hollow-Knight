@@ -19,6 +19,8 @@ public class GameAssetManager {
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
+    public static final Texture[] soulsTextures = new Texture[18];
+
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
@@ -30,6 +32,8 @@ public class GameAssetManager {
         for (HealthMaskState type : HealthMaskState.values()) {
             loadHealthAnimation(type);
         }
+
+        loadSoulsTexture();
     }
 
     private static void loadPlayerAnimation(PlayerState type) {
@@ -88,5 +92,11 @@ public class GameAssetManager {
         animation.setPlayMode(type.mode);
 
         healthAnimationMap.put(type, animation);
+    }
+
+    private static void loadSoulsTexture() {
+        for (int i = 237; i <= 254; i++) {
+            soulsTextures[i - 237] = new Texture("animation/HUD/HUD Cln_" + i + ".png");
+        }
     }
 }

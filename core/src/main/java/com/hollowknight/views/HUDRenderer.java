@@ -1,10 +1,12 @@
 package com.hollowknight.views;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.hollowknight.models.player.HealthMask;
+import com.hollowknight.models.player.PlayerVitals;
 import com.hollowknight.models.world.GameWorld;
 
 import java.util.List;
@@ -31,15 +33,38 @@ public class HUDRenderer {
 
         batch.begin();
 
+        PlayerVitals vitals = world.player.getVitals();
+
         float masksStartX = camera.position.x - (camera.viewportWidth / 2f) + START_OFFSET_X;
         float masksStartY = camera.position.y + (camera.viewportHeight / 2f) - START_OFFSET_Y;
 
         float barStartX = masksStartX - 320;
         float barStartY = masksStartY - 60;
 
+        // 1. Calculate the percentage of souls (0.0 to 1.0)
+        float soulPercent = Math.max(0, Math.min(vitals.getSouls() / 100f, 1f)); // Clamped between 0 and 1
+
+        // 2. Draw the background frame first
         batch.draw(GameAssetManager.healthBar, barStartX, barStartY);
 
-        List<HealthMask> masks = world.player.getVitals().getHealthMasks();
+        // If there are no souls, we can skip drawing the circle entirely
+        if (soulPercent > 0) {
+            int index = (int) (soulPercent * GameAssetManager.soulsTextures.length);
+            Texture soulsTexture = GameAssetManager.soulsTextures[index];
+
+            float fullWidth = soulsTexture.getWidth();
+            float fullHeight = soulsTexture.getHeight();
+
+            float orbOffsetX = 250f - 66 + 3;
+            float orbOffsetY = 0 - 14 + 3;
+
+            float drawX = barStartX + orbOffsetX;
+            float drawY = barStartY + orbOffsetY;
+
+            batch.draw(soulsTexture, drawX, drawY, fullWidth * 2.9f, fullHeight * 2.9f);
+        }
+
+        List<HealthMask> masks = vitals.getHealthMasks();
 
         // Calculate the top-left starting position based on the camera
 

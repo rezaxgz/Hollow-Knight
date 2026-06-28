@@ -7,7 +7,7 @@ import com.hollowknight.models.Constants;
 
 public class PlayerVitals {
     private List<HealthMask> health;
-    private int souls = 0;
+    private int souls = 80;
 
     public PlayerVitals() {
         this.health = new ArrayList<>();
@@ -35,6 +35,10 @@ public class PlayerVitals {
 
     public int getSouls() {
         return souls;
+    }
+
+    public void addSouls(int amount) {
+        souls = Math.clamp(souls + amount, 0, 99);
     }
 
     public void update(float delta) {
