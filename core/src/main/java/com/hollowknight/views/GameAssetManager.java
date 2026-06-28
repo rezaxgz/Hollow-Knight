@@ -19,7 +19,7 @@ public class GameAssetManager {
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
-    public static final Texture[] soulsTextures = new Texture[18];
+    public static final Texture[] soulsTextures = new Texture[19];
 
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
@@ -95,7 +95,7 @@ public class GameAssetManager {
     }
 
     private static void loadSoulsTexture() {
-        for (int i = 237; i <= 254; i++) {
+        for (int i = 237; i <= 255; i++) {
             soulsTextures[i - 237] = new Texture("animation/HUD/HUD Cln_" + i + ".png");
         }
     }
