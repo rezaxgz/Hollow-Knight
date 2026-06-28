@@ -1,5 +1,7 @@
 package com.hollowknight.views;
 
+import java.security.Key;
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.hollowknight.models.Constants;
@@ -40,6 +42,17 @@ public class GameProcessor implements InputProcessor {
             game.player.jump();
         } else if (keycode == controls.dash) {
             game.player.dash();
+        } else if (keycode == Input.Keys.RIGHT) {
+            Constants.a++;
+        } else if (keycode == Input.Keys.LEFT) {
+            Constants.a--;
+        } else if (keycode == Input.Keys.UP) {
+            Constants.b++;
+        } else if (keycode == Input.Keys.DOWN) {
+            Constants.b--;
+        } else if (keycode == Input.Keys.ENTER) {
+            System.out.println(Constants.a);
+            System.out.println(Constants.b);
         }
 
         return false;
