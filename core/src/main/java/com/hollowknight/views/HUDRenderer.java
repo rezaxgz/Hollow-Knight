@@ -42,7 +42,7 @@ public class HUDRenderer {
         float barStartY = masksStartY - 60;
 
         // 1. Calculate the percentage of souls (0.0 to 1.0)
-        float soulPercent = Math.max(0, Math.min(vitals.getSouls() / 100f, 1f)); // Clamped between 0 and 1
+        float soulPercent = Math.max(0, Math.min(vitals.getSoulsInAnimation() / 100f, 1f)); // Clamped between 0 and 1
 
         // 2. Draw the background frame first
         batch.draw(GameAssetManager.healthBar, barStartX, barStartY);

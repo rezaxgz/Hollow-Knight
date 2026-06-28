@@ -8,6 +8,7 @@ import com.hollowknight.models.Constants;
 public class PlayerVitals {
     private List<HealthMask> health;
     private int souls = 80;
+    private SoulsAnimation soulsAnimation = null;
 
     public PlayerVitals() {
         this.health = new ArrayList<>();
@@ -37,13 +38,29 @@ public class PlayerVitals {
         return souls;
     }
 
+    public int getSoulsInAnimation() {
+        if (soulsAnimation != null) {
+            return soulsAnimation.getSouls();
+        }
+        return souls;
+    }
+
     public void addSouls(int amount) {
-        souls = Math.clamp(souls + amount, 0, 99);
+        int target = Math.clamp(souls + amount, 0, 99);
+        soulsAnimation = new SoulsAnimation(getSoulsInAnimation(), target, Constants.SOULS_CHANGE_TIMER);
+        souls = target;
     }
 
     public void update(float delta) {
         for (HealthMask h : health) {
             h.update(delta);
+        }
+
+        if (soulsAnimation != null) {
+            soulsAnimation.update(delta);
+            if (soulsAnimation.isOver()) {
+                soulsAnimation = null;
+            }
         }
     }
 
@@ -66,5 +83,13 @@ public class PlayerVitals {
                     break;
             }
         }
+    }
+
+    public void setNewAnimation(int from, int to, float time) {
+        soulsAnimation = new SoulsAnimation(from, to, time);
+    }
+
+    public void resetSouls() {
+        soulsAnimation = new SoulsAnimation(getSoulsInAnimation(), getSouls(), Constants.SOULS_CHANGE_TIMER);
     }
 }

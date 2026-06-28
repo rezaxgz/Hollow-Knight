@@ -169,11 +169,14 @@ public class Player {
             setState(PlayerState.FOCUS);
             velocity.x = 0;
             movingHorizontally = false;
+            vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
+                    Constants.HEALTH_REFIL_TIME);
         }
     }
 
     public void stopFocus() {
         setState(PlayerState.IDLE);
+        vitals.resetSouls();
     }
 
     public void doAction(GameActionType action) {
