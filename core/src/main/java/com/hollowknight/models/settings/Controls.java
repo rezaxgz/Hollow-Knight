@@ -12,6 +12,12 @@ public class Controls {
     public int dash = Input.Keys.C;
     public int focus = Input.Keys.A;
 
+    // cheats
+    public int takeDamage = Input.Keys.NUM_0;
+    public int heal = Input.Keys.NUM_9;
+    public int addSouls = Input.Keys.NUM_8;
+    public int loseSouls = Input.Keys.NUM_7;
+
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
             case MOVE_LEFT -> left = key;
@@ -47,6 +53,18 @@ public class Controls {
             return GameActionType.DASH;
         if (key == focus)
             return GameActionType.FOCUS;
+        return null;
+    }
+
+    public GameCheat getCheat(int key) {
+        if (key == takeDamage)
+            return GameCheat.TAKE_DAMAGE;
+        if (key == heal)
+            return GameCheat.HEAL;
+        if (key == loseSouls)
+            return GameCheat.LOSE_SOULS;
+        if (key == addSouls)
+            return GameCheat.ADD_SOULS;
         return null;
     }
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.settings.GameActionType;
+import com.hollowknight.models.settings.GameCheat;
 
 public class Player {
     public Vector2 position = new Vector2();
@@ -342,5 +343,14 @@ public class Player {
 
     public PlayerVitals getVitals() {
         return vitals;
+    }
+
+    public void applyCheat(GameCheat cheat) {
+        switch (cheat) {
+            case ADD_SOULS -> vitals.addSouls(10);
+            case HEAL -> vitals.heal(1);
+            case LOSE_SOULS -> vitals.addSouls(-10);
+            case TAKE_DAMAGE -> takeDamage();
+        }
     }
 }

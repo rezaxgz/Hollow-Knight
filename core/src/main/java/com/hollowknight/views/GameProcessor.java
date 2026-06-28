@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.settings.Controls;
 import com.hollowknight.models.settings.GameActionType;
+import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.models.settings.Settings;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.actors.modals.PauseModal;
@@ -38,6 +39,11 @@ public class GameProcessor implements InputProcessor {
         GameActionType action = controls.getAction(keycode);
         if (action != null) {
             game.player.doAction(action);
+        }
+
+        GameCheat cheat = controls.getCheat(keycode);
+        if (cheat != null) {
+            game.player.applyCheat(cheat);
         }
 
         return false;
