@@ -17,6 +17,8 @@ public class GameAssetManager {
     public static final HashMap<PlayerState, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
 
+    public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
+
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 

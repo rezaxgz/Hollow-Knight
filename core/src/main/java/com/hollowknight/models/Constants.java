@@ -16,7 +16,7 @@ public class Constants {
     public static final int PLAYER_HITBOX_HEIGHT = 130;
 
     // Player Vitals
-    public static final int MAX_PLAYER_HEALTH = 6;
+    public static final int MAX_PLAYER_HEALTH = 5;
     public static final int MAX_PLAYER_SOULS = 99;
     public static final float HEALTH_REFIL_TIME = 1.5f;
 }

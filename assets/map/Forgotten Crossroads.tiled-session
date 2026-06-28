@@ -1,5 +1,5 @@
 {
-    "activeFile": "untitled.tmx",
+    "activeFile": "forgotten_crossroads.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -12,6 +12,14 @@
                 "y": 1559.1666666666665
             }
         },
+        "cd_floor_02.tsx": {
+            "scaleInDock": 11,
+            "scaleInEditor": 1
+        },
+        "cd_floor_highway_06.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "floor corner.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 4
@@ -20,8 +28,17 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "forgotten_crossroads.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1346,
+                "y": 15981
+            }
+        },
         "pit.tsx": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 2
         },
         "start wall.tsx": {
             "scaleInDock": 1,
@@ -36,7 +53,7 @@
             }
         },
         "wall1.tsx": {
-            "scaleInDock": 2,
+            "scaleInDock": 4,
             "scaleInEditor": 1
         }
     },
@@ -47,13 +64,20 @@
     "map.tileWidth": 8,
     "map.width": 300,
     "openFiles": [
-        "untitled.tmx",
-        "wall1.tsx"
+        "wall1.tsx",
+        "forgotten_crossroads.tmx",
+        "pit.tsx",
+        "cd_floor_highway_06.tsx",
+        "cd_floor_02.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "bool",
     "recentFiles": [
         "wall1.tsx",
+        "cd_floor_02.tsx",
+        "cd_floor_highway_06.tsx",
+        "pit.tsx",
+        "forgotten_crossroads.tmx",
         "untitled.tmx",
         "start wall.tsx",
         "floor.tsx",

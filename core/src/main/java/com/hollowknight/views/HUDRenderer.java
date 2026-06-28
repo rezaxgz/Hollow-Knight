@@ -15,8 +15,8 @@ public class HUDRenderer {
     private final SpriteBatch batch;
 
     // Layout configuration for the health masks
-    private static final float START_OFFSET_X = 20f;
-    private static final float START_OFFSET_Y = 120f; // Distance down from the top edge
+    private static final float START_OFFSET_X = 140f;
+    private static final float START_OFFSET_Y = 145f; // Distance down from the top edge
     private static final float SPACING = 70f; // Horizontal space between masks
     private static final float MASK_SIZE = 100f; // Width & height to draw the masks
 
@@ -31,11 +31,17 @@ public class HUDRenderer {
 
         batch.begin();
 
+        float masksStartX = camera.position.x - (camera.viewportWidth / 2f) + START_OFFSET_X;
+        float masksStartY = camera.position.y + (camera.viewportHeight / 2f) - START_OFFSET_Y;
+
+        float barStartX = masksStartX - 320;
+        float barStartY = masksStartY - 60;
+
+        batch.draw(GameAssetManager.healthBar, barStartX, barStartY);
+
         List<HealthMask> masks = world.player.getVitals().getHealthMasks();
 
         // Calculate the top-left starting position based on the camera
-        float startX = camera.position.x - (camera.viewportWidth / 2f) + START_OFFSET_X;
-        float startY = camera.position.y + (camera.viewportHeight / 2f) - START_OFFSET_Y;
 
         for (int i = 0; i < masks.size(); i++) {
             HealthMask mask = masks.get(i);
@@ -48,10 +54,10 @@ public class HUDRenderer {
                 TextureRegion currentFrame = animation.getKeyFrame(mask.stateTime);
 
                 // Calculate the X position for this specific slot
-                float drawX = startX + (i * SPACING);
+                float drawX = masksStartX + (i * SPACING);
 
                 // Render the frame
-                batch.draw(currentFrame, drawX, startY, MASK_SIZE, MASK_SIZE);
+                batch.draw(currentFrame, drawX, masksStartY, MASK_SIZE, MASK_SIZE);
             }
         }
 
