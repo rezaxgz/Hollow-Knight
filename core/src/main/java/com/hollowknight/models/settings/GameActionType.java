@@ -5,5 +5,6 @@ public enum GameActionType {
     MOVE_RIGHT,
     JUMP,
     ATTACK,
-    DASH
+    DASH,
+    FOCUS
 }

@@ -19,6 +19,8 @@ public class Constants {
     public static final int MAX_PLAYER_HEALTH = 5;
     public static final int MAX_PLAYER_SOULS = 99;
     public static final float HEALTH_REFIL_TIME = 1.5f;
+    public static final int HEALING_COST_IN_SOULS = 50;
+    public static final int SUCCESSFUL_ATTACK_SOUL_BONUS = 11;
 
     // debug
     public static int a = 0;

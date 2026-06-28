@@ -5,6 +5,7 @@ import java.util.List;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.settings.GameActionType;
 
 public class Player {
     public Vector2 position = new Vector2();
@@ -62,6 +63,34 @@ public class Player {
             }
             stateTime += delta;
             return; // Exit early so we don't apply normal physics
+        }
+
+        // --- 2.5 HANDLE FOCUS STATE (Overrides normal physics & movement) ---
+        if (state == PlayerState.FOCUS) {
+            velocity.x = 0;
+            movingHorizontally = false;
+
+            // Keep player on the ground
+            velocity.y += Constants.GRAVITY * delta;
+            updatePosition(delta, solidBlocks);
+
+            if (stateTime >= Constants.HEALTH_REFIL_TIME) {
+                if (vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
+                        && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH) {
+                    vitals.addSouls(-Constants.HEALING_COST_IN_SOULS);
+                    vitals.heal(1);
+
+                    if (canFocus()) {
+                        focus();
+                    } else {
+                        stopFocus();
+                    }
+
+                } else {
+                    setState(PlayerState.IDLE);
+                }
+            }
+            return;
         }
 
         // --- 3. CALCULATE VELOCITY (Inputs & Gravity) ---
@@ -123,6 +152,40 @@ public class Player {
             } else {
                 setState(PlayerState.JUMP);
             }
+        }
+    }
+
+    private void attack() {
+
+    }
+
+    private boolean canFocus() {
+        return isOnGround && state != PlayerState.DASH && state != PlayerState.FOCUS &&
+                vitals.getSouls() > Constants.HEALING_COST_IN_SOULS && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
+    }
+
+    private void focus() {
+        if (canFocus()) {
+            setState(PlayerState.FOCUS);
+            velocity.x = 0;
+            movingHorizontally = false;
+        }
+    }
+
+    public void stopFocus() {
+        setState(PlayerState.IDLE);
+    }
+
+    public void doAction(GameActionType action) {
+        if (action != GameActionType.FOCUS && state == PlayerState.FOCUS)
+            return;
+        switch (action) {
+            case MOVE_LEFT -> moveLeft();
+            case MOVE_RIGHT -> moveRight();
+            case JUMP -> jump();
+            case ATTACK -> attack();
+            case DASH -> dash();
+            case FOCUS -> focus();
         }
     }
 
@@ -201,6 +264,9 @@ public class Player {
         vitals.takeDamage();
         isInvincible = true;
         invincibilityTimer = Constants.INVINCIBILITY_TIME;
+        if (state == PlayerState.FOCUS) { // break focus
+            setState(PlayerState.IDLE);
+        }
         if (vitals.isDead()) {
             kill();
             return true;

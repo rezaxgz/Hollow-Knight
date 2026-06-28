@@ -56,4 +56,15 @@ public class PlayerVitals {
             }
         }
     }
+
+    public void heal(int amount) {
+        for (HealthMask h : health) {
+            if (!h.isFull()) {
+                h.set(HealthMaskState.HEALING);
+                amount--;
+                if (amount == 0)
+                    break;
+            }
+        }
+    }
 }

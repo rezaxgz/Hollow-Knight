@@ -3,13 +3,14 @@ package com.hollowknight.models.settings;
 import com.badlogic.gdx.Input;
 
 public class Controls {
-    public int left = Input.Keys.A;
-    public int right = Input.Keys.D;
-    public int up = Input.Keys.W;
-    public int down = Input.Keys.S;
+    public int left = Input.Keys.LEFT;
+    public int right = Input.Keys.RIGHT;
+    public int up = Input.Keys.UP;
+    public int down = Input.Keys.DOWN;
     public int jump = Input.Keys.SPACE;
     public int attack = Input.Keys.X;
     public int dash = Input.Keys.C;
+    public int focus = Input.Keys.A;
 
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
@@ -18,6 +19,7 @@ public class Controls {
             case JUMP -> jump = key;
             case ATTACK -> attack = key;
             case DASH -> dash = key;
+            case FOCUS -> focus = key;
         }
     }
 
@@ -28,6 +30,23 @@ public class Controls {
             case JUMP -> jump;
             case ATTACK -> attack;
             case DASH -> dash;
+            case FOCUS -> focus;
         };
+    }
+
+    public GameActionType getAction(int key) {
+        if (key == left)
+            return GameActionType.MOVE_LEFT;
+        if (key == right)
+            return GameActionType.MOVE_RIGHT;
+        if (key == jump)
+            return GameActionType.JUMP;
+        if (key == attack)
+            return GameActionType.ATTACK;
+        if (key == dash)
+            return GameActionType.DASH;
+        if (key == focus)
+            return GameActionType.FOCUS;
+        return null;
     }
 }

@@ -12,7 +12,8 @@ public enum PlayerState {
     HURT("animation/Idle Hurt.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
     FALL("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f, true),
     DOUBLE_JUMP("animation/Double Jump.png", 8, 8, 1, false, AnimationType.ONESHOT,
-            (Constants.JUMP_SPEED / -Constants.GRAVITY) / 8);
+            (Constants.JUMP_SPEED / -Constants.GRAVITY) / 8),
+    FOCUS("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f, true);
 
     public final String path;
     public final int frameCount;

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.settings.Controls;
+import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.Settings;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.actors.modals.PauseModal;
@@ -32,25 +33,11 @@ public class GameProcessor implements InputProcessor {
                 }
             };
             pauseModal.show();
-        } else if (keycode == controls.right) {
-            game.player.moveRight();
-        } else if (keycode == controls.left) {
-            game.player.moveLeft();
-        } else if (keycode == controls.jump) {
-            game.player.jump();
-        } else if (keycode == controls.dash) {
-            game.player.dash();
-        } else if (keycode == Input.Keys.RIGHT) {
-            Constants.a++;
-        } else if (keycode == Input.Keys.LEFT) {
-            Constants.a--;
-        } else if (keycode == Input.Keys.UP) {
-            Constants.b++;
-        } else if (keycode == Input.Keys.DOWN) {
-            Constants.b--;
-        } else if (keycode == Input.Keys.ENTER) {
-            System.out.println(Constants.a);
-            System.out.println(Constants.b);
+        }
+
+        GameActionType action = controls.getAction(keycode);
+        if (action != null) {
+            game.player.doAction(action);
         }
 
         return false;
@@ -63,6 +50,8 @@ public class GameProcessor implements InputProcessor {
             game.player.stopMoving(Constants.RIGHT_DIRECTION);
         } else if (keycode == controls.left) {
             game.player.stopMoving(Constants.LEFT_DIRECTION);
+        } else if (keycode == controls.focus) {
+            game.player.stopFocus();
         }
         return false;
     }
