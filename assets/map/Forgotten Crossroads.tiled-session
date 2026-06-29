@@ -40,6 +40,9 @@
             "scaleInDock": 1,
             "scaleInEditor": 2
         },
+        "ruins_resting_extra_bits_0040_Layer-142.tsx": {
+            "dynamicWrapping": false
+        },
         "start wall.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -71,7 +74,7 @@
         "cd_floor_02.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
-    "property.type": "bool",
+    "property.type": "int",
     "recentFiles": [
         "wall1.tsx",
         "cd_floor_02.tsx",
