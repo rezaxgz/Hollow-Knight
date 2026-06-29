@@ -5,26 +5,22 @@ import java.util.List;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.player.states.PlayerStatus;
 import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
 
 public class Player {
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
-    public boolean isOnGround = false;
     private float dashTimer = 0.0f;
     private float dashCooldownTimer = 0.0f;
-    private boolean canDash = true;
-    private int facingDirection = Constants.RIGHT_DIRECTION;
-    private boolean movingHorizontally = false;
-    private int jumpsRemaining = 2;
 
-    public PlayerState state = PlayerState.IDLE;
-    public float stateTime = 0;
+    public PlayerAnimation animation = PlayerAnimation.IDLE;
+    public float animationTime = 0;
+
+    public PlayerStatus status = new PlayerStatus();
 
     private PlayerVitals vitals = new PlayerVitals();
-    private boolean isInvincible = false;
-    private float invincibilityTimer = 0.0f;
 
     public Player() {
 
@@ -37,45 +33,39 @@ public class Player {
     public void update(float delta, List<Rectangle> solidBlocks) {
         vitals.update(delta);
         // --- 1. HANDLE TIMERS ---
-        stateTime += delta;
+        animationTime += delta;
 
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= delta;
-        if (invincibilityTimer > 0)
-            invincibilityTimer -= delta;
 
-        if (isInvincible && invincibilityTimer <= 0) {
-            isInvincible = false;
-            invincibilityTimer = 0.0f;
-        }
+        status.update(delta);
 
         // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
-        if (state == PlayerState.DASH) {
+        if (animation == PlayerAnimation.DASH) {
             dashTimer -= delta;
-            velocity.x = Constants.DASH_SPEED * facingDirection;
+            velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0; // ignore gravity
 
-            isOnGround = false;
             updatePosition(delta, solidBlocks);
 
             if (dashTimer <= 0) {
                 setStateAfterDash();
                 dashCooldownTimer = Constants.DASH_COOLDOWN;
             }
-            stateTime += delta;
+            animationTime += delta;
             return; // Exit early so we don't apply normal physics
         }
 
         // --- 2.5 HANDLE FOCUS STATE (Overrides normal physics & movement) ---
-        if (state == PlayerState.FOCUS) {
+        if (animation == PlayerAnimation.FOCUS) {
             velocity.x = 0;
-            movingHorizontally = false;
+            status.setMovingHorizontally(false);
 
             // Keep player on the ground
             velocity.y += Constants.GRAVITY * delta;
             updatePosition(delta, solidBlocks);
 
-            if (stateTime >= Constants.HEALTH_REFIL_TIME) {
+            if (animationTime >= Constants.HEALTH_REFIL_TIME) {
                 if (vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
                         && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH) {
                     vitals.addSouls(-Constants.HEALING_COST_IN_SOULS);
@@ -88,15 +78,15 @@ public class Player {
                     }
 
                 } else {
-                    setState(PlayerState.IDLE);
+                    setAnimation(PlayerAnimation.IDLE);
                 }
             }
             return;
         }
 
         // --- 3. CALCULATE VELOCITY (Inputs & Gravity) ---
-        if (movingHorizontally) {
-            velocity.x = facingDirection * Constants.PLAYER_MOVE_SPEED;
+        if (status.isMovingHorizontally()) {
+            velocity.x = status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED;
         } else {
             velocity.x = 0;
         }
@@ -106,43 +96,43 @@ public class Player {
         velocity.y += Constants.GRAVITY * delta;
 
         // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
-        boolean wasOnGround = isOnGround;
-        isOnGround = false;
         updatePosition(delta, solidBlocks);
-        if (!isOnGround && wasOnGround) {
-            // Just walked off a ledge.
-            jumpsRemaining = 1;
+        if (animation == PlayerAnimation.FALL && status.getJumpsRemaining() == 2) {
+            status.setRemainingJumps(1);
         }
 
         // --- 5. UPDATE PLAYER STATES ---
-        if (isOnGround) {
-            canDash = true;
-            jumpsRemaining = 2;
+        if (status.isOnGround()) {
+
+            status.resetDash();
+            status.resetJumps();
+
             velocity.y = 0;
 
             // Because of our fix below, the state will ALWAYS be FALL
             // when hitting the ground from the air.
-            if (state == PlayerState.FALL) {
+            if (animation == PlayerAnimation.FALL) {
                 setSateAfterLanding();
             }
 
             // Catch-all to clean up horizontal states if the player stopped moving
             // while the landing animation/logic was processing
-            if (!movingHorizontally && state != PlayerState.IDLE) {
-                setState(PlayerState.IDLE);
-            } else if (movingHorizontally && state != PlayerState.RUN) {
-                setState(PlayerState.RUN);
+            if (!status.isMovingHorizontally() && animation != PlayerAnimation.IDLE) {
+                setAnimation(PlayerAnimation.IDLE);
+            } else if (status.isMovingHorizontally() && animation != PlayerAnimation.RUN) {
+                setAnimation(PlayerAnimation.RUN);
             }
         } else {
             // FIX: If we are moving downwards, we are falling. Period.
             // This allows the jump animations to correctly transition into the fall state.
-            if (velocity.y < 0 && state != PlayerState.FALL) {
-                setState(PlayerState.FALL);
+            if (velocity.y < 0 && animation != PlayerAnimation.FALL) {
+                setAnimation(PlayerAnimation.FALL);
             }
         }
     }
 
     private void updatePosition(float delta, List<Rectangle> solids) {
+        status.setOnGround(false);
         moveX(velocity.x * delta, solids);
 
         moveY(velocity.y * delta, solids);
@@ -151,12 +141,12 @@ public class Player {
     public void jump() {
         if (canJump()) {
             velocity.y = Constants.JUMP_SPEED;
-            jumpsRemaining--;
+            status.useJump();
 
-            if (jumpsRemaining == 0) {
-                setState(PlayerState.DOUBLE_JUMP);
+            if (!status.canJump()) {
+                setAnimation(PlayerAnimation.DOUBLE_JUMP);
             } else {
-                setState(PlayerState.JUMP);
+                setAnimation(PlayerAnimation.JUMP);
             }
         }
     }
@@ -166,27 +156,27 @@ public class Player {
     }
 
     private boolean canFocus() {
-        return isOnGround && state != PlayerState.DASH && state != PlayerState.FOCUS &&
+        return status.isOnGround() && animation != PlayerAnimation.DASH && animation != PlayerAnimation.FOCUS &&
                 vitals.getSouls() > Constants.HEALING_COST_IN_SOULS && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
     }
 
     private void focus() {
         if (canFocus()) {
-            setState(PlayerState.FOCUS);
+            setAnimation(PlayerAnimation.FOCUS);
             velocity.x = 0;
-            movingHorizontally = false;
+            status.setMovingHorizontally(false);
             vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
                     Constants.HEALTH_REFIL_TIME);
         }
     }
 
     public void stopFocus() {
-        setState(PlayerState.IDLE);
+        setAnimation(PlayerAnimation.IDLE);
         vitals.resetSouls();
     }
 
     public void doAction(GameActionType action) {
-        if (action != GameActionType.FOCUS && state == PlayerState.FOCUS)
+        if (action != GameActionType.FOCUS && animation == PlayerAnimation.FOCUS)
             return;
         switch (action) {
             case MOVE_LEFT -> moveLeft();
@@ -199,68 +189,68 @@ public class Player {
     }
 
     private boolean canJump() {
-        return jumpsRemaining > 0 && state != PlayerState.DASH;
+        return status.canJump() && animation != PlayerAnimation.DASH;
     }
 
     private void move() {
-        if (isOnGround)
-            setState(PlayerState.RUN);
-        movingHorizontally = true;
+        if (status.isOnGround())
+            setAnimation(PlayerAnimation.RUN);
+        status.setMovingHorizontally(true);
     }
 
     public void moveRight() {
         move();
-        facingDirection = Constants.RIGHT_DIRECTION;
+        status.setFacingDirection(Constants.RIGHT_DIRECTION);
     }
 
     public void moveLeft() {
         move();
-        facingDirection = Constants.LEFT_DIRECTION;
+        status.setFacingDirection(Constants.LEFT_DIRECTION);
     }
 
     public void stopMoving(int dir) {
-        if (dir != facingDirection)
+        if (dir != status.getFacingDirection())
             return;
-        if (state == PlayerState.FOCUS)
+        if (animation == PlayerAnimation.FOCUS)
             return;
-        movingHorizontally = false;
-        if (isOnGround)
-            setState(PlayerState.IDLE);
+        status.setMovingHorizontally(false);
+        if (status.isOnGround())
+            setAnimation(PlayerAnimation.IDLE);
     }
 
     public void dash() {
-        if (state != PlayerState.DASH && canDash && dashCooldownTimer <= 0) {
-            setState(PlayerState.DASH);
-            canDash = false;
+        if (animation != PlayerAnimation.DASH && status.canDash() && dashCooldownTimer <= 0) {
+            setAnimation(PlayerAnimation.DASH);
+            status.consumeDash();
             dashTimer = Constants.DASH_DURATION;
 
-            velocity.x = Constants.DASH_SPEED * facingDirection;
+            velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0;
 
-            setState(PlayerState.DASH);
+            setAnimation(PlayerAnimation.DASH);
         }
     }
 
     private void setStateAfterDash() {
-        if (isOnGround && !movingHorizontally) {
-            setState(PlayerState.IDLE);
-        } else if (movingHorizontally) {
-            setState(PlayerState.RUN);
+        if (status.isOnGround() && !status.isMovingHorizontally()) {
+            setAnimation(PlayerAnimation.IDLE);
+        } else if (status.isMovingHorizontally()) {
+            setAnimation(PlayerAnimation.RUN);
         } else {
-            setState(PlayerState.FALL);
+            setAnimation(PlayerAnimation.FALL);
         }
     }
 
     private void setSateAfterLanding() {
-        if (movingHorizontally) {
-            setState(PlayerState.RUN);
+        if (status.isMovingHorizontally()) {
+            setAnimation(PlayerAnimation.RUN);
         } else {
-            setState(PlayerState.IDLE);
+            setAnimation(PlayerAnimation.IDLE);
         }
     }
 
     public int getDirection() {
-        return this.facingDirection;
+        return status.getFacingDirection();
     }
 
     public void kill() {
@@ -268,16 +258,15 @@ public class Player {
     }
 
     public boolean isInvinvible() {
-        return isInvincible;
+        return status.isInvincible();
     }
 
     public boolean takeDamage() {
-        if (isInvincible)
+        if (status.isInvincible())
             return false;
         vitals.takeDamage();
-        isInvincible = true;
-        invincibilityTimer = Constants.INVINCIBILITY_TIME;
-        if (state == PlayerState.FOCUS) { // break focus
+        status.makeInvincible(Constants.INVINCIBILITY_TIME);
+        if (animation == PlayerAnimation.FOCUS) { // break focus
             stopFocus();
         }
         if (vitals.isDead()) {
@@ -287,10 +276,10 @@ public class Player {
         return false;
     }
 
-    private void setState(PlayerState newState) {
-        if (state != newState) {
-            state = newState;
-            stateTime = 0;
+    private void setAnimation(PlayerAnimation newState) {
+        if (animation != newState) {
+            animation = newState;
+            animationTime = 0;
         }
     }
 
@@ -337,7 +326,7 @@ public class Player {
                 position.y = solid.y + solid.height;
 
                 velocity.y = 0;
-                isOnGround = true;
+                status.setOnGround(true);
 
             } else { // ceiling
 

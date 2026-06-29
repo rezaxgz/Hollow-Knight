@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.player.HealthMaskState;
-import com.hollowknight.models.player.PlayerState;
+import com.hollowknight.models.player.PlayerAnimation;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 public class GameAssetManager {
     public static Skin skin;
-    public static final HashMap<PlayerState, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
+    public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
@@ -24,7 +24,7 @@ public class GameAssetManager {
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        for (PlayerState type : PlayerState.values()) {
+        for (PlayerAnimation type : PlayerAnimation.values()) {
             loadPlayerAnimation(type);
         }
 
@@ -36,7 +36,7 @@ public class GameAssetManager {
         loadSoulsTexture();
     }
 
-    private static void loadPlayerAnimation(PlayerState type) {
+    private static void loadPlayerAnimation(PlayerAnimation type) {
         Texture texture = new Texture(type.path);
 
         TextureRegion[][] split = TextureRegion.split(

@@ -12,7 +12,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
-import com.hollowknight.models.player.PlayerState;
+import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.world.GameWorld;
 
 public class GameRenderer {
@@ -87,9 +87,9 @@ public class GameRenderer {
 
         // 2. Render the Player
         batch.begin();
-        PlayerState currentAnimation = world.player.state;
+        PlayerAnimation currentAnimation = world.player.animation;
         Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
-        TextureRegion keyFrame = animation.getKeyFrame(world.player.stateTime);
+        TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
         float spriteWidth = keyFrame.getRegionWidth();
         float spriteHeight = keyFrame.getRegionHeight();
         float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;

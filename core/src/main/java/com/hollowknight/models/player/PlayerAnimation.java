@@ -3,7 +3,7 @@ package com.hollowknight.models.player;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enums.AnimationType;
 
-public enum PlayerState {
+public enum PlayerAnimation {
     IDLE("animation/Idle.png", 9, AnimationType.LOOP_PINGPONG, 0.08f),
     RUN("animation/Run.png", 13, AnimationType.LOOP_PINGPONG, 0.05f),
     DASH("animation/Dash.png", 12, Constants.DASH_DURATION, AnimationType.ONESHOT),
@@ -22,7 +22,7 @@ public enum PlayerState {
     public final float frameDuration;
     public boolean isReversed = false;
 
-    PlayerState(String path, int frameCount, int colCount, int rowCount,
+    PlayerAnimation(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration) {
         this.path = path;
         this.frameCount = frameCount;
@@ -32,7 +32,7 @@ public enum PlayerState {
         this.frameDuration = frameDuration;
     }
 
-    PlayerState(String path, int frameCount, int colCount, int rowCount,
+    PlayerAnimation(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration, boolean isReversed) {
         this.path = path;
         this.frameCount = frameCount;
@@ -43,7 +43,7 @@ public enum PlayerState {
         this.isReversed = isReversed;
     }
 
-    PlayerState(String path, int frameCount,
+    PlayerAnimation(String path, int frameCount,
             AnimationType animationType, float frameDuration) {
         this.path = path;
         this.frameCount = frameCount;
@@ -52,7 +52,7 @@ public enum PlayerState {
         this.frameDuration = frameDuration;
     }
 
-    PlayerState(String path, int frameCount,
+    PlayerAnimation(String path, int frameCount,
             AnimationType animationType, float frameDuration, boolean isReversed) {
         this.path = path;
         this.frameCount = frameCount;
@@ -62,7 +62,7 @@ public enum PlayerState {
         this.isReversed = isReversed;
     }
 
-    PlayerState(String path, int frameCount, float totalDuration, AnimationType animationType) {
+    PlayerAnimation(String path, int frameCount, float totalDuration, AnimationType animationType) {
         this.path = path;
         this.frameCount = frameCount;
         this.colCount = frameCount;
