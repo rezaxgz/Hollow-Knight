@@ -176,6 +176,7 @@ public class Player {
     }
 
     public void stopFocus() {
+        System.out.println("stopFocus()");
         setState(PlayerState.IDLE);
         vitals.resetSouls();
     }
@@ -215,6 +216,8 @@ public class Player {
 
     public void stopMoving(int dir) {
         if (dir != facingDirection)
+            return;
+        if (state == PlayerState.FOCUS)
             return;
         movingHorizontally = false;
         if (isOnGround)
@@ -282,6 +285,7 @@ public class Player {
 
     private void setState(PlayerState newState) {
         if (state != newState) {
+            System.out.println(state + " -> " + newState);
             state = newState;
             stateTime = 0;
         }
