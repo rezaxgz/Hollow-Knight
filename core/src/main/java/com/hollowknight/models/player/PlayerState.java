@@ -4,46 +4,69 @@ import com.hollowknight.models.Constants;
 import com.hollowknight.models.enums.AnimationType;
 
 public enum PlayerState {
-    IDLE("animation/Idle.png", 9, 9, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
-    RUN("animation/Run.png", 13, 13, 1, true, AnimationType.LOOP_PINGPONG, 0.05f),
-    DASH("animation/Dash.png", 12, 12, 1, true, AnimationType.ONESHOT, 0.2f / 12),
-    JUMP("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
-    DEAD("animation/Death.png", 18, 18, 1, true, AnimationType.ONESHOT, 0.08f),
-    HURT("animation/Idle Hurt.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f),
-    FALL("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f, true),
-    DOUBLE_JUMP("animation/Double Jump.png", 8, 8, 1, false, AnimationType.ONESHOT,
-            (Constants.JUMP_SPEED / -Constants.GRAVITY) / 8),
-    FOCUS("animation/Airborne.png", 12, 12, 1, true, AnimationType.LOOP_PINGPONG, 0.08f, true);
+    IDLE("animation/Idle.png", 9, AnimationType.LOOP_PINGPONG, 0.08f),
+    RUN("animation/Run.png", 13, AnimationType.LOOP_PINGPONG, 0.05f),
+    DASH("animation/Dash.png", 12, Constants.DASH_DURATION, AnimationType.ONESHOT),
+    JUMP("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
+    DEAD("animation/Death.png", 18, AnimationType.ONESHOT, 0.08f),
+    HURT("animation/Idle Hurt.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
+    FALL("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f, true),
+    DOUBLE_JUMP("animation/Double Jump.png", 8, Constants.JUMP_SPEED / -Constants.GRAVITY, AnimationType.ONESHOT),
+    FOCUS("animation/Focus Combined.png", 10, Constants.HEALTH_REFIL_TIME, AnimationType.ONESHOT);
 
     public final String path;
-    public final int frameCount;
+    public int frameCount;
     public final int colCount;
-    public final int rowCount;
-    public final boolean isPingPong;
+    public int rowCount = 1;
     public final AnimationType animationType;
     public final float frameDuration;
     public boolean isReversed = false;
 
-    PlayerState(String path, int frameCount, int colCount, int rowCount, boolean pingPong,
+    PlayerState(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration) {
         this.path = path;
         this.frameCount = frameCount;
         this.colCount = colCount;
         this.rowCount = rowCount;
-        this.isPingPong = pingPong;
         this.animationType = animationType;
         this.frameDuration = frameDuration;
     }
 
-    PlayerState(String path, int frameCount, int colCount, int rowCount, boolean pingPong,
+    PlayerState(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration, boolean isReversed) {
         this.path = path;
         this.frameCount = frameCount;
         this.colCount = colCount;
         this.rowCount = rowCount;
-        this.isPingPong = pingPong;
         this.animationType = animationType;
         this.frameDuration = frameDuration;
         this.isReversed = isReversed;
+    }
+
+    PlayerState(String path, int frameCount,
+            AnimationType animationType, float frameDuration) {
+        this.path = path;
+        this.frameCount = frameCount;
+        this.colCount = frameCount;
+        this.animationType = animationType;
+        this.frameDuration = frameDuration;
+    }
+
+    PlayerState(String path, int frameCount,
+            AnimationType animationType, float frameDuration, boolean isReversed) {
+        this.path = path;
+        this.frameCount = frameCount;
+        this.colCount = frameCount;
+        this.animationType = animationType;
+        this.frameDuration = frameDuration;
+        this.isReversed = isReversed;
+    }
+
+    PlayerState(String path, int frameCount, float totalDuration, AnimationType animationType) {
+        this.path = path;
+        this.frameCount = frameCount;
+        this.colCount = frameCount;
+        this.animationType = animationType;
+        this.frameDuration = totalDuration / (float) frameCount;
     }
 }
