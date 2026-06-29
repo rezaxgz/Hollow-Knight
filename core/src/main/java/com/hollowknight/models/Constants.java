@@ -23,6 +23,13 @@ public class Constants {
     public static final int SUCCESSFUL_ATTACK_SOUL_BONUS = 11;
     public static float SOULS_CHANGE_TIMER = 1f;
 
+    // Crawlid
+    public static final int CRAWLID_HITBOX_WIDTH = 110;
+    public static final int CRAWLID_HITBOX_HEIGHT = 80;
+    public static final int CRAWLID_SPEED = 250;
+    public static final float CRAWLID_TURN_TIMER = 0.08f;
+    public static final float CRAWLID_DEATH_TIMER = 1f;
+
     // debug
     public static int a = 0;
     public static int b = 0;

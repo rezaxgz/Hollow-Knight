@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
+import com.hollowknight.models.player.enemies.GroundEnemyAnimations;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +17,7 @@ public class GameAssetManager {
     public static Skin skin;
     public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
+    public static final HashMap<GroundEnemyAnimations, Animation<TextureRegion>> groundEnemyAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
@@ -34,6 +36,7 @@ public class GameAssetManager {
         }
 
         loadSoulsTexture();
+        loadGroundEnemyAnimations();
     }
 
     private static void loadPlayerAnimation(PlayerAnimation type) {
@@ -97,6 +100,39 @@ public class GameAssetManager {
     private static void loadSoulsTexture() {
         for (int i = 237; i <= 255; i++) {
             soulsTextures[i - 237] = new Texture("animation/HUD/HUD Cln_" + i + ".png");
+        }
+    }
+
+    private static void loadGroundEnemyAnimations() {
+        for (GroundEnemyAnimations type : GroundEnemyAnimations.values()) {
+            Texture texture = new Texture(type.path);
+
+            TextureRegion[][] split = TextureRegion.split(
+                    texture,
+                    texture.getWidth() / type.frameCount,
+                    texture.getHeight());
+
+            int frameCount = type.frameCount;
+            TextureRegion[] frames = new TextureRegion[frameCount];
+
+            int cols = split[0].length;
+
+            for (int i = 0; i < frameCount; i++) {
+                int row = i / cols;
+                int col = i % cols;
+                frames[i] = split[row][col];
+            }
+
+            Animation<TextureRegion> animation = new Animation<>(type.frameDuration, frames);
+            switch (type.animationType) {
+                case LOOP ->
+                    animation.setPlayMode(Animation.PlayMode.LOOP);
+                case LOOP_PINGPONG ->
+                    animation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+                case ONESHOT ->
+                    animation.setPlayMode(Animation.PlayMode.NORMAL);
+            }
+            groundEnemyAnimationMap.put(type, animation);
         }
     }
 }

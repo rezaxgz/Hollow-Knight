@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.PlayerAnimation;
+import com.hollowknight.models.player.enemies.GroundEnemy;
 import com.hollowknight.models.world.GameWorld;
 
 public class GameRenderer {
@@ -85,8 +86,12 @@ public class GameRenderer {
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // 2. Render the Player
         batch.begin();
+
+        // Render ground enemies
+        renderGroundEnemies(batch);
+
+        // 2. Render the Player
         PlayerAnimation currentAnimation = world.player.animation;
         Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
@@ -116,10 +121,66 @@ public class GameRenderer {
         shapeRenderer.line(0, 0, 0, 100);
         shapeRenderer.rect(world.player.position.x, world.player.position.y, Constants.PLAYER_HITBOX_WIDTH,
                 Constants.PLAYER_HITBOX_HEIGHT);
+        shapeRenderer.setColor(Color.RED);
+        renderGroundEnemyHitBoxes(shapeRenderer);
         shapeRenderer.end();
 
         // 6. Update and Draw Stage (UI)
         stage.act();
         stage.draw();
+    }
+
+    private void renderGroundEnemies(SpriteBatch batch) {
+        for (GroundEnemy enemy : world.groundEnemies) {
+
+            Animation<TextureRegion> animation = GameAssetManager.groundEnemyAnimationMap.get(enemy.animation);
+
+            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
+            float spriteWidth = frame.getRegionWidth();
+            float spriteHeight = frame.getRegionHeight();
+
+            // Simple camera culling
+            if (enemy.position.x + spriteWidth < camera.position.x - viewport.getWorldWidth() / 2f ||
+                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
+                    enemy.position.y + spriteHeight < camera.position.y - viewport.getWorldHeight() / 2f ||
+                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
+                continue;
+            }
+
+            float xOffset = (spriteWidth - Constants.CRAWLID_HITBOX_WIDTH) / 2f;
+            batch.draw(
+                    frame,
+                    enemy.position.x - xOffset,
+                    enemy.position.y,
+                    spriteWidth / 2f,
+                    0,
+                    spriteWidth,
+                    spriteHeight,
+                    -enemy.facingDirection, // 1 = right, -1 = left
+                    1,
+                    0);
+        }
+    }
+
+    private void renderGroundEnemyHitBoxes(ShapeRenderer shapeRenderer) {
+        for (GroundEnemy enemy : world.groundEnemies) {
+
+            Animation<TextureRegion> animation = GameAssetManager.groundEnemyAnimationMap.get(enemy.animation);
+
+            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
+
+            float width = frame.getRegionWidth();
+            float height = frame.getRegionHeight();
+
+            // Simple camera culling
+            if (enemy.position.x + width < camera.position.x - viewport.getWorldWidth() / 2f ||
+                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
+                    enemy.position.y + height < camera.position.y - viewport.getWorldHeight() / 2f ||
+                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
+                continue;
+            }
+
+            shapeRenderer.rect(enemy.position.x, enemy.position.y, enemy.type.width, enemy.type.height);
+        }
     }
 }
