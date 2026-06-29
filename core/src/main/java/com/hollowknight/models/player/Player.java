@@ -106,8 +106,13 @@ public class Player {
         velocity.y += Constants.GRAVITY * delta;
 
         // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
+        boolean wasOnGround = isOnGround;
         isOnGround = false;
         updatePosition(delta, solidBlocks);
+        if (!isOnGround && wasOnGround) {
+            // Just walked off a ledge.
+            jumpsRemaining = 1;
+        }
 
         // --- 5. UPDATE PLAYER STATES ---
         if (isOnGround) {
@@ -176,7 +181,6 @@ public class Player {
     }
 
     public void stopFocus() {
-        System.out.println("stopFocus()");
         setState(PlayerState.IDLE);
         vitals.resetSouls();
     }
@@ -285,7 +289,6 @@ public class Player {
 
     private void setState(PlayerState newState) {
         if (state != newState) {
-            System.out.println(state + " -> " + newState);
             state = newState;
             stateTime = 0;
         }
