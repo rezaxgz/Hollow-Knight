@@ -76,7 +76,7 @@ public class PlayerVitals {
 
     public void heal(int amount) {
         for (HealthMask h : health) {
-            if (!h.isFull()) {
+            if (h.state == HealthMaskState.EMPTY || h.state == HealthMaskState.BREAKING) {
                 h.set(HealthMaskState.HEALING);
                 amount--;
                 if (amount == 0)

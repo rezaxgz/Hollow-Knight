@@ -17,7 +17,7 @@ public class GameWorld {
     public TiledMap map;
     public Player player = new Player();
     private List<Rectangle> solidBlocks = new ArrayList<>();
-    private List<Obstacle> obstacles = new ArrayList<>();
+    private List<Hazard> hazards = new ArrayList<>();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -32,18 +32,37 @@ public class GameWorld {
             solidBlocks.add(rect);
         }
 
-        MapLayer obsticleLayer = map.getLayers().get("Obstacles");
+        MapLayer obsticleLayer = map.getLayers().get("Hazards");
         for (MapObject obj : obsticleLayer.getObjects()) {
             if (!(obj instanceof RectangleMapObject))
                 continue;
             Rectangle rect = ((RectangleMapObject) (obj)).getRectangle();
             boolean isInstantDeath = (boolean) obj.getProperties().get("isInstantDeath");
-            obstacles.add(new Obstacle(rect, isInstantDeath));
+            hazards.add(new Hazard(rect, isInstantDeath));
         }
     }
 
     public void update(float delta) {
         player.update(delta, solidBlocks);
+        checkHazards();
+    }
+
+    private void checkHazards() {
+        Rectangle playerBounds = player.getBounds();
+
+        for (Hazard hazard : hazards) {
+
+            if (!playerBounds.overlaps(hazard.getBounds()))
+                continue;
+
+            if (hazard.isInstantDeath()) {
+                player.kill();
+            } else {
+                player.takeDamage();
+            }
+
+            break;
+        }
     }
 
     public String getWorldName() {

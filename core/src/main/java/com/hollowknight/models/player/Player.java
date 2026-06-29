@@ -256,7 +256,7 @@ public class Player {
         return this.facingDirection;
     }
 
-    private void kill() {
+    public void kill() {
 
     }
 
@@ -265,11 +265,13 @@ public class Player {
     }
 
     public boolean takeDamage() {
+        if (isInvincible)
+            return false;
         vitals.takeDamage();
         isInvincible = true;
         invincibilityTimer = Constants.INVINCIBILITY_TIME;
         if (state == PlayerState.FOCUS) { // break focus
-            setState(PlayerState.IDLE);
+            stopFocus();
         }
         if (vitals.isDead()) {
             kill();
@@ -285,7 +287,7 @@ public class Player {
         }
     }
 
-    private Rectangle getBounds() {
+    public Rectangle getBounds() {
         return new Rectangle(
                 position.x,
                 position.y,
