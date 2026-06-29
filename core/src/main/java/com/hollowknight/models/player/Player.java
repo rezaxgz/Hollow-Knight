@@ -5,6 +5,8 @@ import java.util.List;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.player.states.CombatState;
+import com.hollowknight.models.player.states.MovementState;
 import com.hollowknight.models.player.states.PlayerStatus;
 import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
@@ -12,6 +14,7 @@ import com.hollowknight.models.settings.GameCheat;
 public class Player {
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
+
     private float dashTimer = 0.0f;
     private float dashCooldownTimer = 0.0f;
 
@@ -19,6 +22,8 @@ public class Player {
     public float animationTime = 0;
 
     public PlayerStatus status = new PlayerStatus();
+    public MovementState movementState = MovementState.IDLE;
+    public CombatState combatState = CombatState.NONE;
 
     private PlayerVitals vitals = new PlayerVitals();
 
@@ -41,7 +46,7 @@ public class Player {
         status.update(delta);
 
         // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
-        if (animation == PlayerAnimation.DASH) {
+        if (movementState == MovementState.DASH) {
             dashTimer -= delta;
             velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0; // ignore gravity
@@ -52,12 +57,12 @@ public class Player {
                 setStateAfterDash();
                 dashCooldownTimer = Constants.DASH_COOLDOWN;
             }
-            animationTime += delta;
+            updateAnimation();
             return; // Exit early so we don't apply normal physics
         }
 
         // --- 2.5 HANDLE FOCUS STATE (Overrides normal physics & movement) ---
-        if (animation == PlayerAnimation.FOCUS) {
+        if (combatState == CombatState.FOCUS) {
             velocity.x = 0;
             status.setMovingHorizontally(false);
 
@@ -78,9 +83,10 @@ public class Player {
                     }
 
                 } else {
-                    setAnimation(PlayerAnimation.IDLE);
+                    stopFocus();
                 }
             }
+            updateAnimation();
             return;
         }
 
@@ -97,7 +103,7 @@ public class Player {
 
         // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
         updatePosition(delta, solidBlocks);
-        if (animation == PlayerAnimation.FALL && status.getJumpsRemaining() == 2) {
+        if (movementState == MovementState.FALL && status.getJumpsRemaining() == 2) {
             status.setRemainingJumps(1);
         }
 
@@ -109,32 +115,33 @@ public class Player {
 
             velocity.y = 0;
 
-            // Because of our fix below, the state will ALWAYS be FALL
-            // when hitting the ground from the air.
-            if (animation == PlayerAnimation.FALL) {
-                setSateAfterLanding();
+            // State resolution when hitting the ground from the air.
+            if (movementState == MovementState.FALL) {
+                setStateAfterLanding();
             }
 
             // Catch-all to clean up horizontal states if the player stopped moving
             // while the landing animation/logic was processing
-            if (!status.isMovingHorizontally() && animation != PlayerAnimation.IDLE) {
-                setAnimation(PlayerAnimation.IDLE);
-            } else if (status.isMovingHorizontally() && animation != PlayerAnimation.RUN) {
-                setAnimation(PlayerAnimation.RUN);
+            if (!status.isMovingHorizontally() && movementState != MovementState.IDLE) {
+                movementState = MovementState.IDLE;
+            } else if (status.isMovingHorizontally() && movementState != MovementState.RUN) {
+                movementState = MovementState.RUN;
             }
         } else {
             // FIX: If we are moving downwards, we are falling. Period.
             // This allows the jump animations to correctly transition into the fall state.
-            if (velocity.y < 0 && animation != PlayerAnimation.FALL) {
-                setAnimation(PlayerAnimation.FALL);
+            if (velocity.y < 0 && movementState != MovementState.FALL) {
+                movementState = MovementState.FALL;
             }
         }
+
+        // Apply visual updates based on final logic states
+        updateAnimation();
     }
 
     private void updatePosition(float delta, List<Rectangle> solids) {
         status.setOnGround(false);
         moveX(velocity.x * delta, solids);
-
         moveY(velocity.y * delta, solids);
     }
 
@@ -144,25 +151,25 @@ public class Player {
             status.useJump();
 
             if (!status.canJump()) {
-                setAnimation(PlayerAnimation.DOUBLE_JUMP);
+                movementState = MovementState.DOUBLE_JUMP;
             } else {
-                setAnimation(PlayerAnimation.JUMP);
+                movementState = MovementState.JUMP;
             }
         }
     }
 
     private void attack() {
-
+        // Combat state ATTACK logic goes here
     }
 
     private boolean canFocus() {
-        return status.isOnGround() && animation != PlayerAnimation.DASH && animation != PlayerAnimation.FOCUS &&
+        return status.isOnGround() && movementState != MovementState.DASH && combatState != CombatState.FOCUS &&
                 vitals.getSouls() > Constants.HEALING_COST_IN_SOULS && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
     }
 
     private void focus() {
         if (canFocus()) {
-            setAnimation(PlayerAnimation.FOCUS);
+            combatState = CombatState.FOCUS;
             velocity.x = 0;
             status.setMovingHorizontally(false);
             vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
@@ -171,13 +178,22 @@ public class Player {
     }
 
     public void stopFocus() {
-        setAnimation(PlayerAnimation.IDLE);
+        combatState = CombatState.NONE;
+
+        // Restore appropriate movement state upon exiting focus
+        if (status.isOnGround()) {
+            movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
+        } else {
+            movementState = MovementState.FALL;
+        }
+
         vitals.resetSouls();
     }
 
     public void doAction(GameActionType action) {
-        if (action != GameActionType.FOCUS && animation == PlayerAnimation.FOCUS)
+        if (action != GameActionType.FOCUS && combatState == CombatState.FOCUS)
             return;
+
         switch (action) {
             case MOVE_LEFT -> moveLeft();
             case MOVE_RIGHT -> moveRight();
@@ -189,12 +205,12 @@ public class Player {
     }
 
     private boolean canJump() {
-        return status.canJump() && animation != PlayerAnimation.DASH;
+        return status.canJump() && movementState != MovementState.DASH;
     }
 
     private void move() {
         if (status.isOnGround())
-            setAnimation(PlayerAnimation.RUN);
+            movementState = MovementState.RUN;
         status.setMovingHorizontally(true);
     }
 
@@ -211,41 +227,40 @@ public class Player {
     public void stopMoving(int dir) {
         if (dir != status.getFacingDirection())
             return;
-        if (animation == PlayerAnimation.FOCUS)
+        if (combatState == CombatState.FOCUS)
             return;
+
         status.setMovingHorizontally(false);
         if (status.isOnGround())
-            setAnimation(PlayerAnimation.IDLE);
+            movementState = MovementState.IDLE;
     }
 
     public void dash() {
-        if (animation != PlayerAnimation.DASH && status.canDash() && dashCooldownTimer <= 0) {
-            setAnimation(PlayerAnimation.DASH);
+        if (movementState != MovementState.DASH && status.canDash() && dashCooldownTimer <= 0) {
+            movementState = MovementState.DASH;
             status.consumeDash();
             dashTimer = Constants.DASH_DURATION;
 
             velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0;
-
-            setAnimation(PlayerAnimation.DASH);
         }
     }
 
     private void setStateAfterDash() {
         if (status.isOnGround() && !status.isMovingHorizontally()) {
-            setAnimation(PlayerAnimation.IDLE);
+            movementState = MovementState.IDLE;
         } else if (status.isMovingHorizontally()) {
-            setAnimation(PlayerAnimation.RUN);
+            movementState = MovementState.RUN;
         } else {
-            setAnimation(PlayerAnimation.FALL);
+            movementState = MovementState.FALL;
         }
     }
 
-    private void setSateAfterLanding() {
+    private void setStateAfterLanding() {
         if (status.isMovingHorizontally()) {
-            setAnimation(PlayerAnimation.RUN);
+            movementState = MovementState.RUN;
         } else {
-            setAnimation(PlayerAnimation.IDLE);
+            movementState = MovementState.IDLE;
         }
     }
 
@@ -254,7 +269,7 @@ public class Player {
     }
 
     public void kill() {
-
+        combatState = CombatState.DEAD;
     }
 
     public boolean isInvinvible() {
@@ -264,16 +279,49 @@ public class Player {
     public boolean takeDamage() {
         if (status.isInvincible())
             return false;
+
         vitals.takeDamage();
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
-        if (animation == PlayerAnimation.FOCUS) { // break focus
+
+        if (combatState == CombatState.FOCUS) {
             stopFocus();
         }
+
         if (vitals.isDead()) {
             kill();
             return true;
         }
+
+        // Optionally trigger a hurt state here:
+        // combatState = CombatState.HURT;
+
         return false;
+    }
+
+    // --- NEW: Centralized Animation Chooser ---
+    private void updateAnimation() {
+        PlayerAnimation targetAnimation = animation;
+
+        // Combat States take visual priority
+        if (combatState == CombatState.DEAD) {
+            targetAnimation = PlayerAnimation.DEAD;
+        } else if (combatState == CombatState.FOCUS) {
+            targetAnimation = PlayerAnimation.FOCUS;
+        } else if (combatState == CombatState.HURT) {
+            targetAnimation = PlayerAnimation.IDLE_HURT;
+        } else {
+            // If no active overriding combat state, derive from movement
+            switch (movementState) {
+                case DASH -> targetAnimation = PlayerAnimation.DASH;
+                case DOUBLE_JUMP -> targetAnimation = PlayerAnimation.DOUBLE_JUMP;
+                case JUMP -> targetAnimation = PlayerAnimation.JUMP;
+                case FALL -> targetAnimation = PlayerAnimation.FALL;
+                case RUN -> targetAnimation = PlayerAnimation.RUN;
+                case IDLE -> targetAnimation = PlayerAnimation.IDLE;
+            }
+        }
+
+        setAnimation(targetAnimation);
     }
 
     private void setAnimation(PlayerAnimation newState) {

@@ -9,7 +9,7 @@ public enum PlayerAnimation {
     DASH("animation/Dash.png", 12, Constants.DASH_DURATION, AnimationType.ONESHOT),
     JUMP("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
     DEAD("animation/Death.png", 18, AnimationType.ONESHOT, 0.08f),
-    HURT("animation/Idle Hurt.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
+    IDLE_HURT("animation/Idle Hurt.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
     FALL("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f, true),
     DOUBLE_JUMP("animation/Double Jump.png", 8, Constants.JUMP_SPEED / -Constants.GRAVITY, AnimationType.ONESHOT),
     FOCUS("animation/Focus Combined.png", 10, Constants.HEALTH_REFIL_TIME, AnimationType.ONESHOT);
