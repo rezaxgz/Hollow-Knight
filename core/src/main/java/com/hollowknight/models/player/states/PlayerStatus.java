@@ -14,8 +14,14 @@ public class PlayerStatus {
     private int jumpsRemaining = 2;
 
     // Damage
+    private boolean godMode = false;
     private boolean invincible = false;
     private float invincibilityTimer = 0;
+
+    // Spectator
+    private boolean spectatorMode = false;
+    private boolean movingVertically = false;
+    private int verticalDir = 0;
 
     // -------------------------------------------------
     // Ground
@@ -102,9 +108,12 @@ public class PlayerStatus {
     // -------------------------------------------------
     // Invincibility
     // -------------------------------------------------
+    public void toggleGodMode() {
+        godMode = !godMode;
+    }
 
     public boolean isInvincible() {
-        return invincible;
+        return invincible || godMode;
     }
 
     public void makeInvincible(float duration) {
@@ -130,5 +139,35 @@ public class PlayerStatus {
     public void resetAirAbilities() {
         resetDash();
         resetJumps();
+    }
+
+    // -------------------------------------------------
+    // Spectator
+    // -------------------------------------------------
+    public void toggleSpectatorMode() {
+        spectatorMode = !spectatorMode;
+        godMode = spectatorMode;
+    }
+
+    public boolean isSpectatorMode() {
+        return spectatorMode;
+    }
+
+    public boolean isMovingVertically() {
+        return movingVertically;
+    }
+
+    public int getVerticalDirection() {
+        return verticalDir;
+    }
+
+    public void moveVertically(int dir) {
+        verticalDir = dir;
+        movingVertically = true;
+    }
+
+    public void stopVerticalMovement() {
+        verticalDir = 0;
+        movingVertically = false;
     }
 }

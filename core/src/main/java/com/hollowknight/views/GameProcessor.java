@@ -1,5 +1,6 @@
 package com.hollowknight.views;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.hollowknight.models.Constants;
@@ -41,9 +42,13 @@ public class GameProcessor implements InputProcessor {
             game.player.doAction(action);
         }
 
-        GameCheat cheat = controls.getCheat(keycode);
-        if (cheat != null) {
-            game.player.applyCheat(cheat);
+        // Only check for and apply cheats if Ctrl is held
+        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+            GameCheat cheat = controls.getCheat(keycode);
+
+            if (cheat != null) {
+                game.player.applyCheat(cheat);
+            }
         }
 
         return false;
@@ -58,6 +63,10 @@ public class GameProcessor implements InputProcessor {
             game.player.stopMoving(Constants.LEFT_DIRECTION);
         } else if (keycode == controls.focus) {
             game.player.stopFocus();
+        } else if (keycode == controls.up) {
+            game.player.stopVerticalMovement(Constants.UP_DIRECTION);
+        } else if (keycode == controls.down) {
+            game.player.stopVerticalMovement(Constants.DOWN_DIRECTION);
         }
         return false;
     }

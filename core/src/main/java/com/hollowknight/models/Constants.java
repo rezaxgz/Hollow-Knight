@@ -4,6 +4,8 @@ public class Constants {
     // General
     public static final int RIGHT_DIRECTION = 1;
     public static final int LEFT_DIRECTION = -1;
+    public static final int UP_DIRECTION = -1;
+    public static final int DOWN_DIRECTION = 1;
     // Player
     public static final float GRAVITY = -1000f;
     public static final float PLAYER_MOVE_SPEED = 500f;

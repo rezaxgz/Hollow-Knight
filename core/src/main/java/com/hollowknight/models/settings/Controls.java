@@ -12,11 +12,12 @@ public class Controls {
     public int dash = Input.Keys.C;
     public int focus = Input.Keys.A;
 
-    // cheats
-    public int takeDamage = Input.Keys.NUM_0;
-    public int heal = Input.Keys.NUM_9;
-    public int addSouls = Input.Keys.NUM_8;
-    public int loseSouls = Input.Keys.NUM_7;
+    // cheats (activated with key + Ctrl)
+    public int takeDamage = Input.Keys.NUMPAD_SUBTRACT;
+    public int heal = Input.Keys.NUMPAD_ADD;
+    public int fillSouls = Input.Keys.UP;
+    public int godMode = Input.Keys.G;
+    public int specMode = Input.Keys.S;
 
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
@@ -26,6 +27,8 @@ public class Controls {
             case ATTACK -> attack = key;
             case DASH -> dash = key;
             case FOCUS -> focus = key;
+            case DOWN -> down = key;
+            case UP -> up = key;
         }
     }
 
@@ -33,6 +36,8 @@ public class Controls {
         return switch (actionType) {
             case MOVE_LEFT -> left;
             case MOVE_RIGHT -> right;
+            case UP -> up;
+            case DOWN -> down;
             case JUMP -> jump;
             case ATTACK -> attack;
             case DASH -> dash;
@@ -53,6 +58,10 @@ public class Controls {
             return GameActionType.DASH;
         if (key == focus)
             return GameActionType.FOCUS;
+        if (key == up)
+            return GameActionType.DOWN;
+        if (key == down)
+            return GameActionType.UP;
         return null;
     }
 
@@ -61,10 +70,12 @@ public class Controls {
             return GameCheat.TAKE_DAMAGE;
         if (key == heal)
             return GameCheat.HEAL;
-        if (key == loseSouls)
-            return GameCheat.LOSE_SOULS;
-        if (key == addSouls)
-            return GameCheat.ADD_SOULS;
+        if (key == fillSouls)
+            return GameCheat.FILL_SOULS;
+        if (key == godMode)
+            return GameCheat.GOD_MODE;
+        if (key == specMode)
+            return GameCheat.SPECTATOR_MODE;
         return null;
     }
 }

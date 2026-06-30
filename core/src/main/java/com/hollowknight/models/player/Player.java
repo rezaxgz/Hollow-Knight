@@ -45,6 +45,35 @@ public class Player {
 
         status.update(delta);
 
+        // --- UPDATE THE SPECTATOR BLOCK INSIDE Player.update() ---
+        if (status.isSpectatorMode()) {
+            // Increased movement speed (e.g., 3x multiplier)
+            float spectatorSpeed = Constants.PLAYER_MOVE_SPEED * 3.0f;
+
+            if (status.isMovingHorizontally()) {
+                velocity.x = status.getFacingDirection() * spectatorSpeed;
+            } else {
+                velocity.x = 0;
+            }
+
+            // FIX: Read continuous vertical state instead of clearing velocity.y directly
+            if (status.isMovingVertically()) {
+                velocity.y = status.getVerticalDirection() * spectatorSpeed;
+            } else {
+                velocity.y = 0;
+            }
+
+            // Apply position directly (Bypass collisions and gravity)
+            position.x += velocity.x * delta;
+            position.y += velocity.y * delta;
+
+            // Disable animations (Freeze at IDLE)
+            setAnimation(PlayerAnimation.IDLE);
+            animationTime = 0;
+
+            return; // Exit early to skip normal physics and states
+        }
+
         // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
         if (movementState == MovementState.DASH) {
             dashTimer -= delta;
@@ -158,6 +187,24 @@ public class Player {
         }
     }
 
+    public void moveVertically(int dir) {
+        if (!status.isSpectatorMode())
+            return;
+        status.moveVertically(dir);
+    }
+
+    public void stopVerticalMovement(int releasedDir) {
+        if (!status.isSpectatorMode())
+            return;
+
+        // Safety check: Only stop if the released key matches our current moving
+        // direction
+        if (releasedDir == -status.getVerticalDirection()) {
+            status.stopVerticalMovement();
+            velocity.y = 0;
+        }
+    }
+
     private void attack() {
         // Combat state ATTACK logic goes here
     }
@@ -201,6 +248,8 @@ public class Player {
             case ATTACK -> attack();
             case DASH -> dash();
             case FOCUS -> focus();
+            case DOWN -> moveVertically(Constants.DOWN_DIRECTION);
+            case UP -> moveVertically(Constants.UP_DIRECTION);
         }
     }
 
@@ -302,8 +351,11 @@ public class Player {
     private void updateAnimation() {
         PlayerAnimation targetAnimation = animation;
 
+        if (status.isSpectatorMode()) {
+            targetAnimation = PlayerAnimation.IDLE;
+        }
         // Combat States take visual priority
-        if (combatState == CombatState.DEAD) {
+        else if (combatState == CombatState.DEAD) {
             targetAnimation = PlayerAnimation.DEAD;
         } else if (combatState == CombatState.FOCUS) {
             targetAnimation = PlayerAnimation.FOCUS;
@@ -393,10 +445,17 @@ public class Player {
 
     public void applyCheat(GameCheat cheat) {
         switch (cheat) {
-            case ADD_SOULS -> vitals.addSouls(10);
             case HEAL -> vitals.heal(1);
-            case LOSE_SOULS -> vitals.addSouls(-10);
             case TAKE_DAMAGE -> takeDamage();
+            case FILL_SOULS -> vitals.addSouls(Constants.MAX_PLAYER_SOULS);
+            case GOD_MODE -> status.toggleGodMode();
+            case SPECTATOR_MODE -> {
+                status.toggleSpectatorMode();
+                if (!status.isSpectatorMode()) {
+                    status.stopVerticalMovement();
+                    velocity.y = 0;
+                }
+            }
         }
     }
 }
