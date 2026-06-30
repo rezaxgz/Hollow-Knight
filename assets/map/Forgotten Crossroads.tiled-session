@@ -12,6 +12,10 @@
                 "y": 1559.1666666666665
             }
         },
+        "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
         "cd_floor_02.tsx": {
             "scaleInDock": 11,
             "scaleInEditor": 1
@@ -40,6 +44,9 @@
             "scaleInDock": 1,
             "scaleInEditor": 2
         },
+        "plat_lifts_0002_a.tsx": {
+            "scaleInEditor": 1
+        },
         "ruins_resting_extra_bits_0040_Layer-142.tsx": {
             "dynamicWrapping": false
         },
@@ -60,7 +67,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "G:/code/Hollow Knight/assets/sprites/Architecture & Environment/Area specfic architecture/Forgotten Crossroads",
+    "last.imagePath": "G:/code/Hollow Knight/assets/sprites/Architecture & Environment",
     "map.height": 200,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 8,
@@ -76,10 +83,12 @@
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "wall1.tsx",
-        "cd_floor_02.tsx",
+        "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx",
         "cd_floor_highway_06.tsx",
         "pit.tsx",
+        "plat_lifts_0002_a.tsx",
+        "wall1.tsx",
+        "cd_floor_02.tsx",
         "forgotten_crossroads.tmx",
         "untitled.tmx",
         "start wall.tsx",
