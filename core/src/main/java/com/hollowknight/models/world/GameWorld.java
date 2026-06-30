@@ -11,10 +11,12 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.models.Constants;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.player.Player;
 import com.hollowknight.models.player.enemies.GroundEnemy;
 import com.hollowknight.models.player.enemies.GroundEnemyType;
+import com.hollowknight.models.player.enemies.HuskHornHead;
 
 public class GameWorld {
     private String worldName = "new world";
@@ -24,10 +26,7 @@ public class GameWorld {
     private List<Hazard> hazards = new ArrayList<>();
 
     public List<GroundEnemy> groundEnemies = new ArrayList<>();
-
-    public final float ENEMY_ACTIVE_RADIUS = 1100f;
-    public final float ENEMY_RESPAWN_RADIUS = 2200f;
-    public final float ENEMY_IGNORE_RADIUS = 2300f;
+    public List<HuskHornHead> hornHeads = new ArrayList<>();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -62,27 +61,56 @@ public class GameWorld {
             groundEnemies.add(GroundEnemy.newEnemy(enemytype, point));
         }
 
+        MapLayer hornheadSpawnPoints = map.getLayers().get("HornheadSpawnPoints");
+        for (MapObject obj : hornheadSpawnPoints.getObjects()) {
+            if (!(obj instanceof PointMapObject))
+                continue;
+            Vector2 point = ((PointMapObject) obj).getPoint();
+
+            hornHeads.add(HuskHornHead.newEnemy(point));
+        }
+
     }
 
     public void update(float delta) {
         player.update(delta, solidBlocks);
         checkHazards();
 
+        updateEnemies(delta);
+
+        checkEnemyCollisions();
+    }
+
+    private void updateEnemies(float delta) {
+        // Update ground enemies
         for (GroundEnemy enemy : groundEnemies) {
             float dist = player.position.dst(enemy.position);
-            if (dist >= ENEMY_IGNORE_RADIUS) {
+            if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
                 continue;
             }
-            if (dist >= ENEMY_RESPAWN_RADIUS) {
+            if (dist >= Constants.ENEMY_RESPAWN_RADIUS) {
                 enemy.respawn();
                 continue;
             }
-            if (player.position.dst(enemy.position) <= ENEMY_ACTIVE_RADIUS) {
+            if (player.position.dst(enemy.position) <= Constants.ENEMY_ACTIVE_RADIUS) {
                 enemy.update(delta, solidBlocks);
             }
         }
 
-        checkEnemyCollisions();
+        // Update Hornheads
+        for (HuskHornHead enemy : hornHeads) {
+            float dist = player.position.dst(enemy.position);
+            if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
+                continue;
+            }
+            if (dist >= Constants.ENEMY_RESPAWN_RADIUS) {
+                enemy.respawn();
+                continue;
+            }
+            if (player.position.dst(enemy.position) <= Constants.ENEMY_ACTIVE_RADIUS) {
+                enemy.update(delta, player, solidBlocks);
+            }
+        }
     }
 
     private void checkHazards() {
@@ -118,7 +146,7 @@ public class GameWorld {
             }
 
             // Only check enemies that are close enough to be active
-            if (player.position.dst(enemy.position) > ENEMY_ACTIVE_RADIUS) {
+            if (player.position.dst(enemy.position) > Constants.ENEMY_ACTIVE_RADIUS) {
                 continue;
             }
 

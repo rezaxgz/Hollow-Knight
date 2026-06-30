@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
-import com.hollowknight.models.player.enemies.GroundEnemyAnimations;
+import com.hollowknight.models.player.enemies.EnemyAnimations;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +17,7 @@ public class GameAssetManager {
     public static Skin skin;
     public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
-    public static final HashMap<GroundEnemyAnimations, Animation<TextureRegion>> groundEnemyAnimationMap = new HashMap<>();
+    public static final HashMap<EnemyAnimations, Animation<TextureRegion>> enemyAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
@@ -104,7 +104,7 @@ public class GameAssetManager {
     }
 
     private static void loadGroundEnemyAnimations() {
-        for (GroundEnemyAnimations type : GroundEnemyAnimations.values()) {
+        for (EnemyAnimations type : EnemyAnimations.values()) {
             Texture texture = new Texture(type.path);
 
             TextureRegion[][] split = TextureRegion.split(
@@ -132,7 +132,7 @@ public class GameAssetManager {
                 case ONESHOT ->
                     animation.setPlayMode(Animation.PlayMode.NORMAL);
             }
-            groundEnemyAnimationMap.put(type, animation);
+            enemyAnimationMap.put(type, animation);
         }
     }
 }

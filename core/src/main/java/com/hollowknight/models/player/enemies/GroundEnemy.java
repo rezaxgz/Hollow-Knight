@@ -12,7 +12,7 @@ public class GroundEnemy {
     public Vector2 position = new Vector2();
     public Vector2 velocity;
 
-    public GroundEnemyAnimations animation;
+    public EnemyAnimations animation;
     public float animationTime = 0;
 
     public GroundEnemyType type;
@@ -109,7 +109,7 @@ public class GroundEnemy {
     }
 
     // --- Centralized Animation Chooser ---
-    private void setAnimation(GroundEnemyAnimations newState) {
+    private void setAnimation(EnemyAnimations newState) {
         if (animation != newState) {
             animation = newState;
             animationTime = 0; // Reset timer for new animation
