@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.Player; // Assuming this import path based on your package
 
-public class HuskHornHead {
+public class HuskHornHead extends Enemy {
     public final static EnemyAnimations WALK_ANIMATION = EnemyAnimations.HORNHEAD_WALK;
     public final static EnemyAnimations IDLE_ANIMATION = EnemyAnimations.HORNHEAD_IDLE;
     public final static EnemyAnimations ATTACK_ANIMATION = EnemyAnimations.HORNHEAD_ATTACK_RUN;
@@ -22,18 +22,6 @@ public class HuskHornHead {
 
     public State currentState = State.WALK;
 
-    public final Vector2 respawnPosition;
-    public Vector2 position = new Vector2();
-    public Vector2 velocity;
-
-    public EnemyAnimations animation;
-    public float animationTime = 0;
-
-    // State variables
-    public int facingDirection = Constants.RIGHT_DIRECTION;
-    public boolean isOnGround = false;
-    public boolean isDead = false;
-
     // Timers
     private float stateTimer = 0f;
     private float walkTimer = 0f;
@@ -42,8 +30,7 @@ public class HuskHornHead {
     private static final float SIGHT_HEIGHT_TOLERANCE = 50f;
 
     private HuskHornHead(Vector2 pos) {
-        this.position = pos;
-        this.respawnPosition = pos;
+        super(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
         changeState(State.WALK);
     }
@@ -63,6 +50,7 @@ public class HuskHornHead {
         changeState(State.WALK);
     }
 
+    @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
         animationTime += delta;
         if (isDead)
@@ -224,6 +212,7 @@ public class HuskHornHead {
         return false;
     }
 
+    @Override
     public Rectangle getBounds() {
         if (currentState == State.ATTACK_CHARGE || currentState == State.ATTACK_START) {
             return new Rectangle(position.x, position.y, Constants.HORNHEAD_HITBOX_WIDTH,
@@ -231,54 +220,5 @@ public class HuskHornHead {
         }
         return new Rectangle(position.x, position.y, Constants.HORNHEAD_HITBOX_WIDTH,
                 Constants.HORNHEAD_HITBOX_HEIGHT);
-    }
-
-    // --- Axis-Separated Collision Resolution ---
-    private boolean moveX(float amount, List<Rectangle> solids) {
-        if (amount == 0)
-            return false;
-
-        position.x += amount;
-        Rectangle enemyBounds = getBounds();
-        boolean collisionDetected = false;
-
-        for (Rectangle solid : solids) {
-            if (enemyBounds.overlaps(solid)) {
-                collisionDetected = true;
-
-                if (amount > 0) { // Hitting wall on the right
-                    position.x = solid.x - enemyBounds.width;
-                } else { // Hitting wall on the left
-                    position.x = solid.x + solid.width;
-                }
-
-                velocity.x = 0;
-                break;
-            }
-        }
-        return collisionDetected;
-    }
-
-    private void moveY(float amount, List<Rectangle> solids) {
-        if (amount == 0)
-            return;
-
-        position.y += amount;
-        Rectangle enemyBounds = getBounds();
-
-        for (Rectangle solid : solids) {
-            if (!enemyBounds.overlaps(solid))
-                continue;
-
-            if (amount < 0) { // Landing on the ground
-                position.y = solid.y + solid.height;
-                velocity.y = 0;
-                isOnGround = true;
-            } else { // Hitting a ceiling
-                position.y = solid.y - enemyBounds.height;
-                velocity.y = 0;
-            }
-            return;
-        }
     }
 }

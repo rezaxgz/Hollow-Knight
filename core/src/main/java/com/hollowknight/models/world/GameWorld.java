@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.player.Player;
+import com.hollowknight.models.player.enemies.Enemy;
 import com.hollowknight.models.player.enemies.GroundEnemy;
 import com.hollowknight.models.player.enemies.GroundEnemyType;
 import com.hollowknight.models.player.enemies.HuskHornHead;
@@ -25,8 +26,7 @@ public class GameWorld {
     private List<Rectangle> solidBlocks = new ArrayList<>();
     private List<Hazard> hazards = new ArrayList<>();
 
-    public List<GroundEnemy> groundEnemies = new ArrayList<>();
-    public List<HuskHornHead> hornHeads = new ArrayList<>();
+    public List<Enemy> enemies = new ArrayList<>();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -58,7 +58,7 @@ public class GameWorld {
             int type = (int) obj.getProperties().get("type");
             GroundEnemyType enemytype = GroundEnemyType.fromInt(type);
 
-            groundEnemies.add(GroundEnemy.newEnemy(enemytype, point));
+            enemies.add(GroundEnemy.newEnemy(enemytype, point));
         }
 
         MapLayer hornheadSpawnPoints = map.getLayers().get("HornheadSpawnPoints");
@@ -67,7 +67,7 @@ public class GameWorld {
                 continue;
             Vector2 point = ((PointMapObject) obj).getPoint();
 
-            hornHeads.add(HuskHornHead.newEnemy(point));
+            enemies.add(HuskHornHead.newEnemy(point));
         }
 
     }
@@ -83,22 +83,7 @@ public class GameWorld {
 
     private void updateEnemies(float delta) {
         // Update ground enemies
-        for (GroundEnemy enemy : groundEnemies) {
-            float dist = player.position.dst(enemy.position);
-            if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
-                continue;
-            }
-            if (dist >= Constants.ENEMY_RESPAWN_RADIUS) {
-                enemy.respawn();
-                continue;
-            }
-            if (player.position.dst(enemy.position) <= Constants.ENEMY_ACTIVE_RADIUS) {
-                enemy.update(delta, solidBlocks);
-            }
-        }
-
-        // Update Hornheads
-        for (HuskHornHead enemy : hornHeads) {
+        for (Enemy enemy : enemies) {
             float dist = player.position.dst(enemy.position);
             if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
                 continue;
@@ -139,7 +124,7 @@ public class GameWorld {
 
         Rectangle playerBounds = player.getBounds();
 
-        for (GroundEnemy enemy : groundEnemies) {
+        for (Enemy enemy : enemies) {
             // Ignore dead enemies
             if (enemy.isDead) {
                 continue;

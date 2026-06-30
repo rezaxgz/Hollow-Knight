@@ -14,8 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.PlayerAnimation;
-import com.hollowknight.models.player.enemies.GroundEnemy;
-import com.hollowknight.models.player.enemies.HuskHornHead;
+import com.hollowknight.models.player.enemies.Enemy;
 import com.hollowknight.models.world.GameWorld;
 
 public class GameRenderer {
@@ -90,10 +89,8 @@ public class GameRenderer {
 
         batch.begin();
 
-        // Render ground enemies
-        renderGroundEnemies(batch);
-        // Render special enemies
-        renderHornheads(batch);
+        // Render enemies
+        renderEnemies(batch);
 
         // 2. Render the Player
         PlayerAnimation currentAnimation = world.player.animation;
@@ -127,8 +124,7 @@ public class GameRenderer {
                 Constants.PLAYER_HITBOX_HEIGHT);
         // Render enemy hitboxes
         shapeRenderer.setColor(Color.RED);
-        renderGroundEnemyHitBoxes(shapeRenderer);
-        renderHornheadHitBoxes(shapeRenderer);
+        renderEnemyHitBoxes(shapeRenderer);
 
         shapeRenderer.end();
 
@@ -137,8 +133,8 @@ public class GameRenderer {
         stage.draw();
     }
 
-    private void renderGroundEnemies(SpriteBatch batch) {
-        for (GroundEnemy enemy : world.groundEnemies) {
+    private void renderEnemies(SpriteBatch batch) {
+        for (Enemy enemy : world.enemies) {
 
             Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
 
@@ -169,69 +165,11 @@ public class GameRenderer {
         }
     }
 
-    private void renderGroundEnemyHitBoxes(ShapeRenderer shapeRenderer) {
-        for (GroundEnemy enemy : world.groundEnemies) {
+    private void renderEnemyHitBoxes(ShapeRenderer shapeRenderer) {
+        for (Enemy enemy : world.enemies) {
 
             Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
 
-            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
-
-            float width = frame.getRegionWidth();
-            float height = frame.getRegionHeight();
-
-            // Simple camera culling
-            if (enemy.position.x + width < camera.position.x - viewport.getWorldWidth() / 2f ||
-                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
-                    enemy.position.y + height < camera.position.y - viewport.getWorldHeight() / 2f ||
-                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
-                continue;
-            }
-
-            shapeRenderer.rect(enemy.position.x, enemy.position.y, enemy.type.width, enemy.type.height);
-        }
-    }
-
-    private void renderHornheads(SpriteBatch batch) {
-        for (HuskHornHead enemy : world.hornHeads) {
-
-            // Ensure the map name matches what you use in GameAssetManager for
-            // EnemyAnimations
-            Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
-
-            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
-            float spriteWidth = frame.getRegionWidth();
-            float spriteHeight = frame.getRegionHeight();
-
-            // Simple camera culling
-            if (enemy.position.x + spriteWidth < camera.position.x - viewport.getWorldWidth() / 2f ||
-                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
-                    enemy.position.y + spriteHeight < camera.position.y - viewport.getWorldHeight() / 2f ||
-                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
-                continue;
-            }
-
-            // Offset to center the sprite horizontally over the hitbox
-            float xOffset = (spriteWidth - Constants.HORNHEAD_HITBOX_WIDTH) / 2f;
-
-            batch.draw(
-                    frame,
-                    enemy.position.x - xOffset,
-                    enemy.position.y,
-                    spriteWidth / 2f, // Origin X for flipping
-                    0, // Origin Y
-                    spriteWidth,
-                    spriteHeight,
-                    -enemy.facingDirection, // -1 flips it when walking left
-                    1,
-                    0);
-        }
-    }
-
-    private void renderHornheadHitBoxes(ShapeRenderer shapeRenderer) {
-        for (HuskHornHead enemy : world.hornHeads) {
-
-            // Get dimensions for culling calculation
-            Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
             TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
 
             float width = frame.getRegionWidth();
@@ -246,8 +184,8 @@ public class GameRenderer {
             }
 
             Rectangle bounds = enemy.getBounds();
-            // Draw actual hitbox dimensions
             shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
+
 }
