@@ -50,7 +50,7 @@ public class GameRenderer {
         shapeRenderer = new ShapeRenderer();
         stage = new Stage();
 
-        gameProcessor = new GameProcessor(world);
+        gameProcessor = new GameProcessor();
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(gameProcessor);

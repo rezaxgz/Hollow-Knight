@@ -11,7 +11,7 @@ public class GameScreen extends AbstractScreen {
 
     public GameScreen(GameWorld world) {
         this.world = world;
-        controller = new GameController(world);
+        controller = GameController.init(world);
         renderer = new GameRenderer(world);
     }
 
