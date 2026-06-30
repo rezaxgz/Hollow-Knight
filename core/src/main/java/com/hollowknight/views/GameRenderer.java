@@ -14,8 +14,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.player.PlayerAnimation;
-import com.hollowknight.models.player.enemies.Enemy;
 import com.hollowknight.models.world.GameWorld;
 
 public class GameRenderer {

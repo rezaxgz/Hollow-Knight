@@ -1,4 +1,4 @@
-package com.hollowknight.models.player.enemies;
+package com.hollowknight.models.enemies;
 
 import java.util.List;
 

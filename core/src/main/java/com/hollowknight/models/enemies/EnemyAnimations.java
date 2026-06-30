@@ -1,4 +1,4 @@
-package com.hollowknight.models.player.enemies;
+package com.hollowknight.models.enemies;
 
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enums.AnimationType;

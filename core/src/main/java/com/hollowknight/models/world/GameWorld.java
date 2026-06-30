@@ -12,12 +12,12 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.enemies.Enemy;
+import com.hollowknight.models.enemies.GroundEnemy;
+import com.hollowknight.models.enemies.GroundEnemyType;
+import com.hollowknight.models.enemies.HuskHornHead;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.player.Player;
-import com.hollowknight.models.player.enemies.Enemy;
-import com.hollowknight.models.player.enemies.GroundEnemy;
-import com.hollowknight.models.player.enemies.GroundEnemyType;
-import com.hollowknight.models.player.enemies.HuskHornHead;
 import com.hollowknight.models.settings.GameCheat;
 
 public class GameWorld {

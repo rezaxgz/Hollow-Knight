@@ -1,4 +1,4 @@
-package com.hollowknight.models.player.enemies;
+package com.hollowknight.models.enemies;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.hollowknight.models.Constants;
