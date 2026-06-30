@@ -5,5 +5,6 @@ public enum GameCheat {
     HEAL,
     FILL_SOULS,
     GOD_MODE,
-    SPECTATOR_MODE
+    SPECTATOR_MODE,
+    KILL_ENEMIES
 }

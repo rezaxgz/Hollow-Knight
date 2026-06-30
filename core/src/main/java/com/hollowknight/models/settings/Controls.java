@@ -18,6 +18,7 @@ public class Controls {
     public int fillSouls = Input.Keys.UP;
     public int godMode = Input.Keys.G;
     public int specMode = Input.Keys.S;
+    public int killEnemies = Input.Keys.K;
 
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
@@ -76,6 +77,8 @@ public class Controls {
             return GameCheat.GOD_MODE;
         if (key == specMode)
             return GameCheat.SPECTATOR_MODE;
+        if (key == killEnemies)
+            return GameCheat.KILL_ENEMIES;
         return null;
     }
 }

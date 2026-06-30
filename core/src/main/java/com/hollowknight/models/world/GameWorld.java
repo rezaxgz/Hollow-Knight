@@ -18,6 +18,7 @@ import com.hollowknight.models.player.enemies.Enemy;
 import com.hollowknight.models.player.enemies.GroundEnemy;
 import com.hollowknight.models.player.enemies.GroundEnemyType;
 import com.hollowknight.models.player.enemies.HuskHornHead;
+import com.hollowknight.models.settings.GameCheat;
 
 public class GameWorld {
     private String worldName = "new world";
@@ -82,7 +83,7 @@ public class GameWorld {
     }
 
     private void updateEnemies(float delta) {
-        // Update ground enemies
+        // Update enemies
         for (Enemy enemy : enemies) {
             float dist = player.position.dst(enemy.position);
             if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
@@ -139,6 +140,18 @@ public class GameWorld {
                 player.takeDamage();
                 break; // Exit loop after taking damage once per frame
             }
+        }
+    }
+
+    public void applyCheat(GameCheat cheat) {
+        if (cheat == GameCheat.KILL_ENEMIES) {
+            for (Enemy enemy : enemies) {
+                if (player.position.dst(enemy.position) <= Constants.ENEMY_ACTIVE_RADIUS) {
+                    enemy.kill();
+                }
+            }
+        } else {
+            player.applyCheat(cheat);
         }
     }
 

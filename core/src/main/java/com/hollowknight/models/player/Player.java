@@ -456,6 +456,8 @@ public class Player {
                     velocity.y = 0;
                 }
             }
+            case KILL_ENEMIES -> {
+            }
         }
     }
 }

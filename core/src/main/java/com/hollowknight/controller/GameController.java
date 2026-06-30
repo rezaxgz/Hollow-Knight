@@ -62,7 +62,7 @@ public class GameController {
             GameCheat cheat = controls.getCheat(keycode);
 
             if (cheat != null) {
-                world.player.applyCheat(cheat);
+                world.applyCheat(cheat);
             }
         }
 
