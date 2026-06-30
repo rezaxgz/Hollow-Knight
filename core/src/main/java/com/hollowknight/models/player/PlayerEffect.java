@@ -1,0 +1,26 @@
+package com.hollowknight.models.player;
+
+import com.hollowknight.models.Constants;
+
+public enum PlayerEffect {
+    SLASH("animation/Effects/SlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
+    SLASH_ALT("animation/Effects/SlashEffectAlt.png", 6, Constants.SLASH_TIME, 0, 0),
+    DOWN_SLASH("animation/Effects/DownSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
+    UP_SLASH("animation/Effects/UpSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0);
+
+    public final String path;
+    public final int frameCount;
+    public final float duration;
+    public final int xOffset;
+    public final int yOffset;
+    public final float frameDuration;
+
+    PlayerEffect(String path, int frameCount, float duration, int xOffset, int yOffset) {
+        this.path = path;
+        this.frameCount = frameCount;
+        this.duration = duration;
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.frameDuration = duration / (float) frameCount;
+    }
+}

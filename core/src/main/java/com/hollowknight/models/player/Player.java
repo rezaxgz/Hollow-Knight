@@ -18,6 +18,11 @@ public class Player {
     private float dashTimer = 0.0f;
     private float dashCooldownTimer = 0.0f;
 
+    // --- NEW: Attack Tracking ---
+    private float attackTimer = 0.0f;
+    private float attackCooldown = 0f;
+    private PlayerAnimation currentAttackAnimation = PlayerAnimation.IDLE;
+
     public PlayerAnimation animation = PlayerAnimation.IDLE;
     public float animationTime = 0;
 
@@ -43,11 +48,22 @@ public class Player {
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= delta;
 
+        // Handle Attack Timer ---
+        if (attackTimer > 0) {
+            attackTimer -= delta;
+            if (attackTimer <= 0 && combatState == CombatState.ATTACK) {
+                combatState = CombatState.NONE;
+            }
+        }
+
+        if (attackCooldown > 0) {
+            attackCooldown -= delta;
+        }
+
         status.update(delta);
 
         // --- UPDATE THE SPECTATOR BLOCK INSIDE Player.update() ---
         if (status.isSpectatorMode()) {
-            // Increased movement speed (e.g., 3x multiplier)
             float spectatorSpeed = Constants.PLAYER_MOVE_SPEED * 3.0f;
 
             if (status.isMovingHorizontally()) {
@@ -56,22 +72,19 @@ public class Player {
                 velocity.x = 0;
             }
 
-            // FIX: Read continuous vertical state instead of clearing velocity.y directly
             if (status.isMovingVertically()) {
                 velocity.y = status.getVerticalDirection() * spectatorSpeed;
             } else {
                 velocity.y = 0;
             }
 
-            // Apply position directly (Bypass collisions and gravity)
             position.x += velocity.x * delta;
             position.y += velocity.y * delta;
 
-            // Disable animations (Freeze at IDLE)
             setAnimation(PlayerAnimation.IDLE);
             animationTime = 0;
 
-            return; // Exit early to skip normal physics and states
+            return;
         }
 
         // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
@@ -87,7 +100,7 @@ public class Player {
                 dashCooldownTimer = Constants.DASH_COOLDOWN;
             }
             updateAnimation();
-            return; // Exit early so we don't apply normal physics
+            return;
         }
 
         // --- 2.5 HANDLE FOCUS STATE (Overrides normal physics & movement) ---
@@ -126,8 +139,6 @@ public class Player {
             velocity.x = 0;
         }
 
-        // ALWAYS apply gravity before moving. This pushes the player into
-        // the floor just enough to trigger the collision check next.
         velocity.y += Constants.GRAVITY * delta;
 
         // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
@@ -144,27 +155,21 @@ public class Player {
 
             velocity.y = 0;
 
-            // State resolution when hitting the ground from the air.
             if (movementState == MovementState.FALL) {
                 setStateAfterLanding();
             }
 
-            // Catch-all to clean up horizontal states if the player stopped moving
-            // while the landing animation/logic was processing
             if (!status.isMovingHorizontally() && movementState != MovementState.IDLE) {
                 movementState = MovementState.IDLE;
             } else if (status.isMovingHorizontally() && movementState != MovementState.RUN) {
                 movementState = MovementState.RUN;
             }
         } else {
-            // FIX: If we are moving downwards, we are falling. Period.
-            // This allows the jump animations to correctly transition into the fall state.
             if (velocity.y < 0 && movementState != MovementState.FALL) {
                 movementState = MovementState.FALL;
             }
         }
 
-        // Apply visual updates based on final logic states
         updateAnimation();
     }
 
@@ -197,16 +202,33 @@ public class Player {
         if (!status.isSpectatorMode())
             return;
 
-        // Safety check: Only stop if the released key matches our current moving
-        // direction
         if (releasedDir == -status.getVerticalDirection()) {
             status.stopVerticalMovement();
             velocity.y = 0;
         }
     }
 
+    // --- NEW: Attack Logic ---
     private void attack() {
-        // Combat state ATTACK logic goes here
+        // Prevent attacking if dead, focusing, or already attacking
+        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS || combatState == CombatState.ATTACK
+                || attackCooldown > 0) {
+            return;
+        }
+
+        combatState = CombatState.ATTACK;
+        attackTimer = Constants.SLASH_TIME;
+
+        // Determine attack direction and animation
+        if (velocity.y > 0) {
+            currentAttackAnimation = PlayerAnimation.UP_SLASH;
+        } else if (!status.isOnGround() && velocity.y < 0) {
+            // Down slashes typically only happen while in the air
+            currentAttackAnimation = PlayerAnimation.DOWN_SLASH;
+        } else {
+            // Standard horizontal slash (Randomize between normal and alt)
+            currentAttackAnimation = Math.random() > 0.5 ? PlayerAnimation.SLASH : PlayerAnimation.SLASH_ALT;
+        }
     }
 
     private boolean canFocus() {
@@ -227,7 +249,6 @@ public class Player {
     public void stopFocus() {
         combatState = CombatState.NONE;
 
-        // Restore appropriate movement state upon exiting focus
         if (status.isOnGround()) {
             movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
         } else {
@@ -341,13 +362,9 @@ public class Player {
             return true;
         }
 
-        // Optionally trigger a hurt state here:
-        // combatState = CombatState.HURT;
-
         return false;
     }
 
-    // --- NEW: Centralized Animation Chooser ---
     private void updateAnimation() {
         PlayerAnimation targetAnimation = animation;
 
@@ -359,10 +376,11 @@ public class Player {
             targetAnimation = PlayerAnimation.DEAD;
         } else if (combatState == CombatState.FOCUS) {
             targetAnimation = PlayerAnimation.FOCUS;
+        } else if (combatState == CombatState.ATTACK) {
+            targetAnimation = currentAttackAnimation;
         } else if (combatState == CombatState.HURT) {
             targetAnimation = PlayerAnimation.IDLE_HURT;
         } else {
-            // If no active overriding combat state, derive from movement
             switch (movementState) {
                 case DASH -> targetAnimation = PlayerAnimation.DASH;
                 case DOUBLE_JUMP -> targetAnimation = PlayerAnimation.DOUBLE_JUMP;

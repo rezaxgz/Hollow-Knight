@@ -17,6 +17,10 @@ public class Constants {
     public static final int PLAYER_HITBOX_WIDTH = 65;
     public static final int PLAYER_HITBOX_HEIGHT = 130;
 
+    // Player Combat
+    public static final float SLASH_TIME = 0.5f;
+    public static final float SLASH_COOLDOWN = 3f;
+
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;
     public static final int MAX_PLAYER_SOULS = 99;

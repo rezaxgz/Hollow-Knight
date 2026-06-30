@@ -4,10 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
+import com.hollowknight.models.player.PlayerEffect;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +20,7 @@ public class GameAssetManager {
     public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
     public static final HashMap<EnemyAnimations, Animation<TextureRegion>> enemyAnimationMap = new HashMap<>();
+    public static final HashMap<PlayerEffect, Animation<TextureRegion>> playerEffectAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
@@ -37,6 +40,31 @@ public class GameAssetManager {
 
         loadSoulsTexture();
         loadGroundEnemyAnimations();
+
+        loadPlayerEffectAnimations();
+    }
+
+    private static void loadPlayerEffectAnimations() {
+        for (PlayerEffect effect : PlayerEffect.values()) {
+            Texture texture = new Texture(effect.path);
+
+            int tileWidth = texture.getWidth() / effect.frameCount;
+            int tileHeight = texture.getHeight();
+
+            TextureRegion[][] split = TextureRegion.split(texture, tileWidth, tileHeight);
+            TextureRegion[] frames = new TextureRegion[effect.frameCount];
+
+            // Extract frames from the single row
+            for (int i = 0; i < effect.frameCount; i++) {
+                frames[i] = split[0][i];
+            }
+
+            Animation<TextureRegion> animation = new Animation<>(effect.frameDuration, frames);
+
+            animation.setPlayMode(PlayMode.NORMAL);
+
+            playerEffectAnimationMap.put(effect, animation);
+        }
     }
 
     private static void loadPlayerAnimation(PlayerAnimation type) {

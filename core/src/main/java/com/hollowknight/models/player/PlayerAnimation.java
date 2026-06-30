@@ -12,7 +12,11 @@ public enum PlayerAnimation {
     IDLE_HURT("animation/Idle Hurt.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
     FALL("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f, true),
     DOUBLE_JUMP("animation/Double Jump.png", 8, Constants.JUMP_SPEED / -Constants.GRAVITY, AnimationType.ONESHOT),
-    FOCUS("animation/Focus Combined.png", 10, Constants.HEALTH_REFIL_TIME, AnimationType.ONESHOT);
+    FOCUS("animation/Focus Combined.png", 10, Constants.HEALTH_REFIL_TIME, AnimationType.ONESHOT),
+    SLASH("animation/Slash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
+    SLASH_ALT("animation/SlashAlt.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
+    UP_SLASH("animation/UpSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
+    DOWN_SLASH("animation/DownSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT);
 
     public final String path;
     public int frameCount;
@@ -21,6 +25,7 @@ public enum PlayerAnimation {
     public final AnimationType animationType;
     public final float frameDuration;
     public boolean isReversed = false;
+    public PlayerEffect effect = null;
 
     PlayerAnimation(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration) {
@@ -63,6 +68,16 @@ public enum PlayerAnimation {
     }
 
     PlayerAnimation(String path, int frameCount, float totalDuration, AnimationType animationType) {
+        this.path = path;
+        this.frameCount = frameCount;
+        this.colCount = frameCount;
+        this.animationType = animationType;
+        this.frameDuration = totalDuration / (float) frameCount;
+    }
+
+    PlayerAnimation(String path, int frameCount, float totalDuration, AnimationType animationType,
+            PlayerEffect effect) {
+        this.effect = effect;
         this.path = path;
         this.frameCount = frameCount;
         this.colCount = frameCount;
