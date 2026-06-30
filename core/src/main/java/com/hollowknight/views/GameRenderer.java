@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -30,6 +31,9 @@ public class GameRenderer {
 
     private HUDRenderer hudRenderer;
     private OrthographicCamera hudCamera;
+
+    private float mapWidth;
+    private float mapHeight;
 
     // Arrays to hold the layer indices
     private int[] backgroundLayers;
@@ -54,6 +58,15 @@ public class GameRenderer {
 
         mapRenderer = new OrthogonalTiledMapRenderer(world.map);
 
+        // Extract map dimensions from properties
+        int tileWidth = world.map.getProperties().get("tilewidth", Integer.class);
+        int tileHeight = world.map.getProperties().get("tileheight", Integer.class);
+        int mapWidthInTiles = world.map.getProperties().get("width", Integer.class);
+        int mapHeightInTiles = world.map.getProperties().get("height", Integer.class);
+
+        this.mapWidth = mapWidthInTiles * tileWidth;
+        this.mapHeight = mapHeightInTiles * tileHeight;
+
         // Define your layers here.
         backgroundLayers = new int[] {
                 world.map.getLayers().getIndex("background"),
@@ -75,8 +88,32 @@ public class GameRenderer {
         viewport.update(width, height);
     }
 
-    public void render() {
+    private void setCameraPosition() {
+        // Track the player first
         camera.position.set(world.player.position, 0);
+
+        // --- CAMERA CLAMPING LOGIC ---
+        float cameraHalfWidth = camera.viewportWidth / 2f;
+        float cameraHalfHeight = camera.viewportHeight / 2f;
+
+        // Clamp X: Ensure camera doesn't spill past left/right edges
+        if (mapWidth > camera.viewportWidth) {
+            camera.position.x = MathUtils.clamp(camera.position.x, cameraHalfWidth, mapWidth - cameraHalfWidth);
+        } else {
+            camera.position.x = mapWidth / 2f; // Center map if it's smaller than screen width
+        }
+
+        // Clamp Y: Ensure camera doesn't spill past bottom/top edges
+        if (mapHeight > camera.viewportHeight) {
+            camera.position.y = MathUtils.clamp(camera.position.y, cameraHalfHeight, mapHeight - cameraHalfHeight);
+        } else {
+            camera.position.y = mapHeight / 2f; // Center map if it's smaller than screen height
+        }
+        // ------------------------------
+    }
+
+    public void render() {
+        setCameraPosition();
         camera.update();
 
         mapRenderer.setView(camera);
@@ -89,10 +126,10 @@ public class GameRenderer {
 
         batch.begin();
 
-        // Render enemies
+        // 2.1 Render enemies
         renderEnemies(batch);
 
-        // 2. Render the Player
+        // 2.2 Render the Player
         PlayerAnimation currentAnimation = world.player.animation;
         Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
