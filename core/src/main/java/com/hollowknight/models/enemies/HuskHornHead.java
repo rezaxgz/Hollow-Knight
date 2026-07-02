@@ -27,7 +27,7 @@ public class HuskHornHead extends Enemy {
     private float walkTimer = 0f;
 
     private static final float SIGHT_RANGE = 700f;
-    private static final float SIGHT_HEIGHT_TOLERANCE = 50f;
+    private static final float SIGHT_HEIGHT_TOLERANCE = Constants.HORNHEAD_HITBOX_HEIGHT - 20;
 
     private HuskHornHead(Vector2 pos) {
         super(pos);
