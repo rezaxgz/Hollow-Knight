@@ -351,11 +351,11 @@ public class Player {
         return status.isInvincible();
     }
 
-    public boolean takeDamage() {
+    public boolean takeDamage(int amount) {
         if (status.isInvincible())
             return false;
 
-        vitals.takeDamage();
+        vitals.takeDamage(amount);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
 
         if (combatState == CombatState.FOCUS) {
@@ -478,7 +478,7 @@ public class Player {
     public void applyCheat(GameCheat cheat) {
         switch (cheat) {
             case HEAL -> vitals.heal(1);
-            case TAKE_DAMAGE -> takeDamage();
+            case TAKE_DAMAGE -> takeDamage(1);
             case FILL_SOULS -> vitals.addSouls(Constants.MAX_PLAYER_SOULS);
             case GOD_MODE -> status.toggleGodMode();
             case SPECTATOR_MODE -> {

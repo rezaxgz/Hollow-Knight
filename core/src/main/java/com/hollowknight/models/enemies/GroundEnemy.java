@@ -19,6 +19,7 @@ public class GroundEnemy extends Enemy {
         this.type = type;
         this.velocity = new Vector2(type.speed * facingDirection, Constants.GRAVITY);
         setAnimation(type.walkAnimation);
+        this.hp = Constants.CRAWLID_HP;
     }
 
     public static GroundEnemy newEnemy(GroundEnemyType type, Vector2 pos) {

@@ -221,4 +221,9 @@ public class HuskHornHead extends Enemy {
         return new Rectangle(position.x, position.y, Constants.HORNHEAD_HITBOX_WIDTH,
                 Constants.HORNHEAD_HITBOX_HEIGHT);
     }
+
+    @Override
+    public int getCollisionDamage() {
+        return 3;
+    }
 }

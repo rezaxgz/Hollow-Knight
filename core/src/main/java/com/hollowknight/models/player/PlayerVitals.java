@@ -64,6 +64,12 @@ public class PlayerVitals {
         }
     }
 
+    public void takeDamage(int amount) {
+        for (int i = 0; i < amount; i++) {
+            takeDamage();
+        }
+    }
+
     public void takeDamage() {
         for (int i = Constants.MAX_PLAYER_HEALTH - 1; i >= 0; i--) {
             HealthMask h = health.get(i);

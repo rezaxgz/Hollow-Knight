@@ -6,6 +6,9 @@ public class Constants {
     public static final int LEFT_DIRECTION = -1;
     public static final int UP_DIRECTION = -1;
     public static final int DOWN_DIRECTION = 1;
+
+    // Map
+    public static final int HAZARD_DAMAGE = 1;
     // Player
     public static final float GRAVITY = -1000f;
     public static final float PLAYER_MOVE_SPEED = 500f;
@@ -22,6 +25,7 @@ public class Constants {
     // Player Combat
     public static final float SLASH_TIME = 0.5f;
     public static final float SLASH_COOLDOWN = 3f;
+    public static final int PLAYER_SLASH_DAMAGE = 15;
 
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;
@@ -35,12 +39,14 @@ public class Constants {
     public static final float ENEMY_ACTIVE_RADIUS = 1500f;
     public static final float ENEMY_RESPAWN_RADIUS = 3000f;
     public static final float ENEMY_IGNORE_RADIUS = 3200f;
+
     // Crawlid
     public static final int CRAWLID_HITBOX_WIDTH = 110;
     public static final int CRAWLID_HITBOX_HEIGHT = 80;
     public static final int CRAWLID_SPEED = 250;
     public static final float CRAWLID_TURN_TIMER = 0.08f;
     public static final float CRAWLID_DEATH_TIMER = 1f;
+    public static final int CRAWLID_HP = 20;
 
     // HornHead
     public static final int HORNHEAD_HITBOX_WIDTH = 110;
@@ -52,6 +58,7 @@ public class Constants {
     public static final float HORNHEAD_DEATH_TIMER = 1f;
     public static final float HORNHEAD_REST_TIMER = 4f;
     public static final float HORNHEAD_WALK_TIMER = 10f;
+    public static final int HORNHEAD_HP = 50;
 
     // debug
     public static int a = 0;

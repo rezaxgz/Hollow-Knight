@@ -117,7 +117,7 @@ public class GameWorld {
             if (hazard.isInstantDeath()) {
                 player.kill();
             } else {
-                player.takeDamage();
+                player.takeDamage(Constants.HAZARD_DAMAGE);
             }
 
             break;
@@ -144,7 +144,8 @@ public class GameWorld {
             }
 
             if (playerBounds.overlaps(enemy.getBounds())) {
-                player.takeDamage();
+                System.out.println(enemy.getCollisionDamage());
+                player.takeDamage(enemy.getCollisionDamage());
                 break; // Exit loop after taking damage once per frame
             }
         }
@@ -173,7 +174,7 @@ public class GameWorld {
             if (attackBounds.overlaps(enemy.getBounds())) {
                 // Ensure we only hit this enemy ONCE per swing
                 if (!enemiesHitThisAttack.contains(enemy)) {
-                    enemy.kill(); // Or enemy.takeDamage(1) once you implement enemy health
+                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE);
                     enemiesHitThisAttack.add(enemy);
 
                     // TODO: The classic Hollow Knight "Pogo" bounce!

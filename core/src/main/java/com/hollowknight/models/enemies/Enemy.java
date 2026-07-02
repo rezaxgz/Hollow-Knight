@@ -18,6 +18,8 @@ public abstract class Enemy {
     public boolean isOnGround = false;
     public boolean isDead = false;
 
+    protected int hp;
+
     public Enemy(Vector2 pos) {
         this.position = new Vector2(pos);
         this.respawnPosition = new Vector2(pos);
@@ -30,8 +32,20 @@ public abstract class Enemy {
     public abstract Rectangle getBounds();
 
     public void kill() {
+        this.hp = 0;
         this.isDead = true;
         this.velocity.set(0, 0);
+    }
+
+    public void takeDamage(int damage) {
+        this.hp -= damage;
+        if (hp <= 0) {
+            this.kill();
+        }
+    }
+
+    public int getCollisionDamage() {
+        return 1;
     }
 
     public void respawn() {
