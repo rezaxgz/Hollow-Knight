@@ -49,6 +49,8 @@ public class HuskHornHead extends Enemy {
         isDead = false;
 
         changeState(State.WALK);
+
+        this.hp = Constants.HORNHEAD_HP;
     }
 
     @Override

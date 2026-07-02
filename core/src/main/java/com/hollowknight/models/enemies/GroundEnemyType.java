@@ -4,10 +4,14 @@ import com.badlogic.gdx.math.Rectangle;
 import com.hollowknight.models.Constants;
 
 public enum GroundEnemyType {
-    CRAWLID(Constants.CRAWLID_SPEED, Constants.CRAWLID_HITBOX_WIDTH, Constants.CRAWLID_HITBOX_HEIGHT,
+    CRAWLID(Constants.GROUND_ENEMY_SPEED, Constants.GROUND_ENEMY_HITBOX_WIDTH, Constants.GROUND_ENEMY_HITBOX_HEIGHT,
             EnemyAnimations.CRAWLID_WALK,
             EnemyAnimations.CRAWLID_TURN,
-            EnemyAnimations.CRAWLID_DEATH);
+            EnemyAnimations.CRAWLID_DEATH),
+    MOSSCREEP(Constants.GROUND_ENEMY_SPEED, Constants.GROUND_ENEMY_HITBOX_WIDTH, Constants.GROUND_ENEMY_HITBOX_HEIGHT,
+            EnemyAnimations.MOSSCREEP_WALK,
+            EnemyAnimations.MOSSCREEP_TURN,
+            EnemyAnimations.MOSSCREEP_DEATH);
 
     public final float speed;
     public final float width;

@@ -176,7 +176,7 @@ public class GameRenderer {
                 continue;
             }
 
-            float xOffset = (spriteWidth - Constants.CRAWLID_HITBOX_WIDTH) / 2f;
+            float xOffset = (spriteWidth - Constants.GROUND_ENEMY_HITBOX_WIDTH) / 2f;
             batch.draw(
                     frame,
                     enemy.position.x - xOffset,

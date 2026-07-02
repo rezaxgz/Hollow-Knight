@@ -6,8 +6,12 @@ import com.hollowknight.models.enums.AnimationType;
 public enum EnemyAnimations {
     // CRAWLID
     CRAWLID_WALK("animation/Crawlid/Walk.png", 4, 1f, AnimationType.LOOP_PINGPONG),
-    CRAWLID_TURN("animation/Crawlid/Turn.png", 2, Constants.CRAWLID_TURN_TIMER, AnimationType.ONESHOT),
+    CRAWLID_TURN("animation/Crawlid/Turn.png", 2, Constants.GROUND_ENEMY_TURN_TIMER, AnimationType.ONESHOT),
     CRAWLID_DEATH("animation/Crawlid/Death.png", 5, 1f, AnimationType.ONESHOT),
+    // Mosscreep
+    MOSSCREEP_WALK("animation/Mosscreep/Walk.png", 3, 1f, AnimationType.LOOP_PINGPONG),
+    MOSSCREEP_TURN("animation/Mosscreep/Turn.png", 3, Constants.GROUND_ENEMY_TURN_TIMER, AnimationType.ONESHOT),
+    MOSSCREEP_DEATH("animation/Mosscreep/Death.png", 6, 1f, AnimationType.ONESHOT),
 
     // Husk HornHead
     HORNHEAD_WALK("animation/Husk_Hornhead/Walk.png", 7, 1f, AnimationType.LOOP_PINGPONG),

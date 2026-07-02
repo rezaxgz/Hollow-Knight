@@ -48,13 +48,13 @@ public class Constants {
     public static final float ENEMY_KNOCKBACK_SPEED_X = 500f; // Horizontal push force
     public static final float ENEMY_KNOCKBACK_SPEED_Y = 400f; // Vertical pop force (lift)
 
-    // Crawlid
-    public static final int CRAWLID_HITBOX_WIDTH = 110;
-    public static final int CRAWLID_HITBOX_HEIGHT = 80;
-    public static final int CRAWLID_SPEED = 250;
-    public static final float CRAWLID_TURN_TIMER = 0.08f;
-    public static final float CRAWLID_DEATH_TIMER = 1f;
-    public static final int CRAWLID_HP = 20;
+    // Ground Enemy
+    public static final int GROUND_ENEMY_HITBOX_WIDTH = 110;
+    public static final int GROUND_ENEMY_HITBOX_HEIGHT = 80;
+    public static final int GROUND_ENEMY_SPEED = 250;
+    public static final float GROUND_ENEMY_TURN_TIMER = 0.08f;
+    public static final float GROUND_ENEMY_DEATH_TIMER = 1f;
+    public static final int GROUND_ENEMY_HP = 20;
 
     // HornHead
     public static final int HORNHEAD_HITBOX_WIDTH = 110;

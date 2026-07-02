@@ -19,7 +19,7 @@ public class GroundEnemy extends Enemy {
         this.type = type;
         this.velocity = new Vector2(type.speed * facingDirection, Constants.GRAVITY);
         setAnimation(type.walkAnimation);
-        this.hp = Constants.CRAWLID_HP;
+        this.hp = Constants.GROUND_ENEMY_HP;
     }
 
     public static GroundEnemy newEnemy(GroundEnemyType type, Vector2 pos) {
@@ -105,7 +105,7 @@ public class GroundEnemy extends Enemy {
 
     private void startTurn() {
         isTurning = true;
-        turnTimer = Constants.CRAWLID_TURN_TIMER;
+        turnTimer = Constants.GROUND_ENEMY_TURN_TIMER;
         setAnimation(type.turnAnimation);
     }
 
