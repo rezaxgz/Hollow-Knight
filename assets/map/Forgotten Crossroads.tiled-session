@@ -106,6 +106,9 @@
         "vil_sign_01.tsx": {
             "scaleInDock": 1
         },
+        "vine_platform_01.tsx": {
+            "scaleInDock": 1
+        },
         "wall1.tsx": {
             "scaleInDock": 11,
             "scaleInEditor": 1
