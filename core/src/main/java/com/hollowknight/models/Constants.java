@@ -30,6 +30,7 @@ public class Constants {
     public static final float KNOCKBACK_DURATION = 0.2f; // How long the player loses control
     public static final float KNOCKBACK_SPEED_X = 500f; // Horizontal push force
     public static final float KNOCKBACK_SPEED_Y = 430f; // Vertical pop-up force
+    public static final int ATTACK_HIT_SOULS_BONUS = 11;
 
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;

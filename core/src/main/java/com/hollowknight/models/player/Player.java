@@ -79,7 +79,7 @@ public class Player {
     }
 
     // =========================================================================================
-    // UPDATE HANDLERS (Extracted from update())
+    // UPDATE HANDLERS
     // =========================================================================================
 
     private void updateTimers(float delta) {
@@ -390,6 +390,10 @@ public class Player {
         if (status.isInvincible() && !vitals.isDead())
             return;
         combatState = CombatState.DEAD;
+    }
+
+    public boolean isDead() {
+        return combatState == CombatState.DEAD;
     }
 
     private void respawn() {

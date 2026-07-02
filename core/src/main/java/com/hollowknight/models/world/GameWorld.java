@@ -176,6 +176,7 @@ public class GameWorld {
                 if (!enemiesHitThisAttack.contains(enemy)) {
                     enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE, player.position.x);
                     enemiesHitThisAttack.add(enemy);
+                    player.getVitals().addSouls(Constants.ATTACK_HIT_SOULS_BONUS);
 
                     // TODO: The classic Hollow Knight "Pogo" bounce!
                     // if (player.animation.name().contains("DOWN_SLASH")) {

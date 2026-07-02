@@ -215,6 +215,8 @@ public class HuskHornHead extends Enemy {
     }
 
     private boolean canSeePlayer(Player player) {
+        if (player.isDead())
+            return false;
         // Check if player is roughly on the same vertical level
         boolean sameHeight = Math.abs(player.position.y - this.position.y) < SIGHT_HEIGHT_TOLERANCE;
         if (!sameHeight)
