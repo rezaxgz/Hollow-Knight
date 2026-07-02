@@ -54,8 +54,26 @@ public class HuskHornHead extends Enemy {
     @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
         animationTime += delta;
-        if (isDead)
-            return;
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            velocity.y += Constants.GRAVITY * delta;
+
+            isOnGround = false;
+            moveX(velocity.x * delta, solidBlocks);
+            moveY(velocity.y * delta, solidBlocks);
+
+            if (knockbackTimer <= 0) {
+                velocity.x = 0;
+            }
+            return; // Intercept and bypass normal AI logic while flying backward
+        }
+
+        if (isDead) {
+            velocity.x = 0;
+            velocity.y += Constants.GRAVITY * delta;
+            moveY(velocity.y * delta, solidBlocks);
+            return; // Allow the dead body to stay pinned to the ground via gravity
+        }
 
         // Apply gravity
         velocity.y += Constants.GRAVITY * delta;
@@ -226,5 +244,13 @@ public class HuskHornHead extends Enemy {
     @Override
     public int getCollisionDamage() {
         return 3;
+    }
+
+    @Override
+    public void takeDamage(int damage, float sourceX) {
+        super.takeDamage(damage, sourceX);
+        // apply less knock back because hornhead is heavy
+        this.velocity.x -= 100;
+        this.velocity.y -= 20;
     }
 }

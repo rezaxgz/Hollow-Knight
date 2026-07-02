@@ -174,7 +174,7 @@ public class GameWorld {
             if (attackBounds.overlaps(enemy.getBounds())) {
                 // Ensure we only hit this enemy ONCE per swing
                 if (!enemiesHitThisAttack.contains(enemy)) {
-                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE);
+                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE, player.position.x);
                     enemiesHitThisAttack.add(enemy);
 
                     // TODO: The classic Hollow Knight "Pogo" bounce!

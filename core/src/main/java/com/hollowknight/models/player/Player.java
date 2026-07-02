@@ -386,6 +386,9 @@ public class Player {
     }
 
     public void kill() {
+        // Don't allow instant death on god mode
+        if (status.isInvincible() && !vitals.isDead())
+            return;
         combatState = CombatState.DEAD;
     }
 

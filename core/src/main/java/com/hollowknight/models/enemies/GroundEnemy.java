@@ -45,8 +45,26 @@ public class GroundEnemy extends Enemy {
         // --- 1. HANDLE TIMERS ---
         animationTime += delta;
 
-        if (isDead)
-            return;
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            velocity.y += Constants.GRAVITY * delta;
+
+            isOnGround = false;
+            moveX(velocity.x * delta, solidBlocks);
+            moveY(velocity.y * delta, solidBlocks);
+
+            if (knockbackTimer <= 0) {
+                velocity.x = 0;
+            }
+            return; // Intercept and bypass normal AI logic while flying backward
+        }
+
+        if (isDead) {
+            velocity.x = 0;
+            velocity.y += Constants.GRAVITY * delta;
+            moveY(velocity.y * delta, solidBlocks);
+            return; // Allow the dead body to stay pinned to the ground via gravity
+        }
 
         // --- 2. HANDLE TURNING STATE ---
         if (isTurning) {

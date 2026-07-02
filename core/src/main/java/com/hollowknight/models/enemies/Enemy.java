@@ -18,6 +18,8 @@ public abstract class Enemy {
     public boolean isOnGround = false;
     public boolean isDead = false;
 
+    protected float knockbackTimer = 0f;
+
     protected int hp;
 
     public Enemy(Vector2 pos) {
@@ -37,11 +39,17 @@ public abstract class Enemy {
         this.velocity.set(0, 0);
     }
 
-    public void takeDamage(int damage) {
+    public void takeDamage(int damage, float sourceX) {
         this.hp -= damage;
         if (hp <= 0) {
             this.kill();
         }
+
+        this.knockbackTimer = Constants.ENEMY_KNOCKBACK_DURATION;
+        float knockbackDir = (this.position.x < sourceX) ? -1f : 1f;
+        this.velocity.x = Constants.ENEMY_KNOCKBACK_SPEED_X * knockbackDir;
+        this.velocity.y = Constants.ENEMY_KNOCKBACK_SPEED_Y;
+        this.isOnGround = false;
     }
 
     public int getCollisionDamage() {
@@ -55,6 +63,7 @@ public abstract class Enemy {
         this.isOnGround = false;
         this.isDead = false;
         this.animationTime = 0;
+        this.knockbackTimer = 0;
     }
 
     // Centralized collision engine: Subclasses inherit these for free!

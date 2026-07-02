@@ -43,6 +43,9 @@ public class Constants {
     public static final float ENEMY_ACTIVE_RADIUS = 1500f;
     public static final float ENEMY_RESPAWN_RADIUS = 3000f;
     public static final float ENEMY_IGNORE_RADIUS = 3200f;
+    public static final float ENEMY_KNOCKBACK_DURATION = 0.15f; // Duration of control loss
+    public static final float ENEMY_KNOCKBACK_SPEED_X = 500f; // Horizontal push force
+    public static final float ENEMY_KNOCKBACK_SPEED_Y = 400f; // Vertical pop force (lift)
 
     // Crawlid
     public static final int CRAWLID_HITBOX_WIDTH = 110;
