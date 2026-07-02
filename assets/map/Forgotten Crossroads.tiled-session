@@ -56,6 +56,9 @@
                 "y": 3878
             }
         },
+        "fung_new_0131_Layer-238.tsx": {
+            "scaleInEditor": 1
+        },
         "highway_FG_0007_Layer-78.tsx": {
             "scaleInDock": 1
         },
@@ -132,6 +135,7 @@
     "property.type": "int",
     "recentFiles": [
         "wall1.tsx",
+        "fung_new_0131_Layer-238.tsx",
         "pillar_cell.tsx",
         "FG_platform.tsx",
         "well_extension_0001_1.tsx",
@@ -141,8 +145,7 @@
         "forgotten_crossroads.tmx",
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx",
         "cd_floor_highway_06.tsx",
-        "pit.tsx",
-        "plat_lifts_0002_a.tsx"
+        "pit.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
