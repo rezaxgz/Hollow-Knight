@@ -126,22 +126,10 @@ public class GameRenderer {
 
         batch.begin();
 
-        // 2.1 Render enemies
+        // 2 Render enemies and player
         renderEnemies(batch);
+        renderPlayer(batch);
 
-        // 2.2 Render the Player
-        PlayerAnimation currentAnimation = world.player.animation;
-        Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
-        TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
-        float spriteWidth = keyFrame.getRegionWidth();
-        float spriteHeight = keyFrame.getRegionHeight();
-        float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-        batch.draw(keyFrame,
-                world.player.position.x - xOffset, // Adjusted X to co-locate
-                world.player.position.y, // Keep Y co-located with ground
-                spriteWidth / 2f, 0, // Center of origin for flipping
-                spriteWidth, spriteHeight,
-                -world.player.getDirection(), 1, 0); // Flip horizontally if moving left
         batch.end();
 
         // 3. Render the Foreground map layer OVER the player
@@ -153,17 +141,17 @@ public class GameRenderer {
 
         // 5. Render Debug Shapes
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.line(0, 0, 100, 0);
+
+        // Render player hitboxe
         shapeRenderer.setColor(Color.GREEN);
-        shapeRenderer.line(0, 0, 0, 100);
-        shapeRenderer.rect(world.player.position.x, world.player.position.y, Constants.PLAYER_HITBOX_WIDTH,
-                Constants.PLAYER_HITBOX_HEIGHT);
+        renderPlayerHitBox(shapeRenderer);
         // Render enemy hitboxes
         shapeRenderer.setColor(Color.RED);
         renderEnemyHitBoxes(shapeRenderer);
+        // Render player attack hitboxes
         shapeRenderer.setColor(Color.ORANGE);
         renderPlayerAttackHitboxe(shapeRenderer);
+
         shapeRenderer.end();
 
         // 6. Update and Draw Stage (UI)
@@ -224,6 +212,26 @@ public class GameRenderer {
             Rectangle bounds = enemy.getBounds();
             shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
+    }
+
+    private void renderPlayer(SpriteBatch batch) {
+        PlayerAnimation currentAnimation = world.player.animation;
+        Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
+        TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
+        float spriteWidth = keyFrame.getRegionWidth();
+        float spriteHeight = keyFrame.getRegionHeight();
+        float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
+        batch.draw(keyFrame,
+                world.player.position.x - xOffset, // Adjusted X to co-locate
+                world.player.position.y, // Keep Y co-located with ground
+                spriteWidth / 2f, 0, // Center of origin for flipping
+                spriteWidth, spriteHeight,
+                -world.player.getDirection(), 1, 0);
+    }
+
+    private void renderPlayerHitBox(ShapeRenderer shapeRenderer) {
+        Rectangle bounds = world.player.getBounds();
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
