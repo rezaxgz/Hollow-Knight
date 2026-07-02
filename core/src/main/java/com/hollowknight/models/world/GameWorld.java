@@ -117,7 +117,7 @@ public class GameWorld {
             if (hazard.isInstantDeath()) {
                 player.kill();
             } else {
-                player.takeDamage(Constants.HAZARD_DAMAGE);
+                player.takeDamage(Constants.HAZARD_DAMAGE, hazard.getBounds().x + (hazard.getBounds().width / 2f));
             }
 
             break;
@@ -145,7 +145,7 @@ public class GameWorld {
 
             if (playerBounds.overlaps(enemy.getBounds())) {
                 System.out.println(enemy.getCollisionDamage());
-                player.takeDamage(enemy.getCollisionDamage());
+                player.takeDamage(enemy.getCollisionDamage(), enemy.position.x);
                 break; // Exit loop after taking damage once per frame
             }
         }

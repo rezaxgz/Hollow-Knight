@@ -33,6 +33,8 @@ public class Player {
 
     private PlayerVitals vitals = new PlayerVitals();
 
+    private float knockbackTimer = 0.0f;
+
     public Player(Vector2 position) {
         this.position = new Vector2(position);
         this.respawnPosition = new Vector2(position);
@@ -90,6 +92,23 @@ public class Player {
             animationTime = 0;
 
             return;
+        }
+
+        // --- 1.5 HANDLE HURT STATE (Overrides normal physics/input) ---
+        if (combatState == CombatState.HURT) {
+            knockbackTimer -= delta;
+
+            // Apply gravity so the player arcs backwards instead of floating linearly
+            velocity.y += Constants.GRAVITY * delta;
+            updatePosition(delta, solidBlocks);
+
+            if (knockbackTimer <= 0) {
+                combatState = CombatState.NONE;
+                velocity.x = 0; // Stop horizontal sliding when control is returned
+            }
+
+            updateAnimation();
+            return; // Skip the rest of the movement logic!
         }
 
         // --- 2. HANDLE DASH STATE (Overrides normal physics) ---
@@ -351,7 +370,7 @@ public class Player {
         return status.isInvincible();
     }
 
-    public boolean takeDamage(int amount) {
+    public boolean takeDamage(int amount, float sourceX) {
         if (status.isInvincible())
             return false;
 
@@ -366,6 +385,20 @@ public class Player {
             kill();
             return true;
         }
+
+        // --- NEW: TRIGGER KNOCKBACK ---
+        combatState = CombatState.HURT;
+        knockbackTimer = Constants.KNOCKBACK_DURATION;
+
+        // Determine knockback direction (away from source)
+        float knockbackDir = (position.x < sourceX) ? -1f : 1f;
+
+        velocity.x = Constants.KNOCKBACK_SPEED_X * knockbackDir;
+        velocity.y = Constants.KNOCKBACK_SPEED_Y; // Slight pop into the air
+
+        // Ensure they are treated as airborne
+        status.setOnGround(false);
+        movementState = MovementState.FALL;
 
         return false;
     }
@@ -478,7 +511,7 @@ public class Player {
     public void applyCheat(GameCheat cheat) {
         switch (cheat) {
             case HEAL -> vitals.heal(1);
-            case TAKE_DAMAGE -> takeDamage(1);
+            case TAKE_DAMAGE -> takeDamage(1, position.x + 10);
             case FILL_SOULS -> vitals.addSouls(Constants.MAX_PLAYER_SOULS);
             case GOD_MODE -> status.toggleGodMode();
             case SPECTATOR_MODE -> {

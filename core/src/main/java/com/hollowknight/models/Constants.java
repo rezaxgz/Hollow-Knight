@@ -9,6 +9,7 @@ public class Constants {
 
     // Map
     public static final int HAZARD_DAMAGE = 1;
+
     // Player
     public static final float GRAVITY = -1000f;
     public static final float PLAYER_MOVE_SPEED = 500f;
@@ -26,6 +27,9 @@ public class Constants {
     public static final float SLASH_TIME = 0.5f;
     public static final float SLASH_COOLDOWN = 3f;
     public static final int PLAYER_SLASH_DAMAGE = 15;
+    public static final float KNOCKBACK_DURATION = 0.2f; // How long the player loses control
+    public static final float KNOCKBACK_SPEED_X = 500f; // Horizontal push force
+    public static final float KNOCKBACK_SPEED_Y = 430f; // Vertical pop-up force
 
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;
