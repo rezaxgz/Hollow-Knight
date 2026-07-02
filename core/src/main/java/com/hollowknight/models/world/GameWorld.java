@@ -23,7 +23,7 @@ import com.hollowknight.models.settings.GameCheat;
 public class GameWorld {
     private String worldName = "new world";
     public TiledMap map;
-    public Player player = new Player();
+    public Player player;
     private List<Rectangle> solidBlocks = new ArrayList<>();
     private List<Hazard> hazards = new ArrayList<>();
 

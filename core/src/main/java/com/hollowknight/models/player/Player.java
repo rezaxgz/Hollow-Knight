@@ -12,6 +12,7 @@ import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
 
 public class Player {
+    public Vector2 respawnPosition;
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
 
@@ -32,12 +33,9 @@ public class Player {
 
     private PlayerVitals vitals = new PlayerVitals();
 
-    public Player() {
-
-    }
-
     public Player(Vector2 position) {
-        this.position = position;
+        this.position = new Vector2(position);
+        this.respawnPosition = new Vector2(position);
     }
 
     public void update(float delta, List<Rectangle> solidBlocks) {
@@ -58,6 +56,13 @@ public class Player {
 
         if (attackCooldown > 0) {
             attackCooldown -= delta;
+        }
+
+        if (combatState == CombatState.DEAD && animation == PlayerAnimation.DEAD
+                && animationTime >= Constants.PLAYER_DEATH_TIME) {
+            // death timer over; respawn
+            respawn();
+            return;
         }
 
         status.update(delta);
@@ -455,6 +460,15 @@ public class Player {
 
             return;
         }
+    }
+
+    private void respawn() {
+        position = new Vector2(respawnPosition);
+        velocity = new Vector2();
+        vitals.heal(Constants.MAX_PLAYER_HEALTH);
+        combatState = CombatState.NONE;
+        status.setFacingDirection(Constants.RIGHT_DIRECTION);
+        status.setMovingHorizontally(false);
     }
 
     public PlayerVitals getVitals() {

@@ -16,6 +16,8 @@ public class Constants {
     public static final float INVINCIBILITY_TIME = 1.0f;
     public static final int PLAYER_HITBOX_WIDTH = 65;
     public static final int PLAYER_HITBOX_HEIGHT = 130;
+    public static final float PLAYER_DEATH_ANIMATION_TIME = 1.44f;
+    public static final float PLAYER_DEATH_TIME = 3;
 
     // Player Combat
     public static final float SLASH_TIME = 0.5f;
