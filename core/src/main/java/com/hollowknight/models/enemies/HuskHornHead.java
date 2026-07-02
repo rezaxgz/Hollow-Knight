@@ -33,6 +33,7 @@ public class HuskHornHead extends Enemy {
         super(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
         changeState(State.WALK);
+        this.hp = Constants.HORNHEAD_HP;
     }
 
     public static HuskHornHead newEnemy(Vector2 pos) {
