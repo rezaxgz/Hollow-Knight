@@ -4,6 +4,14 @@
         "."
     ],
     "fileStates": {
+        "FG_platform.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "FK_break__0000_wall_default.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "Forgotten Crossroads.tmx": {
             "scale": 3,
             "selectedLayer": 0,
@@ -17,42 +25,66 @@
             "scaleInEditor": 1
         },
         "cd_floor_02.tsx": {
-            "scaleInDock": 11,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "cd_floor_highway_06.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 3,
             "scaleInEditor": 1
+        },
+        "cd_tollbooth_lamp.tsx": {
+            "scaleInDock": 1
         },
         "floor corner.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 4
         },
         "floor.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
         "forgotten_crossroads.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 3,
+            "expandedGroupLayers": [
+                12,
+                11,
+                8
+            ],
+            "scale": 0.25,
+            "selectedLayer": 10,
             "viewCenter": {
-                "x": 1346,
-                "y": 15981
+                "x": 1418,
+                "y": 3878
             }
         },
-        "pit.tsx": {
+        "highway_FG_0007_Layer-78.tsx": {
+            "scaleInDock": 1
+        },
+        "pillar_cell.tsx": {
             "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "pit.tsx": {
+            "scaleInDock": 4,
             "scaleInEditor": 2
         },
         "plat_lifts_0002_a.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "ruins_resting_extra_bits_0040_Layer-142.tsx": {
-            "dynamicWrapping": false
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "spikes0003.tsx": {
+            "scaleInDock": 1
         },
         "start wall.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "statue_06.tsx": {
+            "scaleInDock": 1
         },
         "untitled.tmx": {
             "scale": 1,
@@ -62,9 +94,22 @@
                 "y": 1236.5
             }
         },
+        "vil_BG_04.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_lamp_02.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_sign_01.tsx": {
+            "scaleInDock": 1
+        },
         "wall1.tsx": {
-            "scaleInDock": 4,
+            "scaleInDock": 11,
             "scaleInEditor": 1
+        },
+        "well_extension_0001_1.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1.5
         }
     },
     "last.imagePath": "G:/code/Hollow Knight/assets/sprites/Architecture & Environment",
@@ -76,25 +121,28 @@
     "openFiles": [
         "wall1.tsx",
         "forgotten_crossroads.tmx",
-        "pit.tsx",
-        "cd_floor_highway_06.tsx",
-        "cd_floor_02.tsx"
+        "cd_floor_02.tsx",
+        "ruins_resting_extra_bits_0040_Layer-142.tsx",
+        "FK_break__0000_wall_default.tsx",
+        "well_extension_0001_1.tsx",
+        "FG_platform.tsx",
+        "pillar_cell.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "wall1.tsx",
+        "pillar_cell.tsx",
+        "FG_platform.tsx",
+        "well_extension_0001_1.tsx",
+        "FK_break__0000_wall_default.tsx",
+        "ruins_resting_extra_bits_0040_Layer-142.tsx",
+        "cd_floor_02.tsx",
+        "forgotten_crossroads.tmx",
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx",
         "cd_floor_highway_06.tsx",
         "pit.tsx",
-        "plat_lifts_0002_a.tsx",
-        "wall1.tsx",
-        "cd_floor_02.tsx",
-        "forgotten_crossroads.tmx",
-        "untitled.tmx",
-        "start wall.tsx",
-        "floor.tsx",
-        "floor corner.tsx",
-        "Forgotten Crossroads.tmx"
+        "plat_lifts_0002_a.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",

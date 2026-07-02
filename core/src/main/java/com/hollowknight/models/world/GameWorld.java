@@ -47,7 +47,8 @@ public class GameWorld {
             if (!(obj instanceof RectangleMapObject))
                 continue;
             Rectangle rect = ((RectangleMapObject) (obj)).getRectangle();
-            boolean isInstantDeath = (boolean) obj.getProperties().get("isInstantDeath");
+            Object death = obj.getProperties().get("isInstantDeath");
+            boolean isInstantDeath = death == null ? false : (boolean) death;
             hazards.add(new Hazard(rect, isInstantDeath));
         }
 
