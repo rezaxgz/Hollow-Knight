@@ -162,7 +162,8 @@ public class GameRenderer {
         // Render enemy hitboxes
         shapeRenderer.setColor(Color.RED);
         renderEnemyHitBoxes(shapeRenderer);
-
+        shapeRenderer.setColor(Color.ORANGE);
+        renderPlayerAttackHitboxe(shapeRenderer);
         shapeRenderer.end();
 
         // 6. Update and Draw Stage (UI)
@@ -225,4 +226,10 @@ public class GameRenderer {
         }
     }
 
+    private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
+        Rectangle bounds = world.player.getAttackHitbox();
+        if (bounds == null)
+            return;
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
 }

@@ -41,11 +41,11 @@ public class GroundEnemy extends Enemy {
 
     @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
-        if (isDead)
-            return;
-
         // --- 1. HANDLE TIMERS ---
         animationTime += delta;
+
+        if (isDead)
+            return;
 
         // --- 2. HANDLE TURNING STATE ---
         if (isTurning) {

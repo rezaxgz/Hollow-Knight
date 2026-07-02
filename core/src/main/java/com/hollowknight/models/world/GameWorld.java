@@ -1,7 +1,9 @@
 package com.hollowknight.models.world;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
@@ -18,6 +20,7 @@ import com.hollowknight.models.enemies.GroundEnemyType;
 import com.hollowknight.models.enemies.HuskHornHead;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.player.Player;
+import com.hollowknight.models.player.states.CombatState;
 import com.hollowknight.models.settings.GameCheat;
 
 public class GameWorld {
@@ -28,6 +31,8 @@ public class GameWorld {
     private List<Hazard> hazards = new ArrayList<>();
 
     public List<Enemy> enemies = new ArrayList<>();
+
+    private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -81,10 +86,11 @@ public class GameWorld {
         updateEnemies(delta);
 
         checkEnemyCollisions();
+
+        checkPlayerAttacks();
     }
 
     private void updateEnemies(float delta) {
-        // Update enemies
         for (Enemy enemy : enemies) {
             float dist = player.position.dst(enemy.position);
             if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
@@ -140,6 +146,41 @@ public class GameWorld {
             if (playerBounds.overlaps(enemy.getBounds())) {
                 player.takeDamage();
                 break; // Exit loop after taking damage once per frame
+            }
+        }
+    }
+
+    private void checkPlayerAttacks() {
+        // If the player is not attacking, clear the tracking set so they can hit
+        // enemies again next swing
+        if (player.combatState != CombatState.ATTACK) {
+            enemiesHitThisAttack.clear();
+            return;
+        }
+
+        Rectangle attackBounds = player.getAttackHitbox();
+        if (attackBounds == null)
+            return;
+
+        for (Enemy enemy : enemies) {
+            if (enemy.isDead)
+                continue;
+
+            // Ignore enemies that are too far away to matter
+            if (player.position.dst(enemy.position) > Constants.ENEMY_ACTIVE_RADIUS)
+                continue;
+
+            if (attackBounds.overlaps(enemy.getBounds())) {
+                // Ensure we only hit this enemy ONCE per swing
+                if (!enemiesHitThisAttack.contains(enemy)) {
+                    enemy.kill(); // Or enemy.takeDamage(1) once you implement enemy health
+                    enemiesHitThisAttack.add(enemy);
+
+                    // TODO: The classic Hollow Knight "Pogo" bounce!
+                    // if (player.animation.name().contains("DOWN_SLASH")) {
+                    // player.velocity.y = Constants.JUMP_SPEED;
+                    // }
+                }
             }
         }
     }

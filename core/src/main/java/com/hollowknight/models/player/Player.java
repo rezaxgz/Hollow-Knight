@@ -492,4 +492,29 @@ public class Player {
             }
         }
     }
+
+    public Rectangle getAttackHitbox() {
+        if (combatState != CombatState.ATTACK)
+            return null;
+
+        float width = Constants.PLAYER_HITBOX_WIDTH;
+        float height = Constants.PLAYER_HITBOX_HEIGHT;
+
+        // Define the reach of the slash
+        float attackRangeX = width * 1.5f;
+        float attackRangeY = height * 1.2f;
+
+        if (currentAttackAnimation == PlayerAnimation.UP_SLASH) {
+            return new Rectangle(position.x, position.y + height, width, attackRangeY);
+        } else if (currentAttackAnimation == PlayerAnimation.DOWN_SLASH) {
+            return new Rectangle(position.x, position.y - attackRangeY, width, attackRangeY);
+        } else {
+            // Horizontal slash
+            if (status.getFacingDirection() == Constants.RIGHT_DIRECTION) {
+                return new Rectangle(position.x + width, position.y, attackRangeX, height);
+            } else {
+                return new Rectangle(position.x - attackRangeX, position.y, attackRangeX, height);
+            }
+        }
+    }
 }
