@@ -144,7 +144,6 @@ public class GameWorld {
             }
 
             if (playerBounds.overlaps(enemy.getBounds())) {
-                System.out.println(enemy.getCollisionDamage());
                 player.takeDamage(enemy.getCollisionDamage(), enemy.position.x);
                 break; // Exit loop after taking damage once per frame
             }
