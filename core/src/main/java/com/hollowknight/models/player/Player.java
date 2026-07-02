@@ -216,6 +216,10 @@ public class Player {
         }
     }
 
+    public boolean shouldFlash() {
+        return status.shouldFlash();
+    }
+
     public void moveVertically(int dir) {
         if (!status.isSpectatorMode())
             return;

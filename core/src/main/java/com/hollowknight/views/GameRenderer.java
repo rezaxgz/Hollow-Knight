@@ -215,6 +215,9 @@ public class GameRenderer {
     }
 
     private void renderPlayer(SpriteBatch batch) {
+        if (world.player.shouldFlash())
+            return;
+
         PlayerAnimation currentAnimation = world.player.animation;
         Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);

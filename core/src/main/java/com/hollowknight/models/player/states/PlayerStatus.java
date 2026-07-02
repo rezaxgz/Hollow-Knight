@@ -132,6 +132,19 @@ public class PlayerStatus {
         }
     }
 
+    public boolean shouldFlash() {
+        // Only flash if the player is actually in their post-damage invincibility
+        // window
+        if (invincible && invincibilityTimer > 0) {
+            // 0.2f is the total cycle time. < 0.1f means it will be invisible 50% of the
+            // time.
+            // You can lower these numbers (e.g., 0.1f and 0.05f) for a faster strobe
+            // effect!
+            return (invincibilityTimer % 0.2f) < 0.1f;
+        }
+        return false;
+    }
+
     // -------------------------------------------------
     // Utility
     // -------------------------------------------------
