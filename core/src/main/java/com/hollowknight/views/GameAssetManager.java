@@ -26,7 +26,7 @@ public class GameAssetManager {
 
     public static final Texture[] soulsTextures = new Texture[19];
 
-    public static TextureRegion laserTexture;
+    public static TextureRegion[] laserTexture = new TextureRegion[4];
     public static TextureRegion laserStartTexture;
 
     public static void init() {
@@ -50,8 +50,11 @@ public class GameAssetManager {
 
     private static void loadLaserTexture() {
         Texture effectsAtlas = new Texture("animation/Crystallized/atlas0 #25304.png");
-        laserTexture = new TextureRegion(effectsAtlas, 0, 22, 116, 32);
         laserStartTexture = new TextureRegion(effectsAtlas, 328, 216, 54, 54);
+        laserTexture[0] = new TextureRegion(effectsAtlas, 0, 22, 114, 32);
+        laserTexture[1] = new TextureRegion(effectsAtlas, 119, 24, 114, 32);
+        laserTexture[2] = new TextureRegion(effectsAtlas, 119, 164, 114, 25);
+        laserTexture[3] = new TextureRegion(effectsAtlas, 210, 105, 114, 28);
     }
 
     private static void loadPlayerEffectAnimations() {

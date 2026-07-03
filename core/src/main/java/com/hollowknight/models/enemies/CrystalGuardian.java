@@ -30,7 +30,7 @@ public class CrystalGuardian extends Enemy {
     private static final float LASER_DURATION = 1.0f; // How long the laser stays active AFTER the animation
     private static final float LASER_HEIGHT = 32f;
     private static final float LASER_MAX_RANGE = 2000f;
-    private static final float LASER_X_OFFSET = 10f;
+    private static final float LASER_X_OFFSET = 15f;
 
     private CrystalGuardian(Vector2 pos) {
         super(pos);
@@ -232,8 +232,8 @@ public class CrystalGuardian extends Enemy {
 
     public float getLaserCircleStartX() {
         return (facingDirection == Constants.RIGHT_DIRECTION)
-                ? getLaserStartX() + 20
-                : getLaserStartX() - 20;
+                ? getLaserStartX() - 12
+                : getLaserStartX() - 24;
     }
 
     private float getLaserStartY() {
@@ -242,6 +242,21 @@ public class CrystalGuardian extends Enemy {
 
     public float getLaserCircleStartY() {
         return getLaserStartY() - 8;
+    }
+
+    public int getLaserAnimationIndex() {
+        float period = 0.25f;
+        float x = stateTimer % period;
+        if (x < period / 4f) {
+            return 0;
+        }
+        if (x < period / 2f) {
+            return 1;
+        }
+        if (x < 3f * period / 4f) {
+            return 2;
+        }
+        return 3;
     }
 
     /**

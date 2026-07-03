@@ -234,7 +234,7 @@ public class GameRenderer {
                     batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
 
                     // Draw the laser stretched over the calculated bounds
-                    batch.draw(GameAssetManager.laserTexture,
+                    batch.draw(GameAssetManager.laserTexture[guardian.getLaserAnimationIndex()],
                             laserBounds.x,
                             laserBounds.y,
                             laserBounds.width,
