@@ -4,13 +4,22 @@
         "."
     ],
     "fileStates": {
+        "2953-0@2x.tsx": {
+            "scaleInDock": 0.5
+        },
+        "BG_egg_07_0000_Layer-1.tsx": {
+            "scaleInDock": 1
+        },
         "FG_platform.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "FK_break__0000_wall_default.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 8,
             "scaleInEditor": 1
+        },
+        "FK_break__0006_wall_metal.tsx": {
+            "scaleInDock": 1
         },
         "Forgotten Crossroads.tmx": {
             "scale": 3,
@@ -23,6 +32,9 @@
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx": {
             "scaleInDock": 0.5,
             "scaleInEditor": 1
+        },
+        "atlas0 #0330050.tsx": {
+            "scaleInDock": 1
         },
         "cd_floor_02.tsx": {
             "scaleInDock": 2,
@@ -43,23 +55,60 @@
             "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
+        "floor_layered_0002_02_green.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_layered_0003_01_green.tsx": {
+            "scaleInDock": 1
+        },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
                 12,
-                11,
-                8
+                8,
+                11
             ],
-            "scale": 0.25,
-            "selectedLayer": 10,
+            "scale": 0.5,
+            "selectedLayer": 20,
             "viewCenter": {
-                "x": 1418,
-                "y": 3878
+                "x": 4280,
+                "y": 3565
             }
         },
+        "fung_new_0123_Layer-244.tsx": {
+            "scaleInDock": 0.75
+        },
+        "fung_new_0125_Layer-242.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0126_03.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0127_02.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0128_01.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0129_Layer-240.tsx": {
+            "scaleInDock": 1
+        },
         "fung_new_0131_Layer-238.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "fung_new_0132_Layer-237.tsx": {
+            "scaleInDock": 1
+        },
+        "fungus_temple_backwall_small.tsx": {
+            "scaleInDock": 1
+        },
         "highway_FG_0007_Layer-78.tsx": {
+            "scaleInDock": 1
+        },
+        "lamp_cave_01.tsx": {
+            "scaleInDock": 1
+        },
+        "nailsmith_light.tsx": {
             "scaleInDock": 1
         },
         "pillar_cell.tsx": {
@@ -70,9 +119,21 @@
             "scaleInDock": 4,
             "scaleInEditor": 2
         },
+        "plat_float_03.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_04.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_05.tsx": {
+            "scaleInDock": 1
+        },
         "plat_lifts_0002_a.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "pole_04.tsx": {
+            "scaleInDock": 1
         },
         "ruins_resting_extra_bits_0040_Layer-142.tsx": {
             "dynamicWrapping": false,
@@ -80,11 +141,17 @@
             "scaleInEditor": 5.5
         },
         "spikes0003.tsx": {
+            "scaleInDock": 1.5
+        },
+        "spines0003.tsx": {
             "scaleInDock": 1
         },
         "start wall.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "statue_01.tsx": {
+            "scaleInDock": 1
         },
         "statue_06.tsx": {
             "scaleInDock": 1
@@ -100,6 +167,9 @@
         "vil_BG_04.tsx": {
             "scaleInDock": 1
         },
+        "vil_fence_02.tsx": {
+            "scaleInDock": 3
+        },
         "vil_lamp_02.tsx": {
             "scaleInDock": 1
         },
@@ -110,11 +180,11 @@
             "scaleInDock": 1
         },
         "wall1.tsx": {
-            "scaleInDock": 11,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "well_extension_0001_1.tsx": {
-            "scaleInDock": 2,
+            "scaleInDock": 0.33,
             "scaleInEditor": 1.5
         }
     },
@@ -125,18 +195,12 @@
     "map.tileWidth": 8,
     "map.width": 300,
     "openFiles": [
-        "wall1.tsx",
-        "forgotten_crossroads.tmx",
-        "cd_floor_02.tsx",
-        "ruins_resting_extra_bits_0040_Layer-142.tsx",
-        "FK_break__0000_wall_default.tsx",
-        "well_extension_0001_1.tsx",
-        "FG_platform.tsx",
-        "pillar_cell.tsx"
+        "forgotten_crossroads.tmx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "forgotten_crossroads.tmx",
         "wall1.tsx",
         "fung_new_0131_Layer-238.tsx",
         "pillar_cell.tsx",
@@ -145,7 +209,6 @@
         "FK_break__0000_wall_default.tsx",
         "ruins_resting_extra_bits_0040_Layer-142.tsx",
         "cd_floor_02.tsx",
-        "forgotten_crossroads.tmx",
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx",
         "cd_floor_highway_06.tsx",
         "pit.tsx"
