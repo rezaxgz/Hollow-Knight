@@ -68,6 +68,12 @@ public class Constants {
     public static final float HORNHEAD_WALK_TIMER = 10f;
     public static final int HORNHEAD_HP = 50;
 
+    // Mossfly
+    public static final int MOSSFLY_HP = 30;
+    public static final int MOSSFLY_SPEED = 180;
+    public static final int MOSSFLY_HITBOX_WIDTH = 100;
+    public static final int MOSSFLY_HITBOX_HEIGHT = 50;
+
     // debug
     public static int a = 0;
     public static int b = 0;

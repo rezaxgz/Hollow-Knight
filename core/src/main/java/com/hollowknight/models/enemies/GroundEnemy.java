@@ -98,9 +98,28 @@ public class GroundEnemy extends Enemy {
         moveY(velocity.y * delta, solids);
 
         // --- 5. UPDATE ENEMY STATES ---
-        if (hitWall && !isTurning && isOnGround) {
+        if ((hitWall || isEdgeAhead(solids)) && !isTurning && isOnGround) {
             startTurn();
         }
+    }
+
+    private boolean isEdgeAhead(List<Rectangle> solids) {
+        // Only check for edges if we are actually standing on the ground
+        if (!isOnGround)
+            return false;
+
+        // Project a point slightly ahead of the enemy and slightly below the platform
+        // floor
+        float width = getBounds().width;
+        float checkX = position.x + (facingDirection == 1 ? width + 5 : -5);
+        float checkY = position.y - 5;
+
+        for (Rectangle solid : solids) {
+            if (solid.contains(checkX, checkY)) {
+                return false; // Found solid ground ahead, it is NOT an edge
+            }
+        }
+        return true; // No ground found ahead, it's an edge!
     }
 
     private void startTurn() {

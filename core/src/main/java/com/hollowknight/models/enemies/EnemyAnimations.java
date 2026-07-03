@@ -13,6 +13,12 @@ public enum EnemyAnimations {
     MOSSCREEP_TURN("animation/Mosscreep/Turn.png", 3, Constants.GROUND_ENEMY_TURN_TIMER, AnimationType.ONESHOT),
     MOSSCREEP_DEATH("animation/Mosscreep/Death.png", 6, 1f, AnimationType.ONESHOT),
 
+    // Mossfly
+    MOSSFLY_SHAKE("animation/Mossfly/Shake.png", 3, 1f, AnimationType.LOOP_PINGPONG),
+    MOSSFLY_APPEAR("animation/Mossfly/Appear.png", 6, 2f, AnimationType.ONESHOT),
+    MOSSFLY_FLY("animation/Mossfly/Fly.png", 4, 1.5f, AnimationType.LOOP_PINGPONG),
+    MOSSFLY_DEATH("animation/Mossfly/Death.png", 6, 2f, AnimationType.ONESHOT),
+
     // Husk HornHead
     HORNHEAD_WALK("animation/Husk_Hornhead/Walk.png", 7, 1f, AnimationType.LOOP_PINGPONG),
     HORNHEAD_ATTACK_START("animation/Husk_Hornhead/Attack Anticipate.png", 5, 1f, AnimationType.ONESHOT),

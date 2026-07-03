@@ -15,9 +15,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enemies.Enemy;
-import com.hollowknight.models.enemies.GroundEnemy;
-import com.hollowknight.models.enemies.GroundEnemyType;
-import com.hollowknight.models.enemies.HuskHornHead;
+import com.hollowknight.models.enemies.EnemyFactory;
+import com.hollowknight.models.enemies.EnemyType;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.player.Player;
 import com.hollowknight.models.player.states.CombatState;
@@ -57,24 +56,16 @@ public class GameWorld {
             hazards.add(new Hazard(rect, isInstantDeath));
         }
 
-        MapLayer groundEnemySpawnPoints = map.getLayers().get("GroundEnemySpawnPoints");
+        MapLayer groundEnemySpawnPoints = map.getLayers().get("EnemySpawnPoints");
         for (MapObject obj : groundEnemySpawnPoints.getObjects()) {
             if (!(obj instanceof PointMapObject))
                 continue;
             Vector2 point = ((PointMapObject) obj).getPoint();
-            int type = (int) obj.getProperties().get("type");
-            GroundEnemyType enemytype = GroundEnemyType.fromInt(type);
+            Object typeObj = obj.getProperties().get("type");
+            int type = typeObj != null ? (int) typeObj : 0;
+            EnemyType enemyType = EnemyType.fromInt(type);
 
-            enemies.add(GroundEnemy.newEnemy(enemytype, point));
-        }
-
-        MapLayer hornheadSpawnPoints = map.getLayers().get("HornheadSpawnPoints");
-        for (MapObject obj : hornheadSpawnPoints.getObjects()) {
-            if (!(obj instanceof PointMapObject))
-                continue;
-            Vector2 point = ((PointMapObject) obj).getPoint();
-
-            enemies.add(HuskHornHead.newEnemy(point));
+            enemies.add(EnemyFactory.newEnemy(point, enemyType));
         }
 
     }
