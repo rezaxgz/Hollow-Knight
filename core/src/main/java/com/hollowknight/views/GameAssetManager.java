@@ -26,6 +26,9 @@ public class GameAssetManager {
 
     public static final Texture[] soulsTextures = new Texture[19];
 
+    public static TextureRegion laserTexture;
+    public static TextureRegion laserStartTexture;
+
     public static void init() {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
@@ -42,6 +45,13 @@ public class GameAssetManager {
         loadGroundEnemyAnimations();
 
         loadPlayerEffectAnimations();
+        loadLaserTexture();
+    }
+
+    private static void loadLaserTexture() {
+        Texture effectsAtlas = new Texture("animation/Crystallized/atlas0 #25304.png");
+        laserTexture = new TextureRegion(effectsAtlas, 0, 22, 116, 32);
+        laserStartTexture = new TextureRegion(effectsAtlas, 328, 216, 54, 54);
     }
 
     private static void loadPlayerEffectAnimations() {

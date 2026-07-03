@@ -3,6 +3,7 @@ package com.hollowknight.views;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.world.GameWorld;
@@ -129,6 +131,7 @@ public class GameRenderer {
         // 2 Render enemies and player
         renderEnemies(batch);
         renderPlayer(batch);
+        renderLasers(batch);
 
         batch.end();
 
@@ -193,6 +196,12 @@ public class GameRenderer {
 
     private void renderEnemyHitBoxes(ShapeRenderer shapeRenderer) {
         for (Enemy enemy : world.enemies) {
+            if (enemy instanceof CrystalGuardian) {
+                Rectangle laserBounds = ((CrystalGuardian) enemy).getActiveLaserBounds(world.solidBlocks);
+                if (laserBounds != null) {
+                    shapeRenderer.rect(laserBounds.x, laserBounds.y, laserBounds.width, laserBounds.height);
+                }
+            }
 
             Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
 
@@ -211,6 +220,32 @@ public class GameRenderer {
 
             Rectangle bounds = enemy.getBounds();
             shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
+    }
+
+    private void renderLasers(SpriteBatch batch) {
+        for (Enemy enemy : world.enemies) {
+            if (enemy instanceof CrystalGuardian) {
+                CrystalGuardian guardian = (CrystalGuardian) enemy;
+                Rectangle laserBounds = guardian.getActiveLaserBounds(world.solidBlocks);
+
+                if (laserBounds != null) {
+                    // Enable Additive Blending: Black becomes transparent, colors glow!
+                    batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+
+                    // Draw the laser stretched over the calculated bounds
+                    batch.draw(GameAssetManager.laserTexture,
+                            laserBounds.x,
+                            laserBounds.y,
+                            laserBounds.width,
+                            laserBounds.height);
+
+                    // Reset blending back to normal so the rest of the game renders correctly
+                    batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                    batch.draw(GameAssetManager.laserStartTexture, guardian.getLaserCircleStartX(),
+                            guardian.getLaserCircleStartY());
+                }
+            }
         }
     }
 

@@ -27,7 +27,7 @@ public class GameWorld {
     private String worldName = "new world";
     public TiledMap map;
     public Player player;
-    private List<Rectangle> solidBlocks = new ArrayList<>();
+    public List<Rectangle> solidBlocks = new ArrayList<>();
     private List<Hazard> hazards = new ArrayList<>();
 
     public List<Enemy> enemies = new ArrayList<>();

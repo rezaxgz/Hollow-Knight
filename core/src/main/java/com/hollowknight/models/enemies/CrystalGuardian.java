@@ -28,8 +28,9 @@ public class CrystalGuardian extends Enemy {
     private static final float AGGRO_RANGE = 600f; // Sight distance
     private static final float RUN_DURATION = 3.0f; // How long he runs before stopping
     private static final float LASER_DURATION = 1.0f; // How long the laser stays active AFTER the animation
-    private static final float LASER_HEIGHT = 20f;
-    private static final float LASER_MAX_RANGE = 1200f;
+    private static final float LASER_HEIGHT = 32f;
+    private static final float LASER_MAX_RANGE = 2000f;
+    private static final float LASER_X_OFFSET = 10f;
 
     private CrystalGuardian(Vector2 pos) {
         super(pos);
@@ -223,6 +224,26 @@ public class CrystalGuardian extends Enemy {
         return false;
     }
 
+    private float getLaserStartX() {
+        return (facingDirection == Constants.RIGHT_DIRECTION)
+                ? position.x + Constants.GUARDIAN_HITBOX_WIDTH - LASER_X_OFFSET
+                : position.x + LASER_X_OFFSET;
+    }
+
+    public float getLaserCircleStartX() {
+        return (facingDirection == Constants.RIGHT_DIRECTION)
+                ? getLaserStartX() + 20
+                : getLaserStartX() - 20;
+    }
+
+    private float getLaserStartY() {
+        return position.y + (Constants.GUARDIAN_HITBOX_HEIGHT / 2f) - (LASER_HEIGHT / 2f) + 5;
+    }
+
+    public float getLaserCircleStartY() {
+        return getLaserStartY() - 8;
+    }
+
     /**
      * Calculates how far the laser travels before hitting a wall.
      * GameWorld will call this to check if the player overlaps it.
@@ -233,11 +254,8 @@ public class CrystalGuardian extends Enemy {
             return null;
         }
 
-        float startX = (facingDirection == Constants.RIGHT_DIRECTION) ? position.x + Constants.GUARDIAN_HITBOX_WIDTH
-                : position.x;
-
-        // Shoot from roughly the center-height of the boss
-        float startY = position.y + (Constants.GUARDIAN_HITBOX_HEIGHT / 2f) - (LASER_HEIGHT / 2f);
+        float startX = getLaserStartX();
+        float startY = getLaserStartY();
 
         float endX = startX + (facingDirection * LASER_MAX_RANGE);
 
