@@ -13,6 +13,8 @@ public class EnemyFactory {
                 return GroundEnemy.newEnemy(GroundEnemyType.MOSSCREEP, point);
             case MOSSFLY:
                 return Mossfly.newEnemy(point);
+            case CRYSTAL_GAURDIAN:
+                return CrystalGuardian.newEnemy(point);
             default:
                 return null;
         }

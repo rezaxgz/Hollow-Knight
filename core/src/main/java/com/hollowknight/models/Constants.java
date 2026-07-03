@@ -74,6 +74,12 @@ public class Constants {
     public static final int MOSSFLY_HITBOX_WIDTH = 100;
     public static final int MOSSFLY_HITBOX_HEIGHT = 50;
 
+    // Crystal Gaurdian
+    public static final int GUARDIAN_HP = 60;
+    public static final int GUARDIAN_SPEED = 550;
+    public static final int GUARDIAN_HITBOX_HEIGHT = 200;
+    public static final int GUARDIAN_HITBOX_WIDTH = 100;
+
     // debug
     public static int a = 0;
     public static int b = 0;

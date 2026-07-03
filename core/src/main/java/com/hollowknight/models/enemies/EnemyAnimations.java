@@ -26,6 +26,14 @@ public enum EnemyAnimations {
     HORNHEAD_DEATH("animation/Husk_Hornhead/Death Land.png", 8, 2f, AnimationType.ONESHOT),
     HORNHEAD_IDLE("animation/Husk_Hornhead/Idle.png", 6, 1f, AnimationType.LOOP),
     HORNHEAD_TURN("animation/Husk_Hornhead/Turn.png", 2, Constants.HORNHEAD_TURN_TIMER, AnimationType.ONESHOT),
+
+    // Crystal Gaurdian
+    CRYSTALLIZED_IDLE("animation/Crystallized/Idle.png", 5, 1.5f, AnimationType.LOOP_PINGPONG),
+    CRYSTALLIZED_SHOOT("animation/Crystallized/Shoot.png", 7, 1.5f, AnimationType.ONESHOT),
+    CRYSTALLIZED_RUN("animation/Crystallized/Run.png", 6, 1.5f, AnimationType.LOOP_PINGPONG),
+    CRYSTALLIZED_TURN("animation/Crystallized/Turn.png", 3, 0.1f, AnimationType.ONESHOT),
+    CRYSTALLIZED_DEATH("animation/Crystallized/Death.png", 6, 1.5f, AnimationType.ONESHOT),
+
     ;
 
     public final String path;

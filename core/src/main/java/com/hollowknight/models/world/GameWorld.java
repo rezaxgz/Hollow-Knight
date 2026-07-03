@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyFactory;
 import com.hollowknight.models.enemies.EnemyType;
@@ -76,9 +77,34 @@ public class GameWorld {
 
         updateEnemies(delta);
 
+        checkLaserCollisions();
         checkEnemyCollisions();
 
         checkPlayerAttacks();
+    }
+
+    private void checkLaserCollisions() {
+        // If the player is already dead or invincible, no need to check collisions
+        if (player.getVitals().isDead() || player.isInvinvible()) {
+            return;
+        }
+
+        Rectangle playerBounds = player.getBounds();
+
+        for (Enemy enemy : enemies) {
+            // Only the Crystal Guardian has a laser
+            if (enemy instanceof CrystalGuardian) {
+                CrystalGuardian guardian = (CrystalGuardian) enemy;
+                Rectangle laserBounds = guardian.getActiveLaserBounds(solidBlocks);
+
+                // If laserBounds is not null, the laser is currently firing
+                if (laserBounds != null && playerBounds.overlaps(laserBounds)) {
+                    // Taking damage from laser (You can adjust damage value or use a constant)
+                    player.takeDamage(2, guardian.position.x);
+                    break; // Exit loop after taking damage once per frame
+                }
+            }
+        }
     }
 
     private void updateEnemies(float delta) {

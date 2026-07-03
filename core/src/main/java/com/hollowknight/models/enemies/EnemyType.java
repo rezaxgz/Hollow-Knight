@@ -9,7 +9,8 @@ public enum EnemyType {
     MOSSFLY,
 
     // Special Enemies
-    HUSK_HORNHEAD;
+    HUSK_HORNHEAD,
+    CRYSTAL_GAURDIAN;
 
     public static EnemyType fromInt(int n) {
         return values()[Math.floorMod(n, values().length)];
