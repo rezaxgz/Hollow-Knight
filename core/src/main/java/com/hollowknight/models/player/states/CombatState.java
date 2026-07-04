@@ -6,5 +6,6 @@ public enum CombatState {
     FOCUS,
     CAST,
     HURT,
-    DEAD
+    DEAD,
+    SCREAM
 }

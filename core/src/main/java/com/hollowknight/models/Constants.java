@@ -40,6 +40,13 @@ public class Constants {
     public static final int SUCCESSFUL_ATTACK_SOUL_BONUS = 11;
     public static float SOULS_CHANGE_TIMER = 1f;
 
+    // Player Abilities
+    public static final float SOUL_SCREAM_TIME = 1f;
+    public static final int ABILITY_COST = MAX_PLAYER_SOULS / 3;
+    public static final int SOUL_SCREAM_TICK_DAMAGE = 10;
+    public static final int SOUL_SCREAM_HITBOX_HEIGHT = 260;
+    public static final int SOUL_SCREAM_HITBOX_WIDTH = 260;
+
     // General Enemy Logic
     public static final float ENEMY_ACTIVE_RADIUS = 1500f;
     public static final float ENEMY_RESPAWN_RADIUS = 3000f;

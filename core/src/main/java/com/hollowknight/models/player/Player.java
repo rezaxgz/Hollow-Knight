@@ -28,6 +28,10 @@ public class Player {
     private float attackCooldown = 0f;
     private float knockbackTimer = 0.0f;
     public float animationTime = 0;
+    private float screamTimer = 0.0f;
+    private int screamTicksApplied = 0;
+
+    public boolean triggerScreamDamage = false;
 
     // States & Vitals
     public PlayerAnimation animation = PlayerAnimation.IDLE;
@@ -68,6 +72,8 @@ public class Player {
         if (handleDashState(delta, solidBlocks))
             return;
         if (handleFocusState(delta, solidBlocks))
+            return;
+        if (handleScreamState(delta, solidBlocks))
             return;
 
         // Normal movement & gravity
@@ -196,6 +202,36 @@ public class Player {
         return true;
     }
 
+    private boolean handleScreamState(float delta, List<Rectangle> solidBlocks) {
+        if (combatState != CombatState.SCREAM)
+            return false;
+
+        // 1. "It doesn't move": Lock the player in place
+        velocity.x = 0;
+        velocity.y = 0;
+        status.setMovingHorizontally(false);
+
+        screamTimer -= delta;
+
+        // 2. "Damage is dealt in 3 ticks"
+        float tickInterval = Constants.SOUL_SCREAM_TIME / 3.0f;
+        int expectedTicks = 3 - (int) (screamTimer / tickInterval);
+
+        if (expectedTicks > screamTicksApplied && expectedTicks <= 3) {
+            screamTicksApplied++;
+            triggerScreamDamage = true; // Flips to true for exactly one frame per tick
+        }
+
+        // 3. End Scream
+        if (screamTimer <= 0) {
+            combatState = CombatState.NONE;
+            movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
+        }
+
+        updateAnimation();
+        return true;
+    }
+
     private void applyNormalPhysics(float delta) {
         velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
         velocity.y += Constants.GRAVITY * delta;
@@ -245,6 +281,7 @@ public class Player {
             case FOCUS -> focus();
             case DOWN -> moveVertically(Constants.DOWN_DIRECTION);
             case UP -> moveVertically(Constants.UP_DIRECTION);
+            case SCREAM -> soulScream();
         }
     }
 
@@ -326,6 +363,21 @@ public class Player {
             currentAttackAnimation = PlayerAnimation.DOWN_SLASH;
         } else {
             currentAttackAnimation = Math.random() > 0.5 ? PlayerAnimation.SLASH : PlayerAnimation.SLASH_ALT;
+        }
+    }
+
+    public void soulScream() {
+        // Prevent casting if dead, focusing, or already screaming
+        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS || combatState == CombatState.SCREAM) {
+            return;
+        }
+
+        if (vitals.getSouls() >= Constants.ABILITY_COST) {
+            vitals.addSouls(-Constants.ABILITY_COST);
+            combatState = CombatState.SCREAM;
+            screamTimer = Constants.SOUL_SCREAM_TIME;
+            screamTicksApplied = 0;
+            triggerScreamDamage = false;
         }
     }
 
@@ -479,6 +531,8 @@ public class Player {
             targetAnimation = currentAttackAnimation;
         } else if (combatState == CombatState.HURT) {
             targetAnimation = PlayerAnimation.IDLE_HURT;
+        } else if (combatState == CombatState.SCREAM) {
+            targetAnimation = PlayerAnimation.SCREAM;
         } else {
             switch (movementState) {
                 case DASH -> targetAnimation = PlayerAnimation.DASH;
@@ -522,6 +576,20 @@ public class Player {
                     ? new Rectangle(position.x + width, position.y, attackRangeX, height)
                     : new Rectangle(position.x - attackRangeX, position.y, attackRangeX, height);
         }
+    }
+
+    public Rectangle getScreamHitbox() {
+        if (combatState != CombatState.SCREAM)
+            return null;
+
+        float width = Constants.SOUL_SCREAM_HITBOX_WIDTH;
+        float height = Constants.SOUL_SCREAM_HITBOX_HEIGHT;
+
+        return new Rectangle(
+                position.x - (width - Constants.PLAYER_HITBOX_WIDTH) / 2f, // Centered on X
+                position.y + Constants.PLAYER_HITBOX_HEIGHT, // Placed directly above head
+                width,
+                height);
     }
 
     public boolean shouldFlash() {

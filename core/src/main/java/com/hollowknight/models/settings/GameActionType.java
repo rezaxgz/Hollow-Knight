@@ -8,5 +8,6 @@ public enum GameActionType {
     JUMP,
     ATTACK,
     DASH,
-    FOCUS
+    FOCUS,
+    SCREAM
 }

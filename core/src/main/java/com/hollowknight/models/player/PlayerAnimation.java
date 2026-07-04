@@ -16,7 +16,8 @@ public enum PlayerAnimation {
     SLASH("animation/Slash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
     SLASH_ALT("animation/SlashAlt.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
     UP_SLASH("animation/UpSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
-    DOWN_SLASH("animation/DownSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT);
+    DOWN_SLASH("animation/DownSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
+    SCREAM("animation/Scream.png", 7, Constants.SOUL_SCREAM_TIME, AnimationType.ONESHOT);
 
     public final String path;
     public int frameCount;

@@ -52,18 +52,19 @@ public class GameController {
             pauseModal.show();
         }
 
-        GameActionType action = controls.getAction(keycode);
-        if (action != null) {
-            world.player.doAction(action);
-        }
-
         // Only check for and apply cheats if Ctrl is held
         if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
             GameCheat cheat = controls.getCheat(keycode);
 
             if (cheat != null) {
                 world.applyCheat(cheat);
+                return false;
             }
+        }
+
+        GameActionType action = controls.getAction(keycode);
+        if (action != null) {
+            world.player.doAction(action);
         }
 
         return false;

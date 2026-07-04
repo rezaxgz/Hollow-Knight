@@ -11,6 +11,7 @@ public class Controls {
     public int attack = Input.Keys.X;
     public int dash = Input.Keys.C;
     public int focus = Input.Keys.A;
+    public int scream = Input.Keys.S;
 
     // cheats (activated with key + Ctrl)
     public int takeDamage = Input.Keys.NUMPAD_SUBTRACT;
@@ -30,6 +31,7 @@ public class Controls {
             case FOCUS -> focus = key;
             case DOWN -> down = key;
             case UP -> up = key;
+            case SCREAM -> scream = key;
         }
     }
 
@@ -43,6 +45,7 @@ public class Controls {
             case ATTACK -> attack;
             case DASH -> dash;
             case FOCUS -> focus;
+            case SCREAM -> scream;
         };
     }
 
@@ -63,6 +66,8 @@ public class Controls {
             return GameActionType.DOWN;
         if (key == down)
             return GameActionType.UP;
+        if (key == scream)
+            return GameActionType.SCREAM;
         return null;
     }
 

@@ -81,6 +81,7 @@ public class GameWorld {
         checkEnemyCollisions();
 
         checkPlayerAttacks();
+        checkSoulScreamAttacks();
     }
 
     private void checkLaserCollisions() {
@@ -200,6 +201,30 @@ public class GameWorld {
                     // }
                 }
             }
+        }
+    }
+
+    private void checkSoulScreamAttacks() {
+        // Only run this if the player's internal timer fired a tick this frame
+        if (player.combatState == CombatState.SCREAM && player.triggerScreamDamage) {
+
+            Rectangle screamHitbox = player.getScreamHitbox();
+            if (screamHitbox == null)
+                return;
+
+            for (Enemy enemy : enemies) {
+                if (enemy.isDead)
+                    continue;
+                if (player.position.dst(enemy.position) > Constants.ENEMY_ACTIVE_RADIUS)
+                    continue;
+
+                if (screamHitbox.overlaps(enemy.getBounds())) {
+                    enemy.takeDamage(Constants.SOUL_SCREAM_TICK_DAMAGE, player.position.x);
+                }
+            }
+
+            // Turn the flag off so we don't double-hit before the next scheduled tick
+            player.triggerScreamDamage = false;
         }
     }
 

@@ -18,6 +18,7 @@ import com.hollowknight.models.Constants;
 import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.player.PlayerAnimation;
+import com.hollowknight.models.player.PlayerEffect;
 import com.hollowknight.models.world.GameWorld;
 
 public class GameRenderer {
@@ -131,6 +132,7 @@ public class GameRenderer {
         // 2 Render enemies and player
         renderEnemies(batch);
         renderPlayer(batch);
+        renderPlayerEffects(batch);
         renderLasers(batch);
 
         batch.end();
@@ -267,15 +269,54 @@ public class GameRenderer {
                 -world.player.getDirection(), 1, 0);
     }
 
+    private void renderPlayerEffects(SpriteBatch batch) {
+        // We check if the player is currently in the SCREAM state
+        if (world.player.combatState == com.hollowknight.models.player.states.CombatState.SCREAM) {
+
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap
+                    .get(PlayerEffect.SOUL_SCREAM);
+
+            // The player's animationTime perfectly tracks how long they've been screaming
+            TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
+
+            float spriteWidth = keyFrame.getRegionWidth();
+            float spriteHeight = keyFrame.getRegionHeight();
+
+            // Center the effect horizontally over the player's hitbox
+            float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
+            float x = world.player.position.x - xOffset + PlayerEffect.SOUL_SCREAM.xOffset;
+
+            // Place it above the player using your enum's yOffset
+            float y = world.player.position.y + PlayerEffect.SOUL_SCREAM.yOffset;
+
+            // Draw the effect (scaleX is 1 because the scream doesn't need to flip based on
+            // direction)
+            batch.draw(keyFrame,
+                    x, y,
+                    spriteWidth / 2f, 0, // Origin
+                    spriteWidth, spriteHeight,
+                    1, 1, // Scale X and Y
+                    0 // Rotation
+            );
+        }
+    }
+
     private void renderPlayerHitBox(ShapeRenderer shapeRenderer) {
         Rectangle bounds = world.player.getBounds();
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
-        Rectangle bounds = world.player.getAttackHitbox();
-        if (bounds == null)
-            return;
-        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        // Draw normal slash hitbox
+        Rectangle attackBounds = world.player.getAttackHitbox();
+        if (attackBounds != null) {
+            shapeRenderer.rect(attackBounds.x, attackBounds.y, attackBounds.width, attackBounds.height);
+        }
+
+        // Draw Soul Scream hitbox
+        Rectangle screamBounds = world.player.getScreamHitbox();
+        if (screamBounds != null) {
+            shapeRenderer.rect(screamBounds.x, screamBounds.y, screamBounds.width, screamBounds.height);
+        }
     }
 }
