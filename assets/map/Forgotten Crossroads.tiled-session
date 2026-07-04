@@ -1,5 +1,5 @@
 {
-    "activeFile": "forgotten_crossroads.tmx",
+    "activeFile": "grass animation.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -15,10 +15,11 @@
             "scaleInEditor": 1
         },
         "FK_break__0000_wall_default.tsx": {
-            "scaleInDock": 8,
+            "scaleInDock": 3,
             "scaleInEditor": 1
         },
         "FK_break__0006_wall_metal.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "Forgotten Crossroads.tmx": {
@@ -29,11 +30,19 @@
                 "y": 1559.1666666666665
             }
         },
+        "GreenPath.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx": {
             "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "atlas0 #0330050.tsx": {
+            "scaleInDock": 1
+        },
+        "back_mid_wall_no_eyes_temple.tsx": {
             "scaleInDock": 1
         },
         "cd_floor_02.tsx": {
@@ -44,8 +53,14 @@
             "scaleInDock": 3,
             "scaleInEditor": 1
         },
+        "cd_room_BG_01.tsx": {
+            "scaleInDock": 1
+        },
         "cd_tollbooth_lamp.tsx": {
             "scaleInDock": 1
+        },
+        "cetipede.tsx": {
+            "dynamicWrapping": true
         },
         "floor corner.tsx": {
             "scaleInDock": 1,
@@ -63,18 +78,33 @@
         },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
-                12,
                 8,
+                12,
                 11
             ],
-            "scale": 0.5,
-            "selectedLayer": 20,
+            "scale": 0.33,
+            "selectedLayer": 18,
             "viewCenter": {
-                "x": 4280,
-                "y": 3565
+                "x": 2618.181818181818,
+                "y": 1343.939393939394
             }
         },
+        "fung_new_0054_Layer-288.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0079_Layer-274.tsx": {
+            "scaleInDock": 1
+        },
         "fung_new_0080_Layer-273.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0095_Layer-262.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0113_Layer-269.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0114_Layer-268.tsx": {
             "scaleInDock": 1
         },
         "fung_new_0123_Layer-244.tsx": {
@@ -87,7 +117,9 @@
             "scaleInDock": 1
         },
         "fung_new_0127_02.tsx": {
-            "scaleInDock": 1
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "fung_new_0128_01.tsx": {
             "scaleInDock": 1
@@ -102,16 +134,58 @@
         "fung_new_0132_Layer-237.tsx": {
             "scaleInDock": 1
         },
-        "fungus_temple_backwall_small.tsx": {
+        "fung_new_0134_Layer-235.tsx": {
             "scaleInDock": 1
         },
+        "fung_new_0136_Layer-233.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0136_Layer-2332.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_spikes_02.tsx": {
+            "scaleInDock": 1
+        },
+        "fungus_temple_backwall_small.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "grass animation.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 0.25
+        },
         "highway_FG_0007_Layer-78.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "lamp_cave_01.tsx": {
             "scaleInDock": 1
         },
+        "light animation.tsx": {
+            "dynamicWrapping": true
+        },
+        "nailmaster_benches_0002_2.tsx": {
+            "scaleInDock": 1
+        },
+        "nailmaster_hut_01_0001_b.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "nailmaster_hut_01_0001_floor.tsx": {
+            "scaleInDock": 0.0625
+        },
+        "nailmaster_hut_01_0002_a.tsx": {
+            "scaleInDock": 1
+        },
+        "nailmaster_hut_01_0004_room_FG.tsx": {
+            "scaleInDock": 1
+        },
+        "nailmaster_hut_EXT_0000_1.tsx": {
+            "scaleInDock": 1
+        },
         "nailsmith_light.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "pillar_cell.tsx": {
@@ -123,6 +197,7 @@
             "scaleInEditor": 2
         },
         "plat_float_03.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "plat_float_04.tsx": {
@@ -142,6 +217,9 @@
             "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 5.5
+        },
+        "slug_shrine_bench.tsx": {
+            "scaleInDock": 1
         },
         "spikes0003.tsx": {
             "scaleInDock": 1.5
@@ -191,6 +269,7 @@
             "scaleInEditor": 1.5
         }
     },
+    "frame.defaultDuration": 1000,
     "last.imagePath": "G:/code/Hollow Knight/assets/sprites/Architecture & Environment",
     "map.height": 200,
     "map.lastUsedFormat": "tmx",
@@ -198,12 +277,17 @@
     "map.tileWidth": 8,
     "map.width": 300,
     "openFiles": [
-        "forgotten_crossroads.tmx"
+        "forgotten_crossroads.tmx",
+        "grass animation.tsx",
+        "grass animation.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
         "forgotten_crossroads.tmx",
+        "grass animation.tsx",
+        "GreenPath.tsx",
+        "fung_new_0127_02.tsx",
         "wall1.tsx",
         "fung_new_0131_Layer-238.tsx",
         "pillar_cell.tsx",
@@ -211,15 +295,13 @@
         "well_extension_0001_1.tsx",
         "FK_break__0000_wall_default.tsx",
         "ruins_resting_extra_bits_0040_Layer-142.tsx",
-        "cd_floor_02.tsx",
-        "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx",
-        "cd_floor_highway_06.tsx",
-        "pit.tsx"
+        "cd_floor_02.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 8,
         "width": 8
-    }
+    },
+    "tileset.type": 0
 }
