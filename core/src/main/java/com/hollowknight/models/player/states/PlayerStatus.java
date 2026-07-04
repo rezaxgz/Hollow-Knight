@@ -8,6 +8,7 @@ public class PlayerStatus {
     private boolean onGround = true;
     private boolean movingHorizontally = false;
     private int facingDirection = Constants.RIGHT_DIRECTION;
+    private boolean movementLocked = false;
 
     // Abilities
     private boolean canDash = true;
@@ -18,10 +19,51 @@ public class PlayerStatus {
     private boolean invincible = false;
     private float invincibilityTimer = 0;
 
+    // Ability Timers
+    private float dashTimer = 0.0f;
+    private float dashCooldownTimer = 0.0f;
+    private float attackTimer = 0.0f;
+    private float attackCooldownTimer = 0.0f;
+    private float knockbackTimer = 0.0f;
+    private float screamTimer = 0.0f;
+    private int screamTicksApplied = 0;
+    private float castTimer = 0.0f;
+
     // Spectator
     private boolean spectatorMode = false;
     private boolean movingVertically = false;
     private int verticalDir = 0;
+
+    // -------------------------------------------------
+    // Core Update
+    // -------------------------------------------------
+
+    public void update(float delta) {
+        if (invincible) {
+            invincibilityTimer -= delta;
+
+            if (invincibilityTimer <= 0f) {
+                invincible = false;
+                invincibilityTimer = 0f;
+            }
+        }
+
+        // Update generic ability/combat timers
+        if (dashCooldownTimer > 0)
+            dashCooldownTimer -= delta;
+        if (dashTimer > 0)
+            dashTimer -= delta;
+        if (attackTimer > 0)
+            attackTimer -= delta;
+        if (attackCooldownTimer > 0)
+            attackCooldownTimer -= delta;
+        if (knockbackTimer > 0)
+            knockbackTimer -= delta;
+        if (screamTimer > 0)
+            screamTimer -= delta;
+        if (castTimer > 0)
+            castTimer -= delta;
+    }
 
     // -------------------------------------------------
     // Ground
@@ -41,7 +83,7 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // Movement
+    // Movement & Locks
     // -------------------------------------------------
 
     public boolean isMovingHorizontally() {
@@ -58,6 +100,82 @@ public class PlayerStatus {
 
     public void setFacingDirection(int facingDirection) {
         this.facingDirection = facingDirection;
+    }
+
+    public boolean isMovementLocked() {
+        return movementLocked;
+    }
+
+    public void setMovementLocked(boolean movementLocked) {
+        this.movementLocked = movementLocked;
+    }
+
+    // -------------------------------------------------
+    // Timers Getters & Setters
+    // -------------------------------------------------
+
+    public float getDashTimer() {
+        return dashTimer;
+    }
+
+    public void setDashTimer(float dashTimer) {
+        this.dashTimer = dashTimer;
+    }
+
+    public float getDashCooldownTimer() {
+        return dashCooldownTimer;
+    }
+
+    public void setDashCooldownTimer(float dashCooldownTimer) {
+        this.dashCooldownTimer = dashCooldownTimer;
+    }
+
+    public float getAttackTimer() {
+        return attackTimer;
+    }
+
+    public void setAttackTimer(float attackTimer) {
+        this.attackTimer = attackTimer;
+    }
+
+    public float getAttackCooldownTimer() {
+        return attackCooldownTimer;
+    }
+
+    public void setAttackCooldownTimer(float attackCooldownTimer) {
+        this.attackCooldownTimer = attackCooldownTimer;
+    }
+
+    public float getKnockbackTimer() {
+        return knockbackTimer;
+    }
+
+    public void setKnockbackTimer(float knockbackTimer) {
+        this.knockbackTimer = knockbackTimer;
+    }
+
+    public float getScreamTimer() {
+        return screamTimer;
+    }
+
+    public void setScreamTimer(float screamTimer) {
+        this.screamTimer = screamTimer;
+    }
+
+    public int getScreamTicksApplied() {
+        return screamTicksApplied;
+    }
+
+    public void setScreamTicksApplied(int screamTicksApplied) {
+        this.screamTicksApplied = screamTicksApplied;
+    }
+
+    public float getCastTimer() {
+        return castTimer;
+    }
+
+    public void setCastTimer(float castTimer) {
+        this.castTimer = castTimer;
     }
 
     // -------------------------------------------------
@@ -108,6 +226,7 @@ public class PlayerStatus {
     // -------------------------------------------------
     // Invincibility
     // -------------------------------------------------
+
     public void toggleGodMode() {
         godMode = !godMode;
     }
@@ -121,25 +240,12 @@ public class PlayerStatus {
         invincibilityTimer = duration;
     }
 
-    public void update(float delta) {
-        if (invincible) {
-            invincibilityTimer -= delta;
-
-            if (invincibilityTimer <= 0f) {
-                invincible = false;
-                invincibilityTimer = 0f;
-            }
-        }
-    }
-
     public boolean shouldFlash() {
         // Only flash if the player is actually in their post-damage invincibility
         // window
         if (invincible && invincibilityTimer > 0) {
             // 0.2f is the total cycle time. < 0.1f means it will be invisible 50% of the
             // time.
-            // You can lower these numbers (e.g., 0.1f and 0.05f) for a faster strobe
-            // effect!
             return (invincibilityTimer % 0.2f) < 0.1f;
         }
         return false;
@@ -157,6 +263,7 @@ public class PlayerStatus {
     // -------------------------------------------------
     // Spectator
     // -------------------------------------------------
+
     public void toggleSpectatorMode() {
         spectatorMode = !spectatorMode;
         godMode = spectatorMode;

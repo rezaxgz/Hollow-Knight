@@ -21,17 +21,8 @@ public class Player {
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
 
-    // Timers
-    private float dashTimer = 0.0f;
-    private float dashCooldownTimer = 0.0f;
-    private float attackTimer = 0.0f;
-    private float attackCooldown = 0f;
-    private float knockbackTimer = 0.0f;
+    // Timers & Triggers left public for external systems (e.g. GameWorld)
     public float animationTime = 0;
-    private float screamTimer = 0.0f;
-    private int screamTicksApplied = 0;
-    private float castTimer = 0.0f;
-
     public boolean triggerSpiritCast = false;
     public boolean triggerScreamDamage = false;
 
@@ -58,12 +49,11 @@ public class Player {
 
     public void update(float delta, List<Rectangle> solidBlocks) {
         vitals.update(delta);
+        status.update(delta); // Updates all ability/combat timers and invincibility
         updateTimers(delta);
 
         if (checkDeathAndRespawn())
             return;
-
-        status.update(delta);
 
         // State handlers - if any of these return true, they override normal
         // movement/physics
@@ -95,18 +85,8 @@ public class Player {
     private void updateTimers(float delta) {
         animationTime += delta;
 
-        if (dashCooldownTimer > 0)
-            dashCooldownTimer -= delta;
-
-        if (attackTimer > 0) {
-            attackTimer -= delta;
-            if (attackTimer <= 0 && combatState == CombatState.ATTACK) {
-                combatState = CombatState.NONE;
-            }
-        }
-
-        if (attackCooldown > 0) {
-            attackCooldown -= delta;
+        if (status.getAttackTimer() <= 0 && combatState == CombatState.ATTACK) {
+            combatState = CombatState.NONE;
         }
     }
 
@@ -141,13 +121,11 @@ public class Player {
         if (combatState != CombatState.HURT)
             return false;
 
-        knockbackTimer -= delta;
-
         // Apply gravity for a clean backwards arc
         velocity.y += Constants.GRAVITY * delta;
         updatePosition(delta, solidBlocks);
 
-        if (knockbackTimer <= 0) {
+        if (status.getKnockbackTimer() <= 0) {
             combatState = CombatState.NONE;
             velocity.x = 0; // Stop horizontal slide
         }
@@ -160,15 +138,14 @@ public class Player {
         if (movementState != MovementState.DASH)
             return false;
 
-        dashTimer -= delta;
         velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
         velocity.y = 0; // Ignore gravity while dashing
 
         updatePosition(delta, solidBlocks);
 
-        if (dashTimer <= 0) {
+        if (status.getDashTimer() <= 0) {
             setStateAfterDash();
-            dashCooldownTimer = Constants.DASH_COOLDOWN;
+            status.setDashCooldownTimer(Constants.DASH_COOLDOWN);
         }
 
         updateAnimation();
@@ -179,21 +156,21 @@ public class Player {
         if (combatState != CombatState.FOCUS)
             return false;
 
-        velocity.x = 0;
-        status.setMovingHorizontally(false);
-
-        // Keep player grounded
+        // Keep player grounded while locked
         velocity.y += Constants.GRAVITY * delta;
         updatePosition(delta, solidBlocks);
 
         if (animationTime >= Constants.HEALTH_REFIL_TIME) {
             if (vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
                     && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH) {
+
                 vitals.addSouls(-Constants.HEALING_COST_IN_SOULS);
                 vitals.heal(1);
 
                 if (canFocus()) {
-                    focus();
+                    animationTime = 0; // Reset focus timer loop
+                    vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
+                            Constants.HEALTH_REFIL_TIME);
                 } else {
                     stopFocus();
                 }
@@ -210,26 +187,24 @@ public class Player {
         if (combatState != CombatState.SCREAM)
             return false;
 
-        // 1. "It doesn't move": Lock the player in place
-        velocity.x = 0;
+        // Player is suspended in air while screaming (X lock is handled by
+        // lockMovement)
         velocity.y = 0;
-        status.setMovingHorizontally(false);
 
-        screamTimer -= delta;
-
-        // 2. "Damage is dealt in 3 ticks"
+        // "Damage is dealt in 3 ticks"
         float tickInterval = Constants.SOUL_SCREAM_TIME / 3.0f;
-        int expectedTicks = 3 - (int) (screamTimer / tickInterval);
+        int expectedTicks = 3 - (int) (status.getScreamTimer() / tickInterval);
 
-        if (expectedTicks > screamTicksApplied && expectedTicks <= 3) {
-            screamTicksApplied++;
+        if (expectedTicks > status.getScreamTicksApplied() && expectedTicks <= 3) {
+            status.setScreamTicksApplied(status.getScreamTicksApplied() + 1);
             triggerScreamDamage = true; // Flips to true for exactly one frame per tick
         }
 
-        // 3. End Scream
-        if (screamTimer <= 0) {
+        // End Scream
+        if (status.getScreamTimer() <= 0) {
             combatState = CombatState.NONE;
             movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
+            unlockMovement();
         }
 
         updateAnimation();
@@ -240,16 +215,13 @@ public class Player {
         if (combatState != CombatState.CAST)
             return false;
 
-        // Player is suspended in air while casting
-        velocity.x = 0;
+        // Player is suspended in air while casting (X lock is handled by lockMovement)
         velocity.y = 0;
-        status.setMovingHorizontally(false);
 
-        castTimer -= delta;
-
-        if (castTimer <= 0) {
+        if (status.getCastTimer() <= 0) {
             combatState = CombatState.NONE;
             movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
+            unlockMovement();
         }
 
         updateAnimation();
@@ -293,9 +265,6 @@ public class Player {
     // =========================================================================================
 
     public void doAction(GameActionType action) {
-        if (action != GameActionType.FOCUS && combatState == CombatState.FOCUS)
-            return;
-
         switch (action) {
             case MOVE_LEFT -> moveLeft();
             case MOVE_RIGHT -> moveRight();
@@ -317,17 +286,21 @@ public class Player {
     }
 
     public void moveRight() {
+        if (status.isMovementLocked())
+            return;
         move();
         status.setFacingDirection(Constants.RIGHT_DIRECTION);
     }
 
     public void moveLeft() {
+        if (status.isMovementLocked())
+            return;
         move();
         status.setFacingDirection(Constants.LEFT_DIRECTION);
     }
 
     public void stopMoving(int dir) {
-        if (dir != status.getFacingDirection() || combatState == CombatState.FOCUS)
+        if (dir != status.getFacingDirection() || status.isMovementLocked())
             return;
 
         status.setMovingHorizontally(false);
@@ -336,6 +309,8 @@ public class Player {
     }
 
     public void jump() {
+        if (status.isMovementLocked())
+            return;
         if (status.canJump() && movementState != MovementState.DASH) {
             velocity.y = Constants.JUMP_SPEED;
             status.useJump();
@@ -344,10 +319,12 @@ public class Player {
     }
 
     public void dash() {
-        if (movementState != MovementState.DASH && status.canDash() && dashCooldownTimer <= 0) {
+        if (status.isMovementLocked())
+            return;
+        if (movementState != MovementState.DASH && status.canDash() && status.getDashCooldownTimer() <= 0) {
             movementState = MovementState.DASH;
             status.consumeDash();
-            dashTimer = Constants.DASH_DURATION;
+            status.setDashTimer(Constants.DASH_DURATION);
 
             velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0;
@@ -370,17 +347,31 @@ public class Player {
     }
 
     // =========================================================================================
+    // MOVEMENT LOCK UTILS
+    // =========================================================================================
+
+    public void lockMovement() {
+        status.setMovementLocked(true);
+        status.setMovingHorizontally(false);
+        velocity.x = 0;
+    }
+
+    public void unlockMovement() {
+        status.setMovementLocked(false);
+    }
+
+    // =========================================================================================
     // COMBAT & DAMAGE
     // =========================================================================================
 
     private void attack() {
-        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS || combatState == CombatState.ATTACK
-                || attackCooldown > 0) {
+        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.ATTACK
+                || status.getAttackCooldownTimer() > 0) {
             return;
         }
 
         combatState = CombatState.ATTACK;
-        attackTimer = Constants.SLASH_TIME;
+        status.setAttackTimer(Constants.SLASH_TIME);
 
         if (velocity.y > 0) {
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
@@ -392,30 +383,32 @@ public class Player {
     }
 
     public void soulScream() {
-        // Prevent casting if dead, focusing, or already screaming
-        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS || combatState == CombatState.SCREAM) {
+        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.SCREAM) {
             return;
         }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
             vitals.addSouls(-Constants.ABILITY_COST);
+
+            lockMovement();
             combatState = CombatState.SCREAM;
-            screamTimer = Constants.SOUL_SCREAM_TIME;
-            screamTicksApplied = 0;
+            status.setScreamTimer(Constants.SOUL_SCREAM_TIME);
+            status.setScreamTicksApplied(0);
             triggerScreamDamage = false;
         }
     }
 
     public void spiritCast() {
-        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS ||
-                combatState == CombatState.SCREAM || combatState == CombatState.CAST) {
+        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.CAST) {
             return;
         }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
             vitals.addSouls(-Constants.ABILITY_COST);
+
+            lockMovement();
             combatState = CombatState.CAST;
-            castTimer = Constants.SPIRIT_CAST_TIME;
+            status.setCastTimer(Constants.SPIRIT_CAST_TIME);
             triggerSpiritCast = true; // Signals GameWorld to spawn exactly one projectile
         }
     }
@@ -427,8 +420,12 @@ public class Player {
         vitals.takeDamage(amount);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
 
-        if (combatState == CombatState.FOCUS)
+        // Break out of locks cleanly
+        if (combatState == CombatState.FOCUS) {
             stopFocus();
+        } else {
+            unlockMovement();
+        }
 
         if (vitals.isDead()) {
             kill();
@@ -437,7 +434,7 @@ public class Player {
 
         // Trigger Knockback
         combatState = CombatState.HURT;
-        knockbackTimer = Constants.KNOCKBACK_DURATION;
+        status.setKnockbackTimer(Constants.KNOCKBACK_DURATION);
         float knockbackDir = (position.x < sourceX) ? -1f : 1f;
 
         velocity.x = Constants.KNOCKBACK_SPEED_X * knockbackDir;
@@ -450,30 +447,36 @@ public class Player {
     }
 
     private boolean canFocus() {
-        return status.isOnGround() && movementState != MovementState.DASH && combatState != CombatState.FOCUS &&
-                vitals.getSouls() > Constants.HEALING_COST_IN_SOULS && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
+        return status.isOnGround() && movementState != MovementState.DASH &&
+                vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
+                && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
     }
 
     private void focus() {
         if (canFocus()) {
-            combatState = CombatState.FOCUS;
-            velocity.x = 0;
-            status.setMovingHorizontally(false);
+            if (combatState != CombatState.FOCUS) {
+                combatState = CombatState.FOCUS;
+                lockMovement();
+            }
             vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
                     Constants.HEALTH_REFIL_TIME);
+            animationTime = 0; // Essential for subsequent loop checks
         }
     }
 
     public void stopFocus() {
-        combatState = CombatState.NONE;
+        if (combatState == CombatState.FOCUS) {
+            combatState = CombatState.NONE;
+            unlockMovement();
 
-        if (status.isOnGround()) {
-            movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
-        } else {
-            movementState = MovementState.FALL;
+            if (status.isOnGround()) {
+                movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
+            } else {
+                movementState = MovementState.FALL;
+            }
+
+            vitals.resetSouls();
         }
-
-        vitals.resetSouls();
     }
 
     public void kill() {
