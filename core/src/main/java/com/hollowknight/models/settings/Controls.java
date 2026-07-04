@@ -13,6 +13,7 @@ public class Controls {
     public int focus = Input.Keys.A;
     public int scream = Input.Keys.S;
     public int cast = Input.Keys.D;
+    public int interact = Input.Keys.E;
 
     // cheats (activated with key + Ctrl)
     public int takeDamage = Input.Keys.NUMPAD_SUBTRACT;

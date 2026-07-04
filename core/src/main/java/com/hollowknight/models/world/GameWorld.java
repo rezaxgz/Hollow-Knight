@@ -19,6 +19,7 @@ import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyFactory;
 import com.hollowknight.models.enemies.EnemyType;
 import com.hollowknight.models.gamedata.GameSave;
+import com.hollowknight.models.npc.Zote;
 import com.hollowknight.models.player.Player;
 import com.hollowknight.models.player.states.CombatState;
 import com.hollowknight.models.settings.GameCheat;
@@ -35,6 +36,8 @@ public class GameWorld {
     private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
 
     public List<PlayerProjectile> projectiles = new ArrayList<>();
+
+    public Zote zote;
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -70,6 +73,17 @@ public class GameWorld {
 
             enemies.add(EnemyFactory.newEnemy(point, enemyType));
         }
+
+        MapLayer zoteLayer = map.getLayers().get("Zote");
+        if (zoteLayer != null) {
+            for (MapObject obj : zoteLayer.getObjects()) {
+                if (obj instanceof PointMapObject) {
+                    Vector2 point = ((PointMapObject) obj).getPoint();
+                    zote = new Zote(point);
+                    break; // Assuming only one Zote exists
+                }
+            }
+        }
     }
 
     public void update(float delta) {
@@ -86,6 +100,10 @@ public class GameWorld {
 
         checkSpiritCastAttacks();
         updateProjectiles(delta);
+
+        if (zote != null) {
+            zote.update(delta, player);
+        }
     }
 
     private void checkSpiritCastAttacks() {

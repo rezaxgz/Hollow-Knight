@@ -4,9 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.enemies.EnemyAnimations;
+import com.hollowknight.models.npc.ZoteAnimation;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffect;
@@ -17,10 +22,12 @@ import java.util.HashMap;
 
 public class GameAssetManager {
     public static Skin skin;
+    public static Skin hollowSkin;
     public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
     public static final HashMap<EnemyAnimations, Animation<TextureRegion>> enemyAnimationMap = new HashMap<>();
     public static final HashMap<PlayerEffect, Animation<TextureRegion>> playerEffectAnimationMap = new HashMap<>();
+    public static final HashMap<ZoteAnimation, Animation<TextureRegion>> zoteAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
 
@@ -29,8 +36,10 @@ public class GameAssetManager {
     public static TextureRegion[] laserTexture = new TextureRegion[4];
     public static TextureRegion laserStartTexture;
 
+    public static final Texture eButton = new Texture("E_button.png");
+
     public static void init() {
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        loadSkins();
 
         for (PlayerAnimation type : PlayerAnimation.values()) {
             loadPlayerAnimation(type);
@@ -46,6 +55,54 @@ public class GameAssetManager {
 
         loadPlayerEffectAnimations();
         loadLaserTexture();
+
+        loadZoteAnimations();
+    }
+
+    private static void loadSkins() {
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        hollowSkin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("ui/General/HollowSkin.atlas"));
+        hollowSkin.addRegions(atlas);
+
+        // 2. Generate the BitmapFont from the TTF file
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
+                Gdx.files.internal("ui/General/TrajanPro-Regular.ttf"));
+        FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+        parameter.size = 24; // Set your desired font size here
+        BitmapFont generatedFont = generator.generateFont(parameter);
+        generator.dispose();
+        hollowSkin.add("Hollowfont", generatedFont, BitmapFont.class);
+
+        hollowSkin.load(Gdx.files.internal("ui/General/HollowSkin.json"));
+    }
+
+    private static void loadZoteAnimations() {
+        for (ZoteAnimation type : ZoteAnimation.values()) {
+            Texture texture = new Texture(type.path);
+
+            // Split based on ZoteAnimation's frameCount properties
+            TextureRegion[][] split = TextureRegion.split(
+                    texture,
+                    texture.getWidth() / type.frameCount,
+                    texture.getHeight());
+
+            TextureRegion[] frames = new TextureRegion[type.frameCount];
+            for (int i = 0; i < type.frameCount; i++) {
+                frames[i] = split[0][i]; // Assuming Zote's sprites are on a single row
+            }
+
+            Animation<TextureRegion> animation = new Animation<>(type.frameDuration, frames);
+
+            switch (type.type) {
+                case LOOP -> animation.setPlayMode(Animation.PlayMode.LOOP);
+                case LOOP_PINGPONG -> animation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+                case ONESHOT -> animation.setPlayMode(Animation.PlayMode.NORMAL);
+            }
+
+            zoteAnimationMap.put(type, animation);
+        }
     }
 
     private static void loadLaserTexture() {

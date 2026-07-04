@@ -67,6 +67,17 @@ public class GameController {
             world.player.doAction(action);
         }
 
+        if (world.zote != null) {
+            // Start Interaction
+            if (keycode == controls.interact) {
+                world.zote.interact();
+            }
+            // Advance Dialogue
+            else if (keycode == Input.Keys.ENTER) {
+                world.zote.advanceDialogue();
+            }
+        }
+
         return false;
     }
 

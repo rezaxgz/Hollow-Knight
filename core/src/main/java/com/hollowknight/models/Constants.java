@@ -93,6 +93,9 @@ public class Constants {
     public static final int GUARDIAN_HITBOX_HEIGHT = 200;
     public static final int GUARDIAN_HITBOX_WIDTH = 100;
 
+    // Zote
+    public static final float ZOTE_ATTACK_TIME = 0.8f;
+
     // debug
     public static int a = 0;
     public static int b = 0;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enemies.CrystalGuardian;
@@ -136,6 +138,7 @@ public class GameRenderer {
         renderPlayerEffects(batch);
         renderProjectiles(batch);
         renderLasers(batch);
+        renderZote(batch);
 
         batch.end();
 
@@ -161,6 +164,8 @@ public class GameRenderer {
         renderPlayerAttackHitboxe(shapeRenderer);
 
         shapeRenderer.end();
+
+        renderZoteDialouges(batch);
 
         // 6. Update and Draw Stage (UI)
         stage.act();
@@ -354,5 +359,59 @@ public class GameRenderer {
             Rectangle bounds = proj.getBounds();
             shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
+    }
+
+    private void renderZote(SpriteBatch batch) {
+        if (world.zote == null)
+            return;
+
+        Animation<TextureRegion> animation = GameAssetManager.zoteAnimationMap.get(world.zote.animation);
+        TextureRegion frame = animation.getKeyFrame(world.zote.animationTime);
+
+        // Draw Zote at his spawned coordinates
+        batch.draw(frame, world.zote.position.x - frame.getRegionWidth() / 2, world.zote.position.y);
+    }
+
+    private void renderZoteDialouges(SpriteBatch batch) {
+        batch.setProjectionMatrix(hudCamera.combined);
+        batch.begin();
+        com.badlogic.gdx.graphics.g2d.BitmapFont font = GameAssetManager.hollowSkin.getFont("Hollowfont");
+
+        if (world.zote != null) {
+            if (world.zote.isTalking) {
+                // Draw the dialogue box at the top of the screen
+                font.getData().setScale(1.5f);
+                font.draw(batch,
+                        world.zote.dialogues[world.zote.dialogueIndex],
+                        0, // Start X at 0
+                        Gdx.graphics.getHeight() - 130f, // Y position
+                        Gdx.graphics.getWidth(), // Target width is the full screen
+                        Align.center, // Tell LibGDX to center it
+                        false); // Word wrap (false)
+                font.getData().setScale(1f); // Reset scale
+
+            } else if (world.zote.playerIsClose) {
+                // Draw the interaction guide near the middle/bottom of the screen
+                Texture button = GameAssetManager.eButton;
+
+                // NOTE: I changed these to floats (added 'f').
+                // Integer division (677 / 3) cuts off decimals and can cause subtle jitter!
+                float width = 677f / 3f;
+                float height = 369f / 3f;
+
+                // Your math for centering the Texture was already perfect
+                batch.draw(button, Gdx.graphics.getWidth() / 2f - width / 2f,
+                        Gdx.graphics.getHeight() / 2f - 300f, width, height);
+
+                font.draw(batch,
+                        "Press E to interact",
+                        0, // Start X at 0
+                        Gdx.graphics.getHeight() / 2f - 300f, // Y position
+                        Gdx.graphics.getWidth(), // Target width is full screen
+                        Align.center, // Tell LibGDX to center it
+                        false); // Word wrap (false)
+            }
+        }
+        batch.end();
     }
 }
