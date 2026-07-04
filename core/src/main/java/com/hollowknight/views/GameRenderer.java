@@ -379,37 +379,43 @@ public class GameRenderer {
 
         if (world.zote != null) {
             if (world.zote.isTalking) {
-                // Draw the dialogue box at the top of the screen
+
+                // 1. Determine which text to draw based on our new flag
+                String textToDraw;
+                if (!world.zote.hasCompletedFirstDialogue) {
+                    textToDraw = world.zote.dialogues[world.zote.dialogueIndex];
+                } else {
+                    textToDraw = world.zote.rules[world.zote.currentRuleIndex];
+                }
+
+                // 2. Draw the dialogue box at the top of the screen
                 font.getData().setScale(1.5f);
                 font.draw(batch,
-                        world.zote.dialogues[world.zote.dialogueIndex],
-                        0, // Start X at 0
-                        Gdx.graphics.getHeight() - 130f, // Y position
-                        Gdx.graphics.getWidth(), // Target width is the full screen
-                        Align.center, // Tell LibGDX to center it
-                        false); // Word wrap (false)
+                        textToDraw,
+                        0,
+                        Gdx.graphics.getHeight() - 130f,
+                        Gdx.graphics.getWidth(),
+                        Align.center,
+                        true); // CHANGED TO TRUE: This wraps long Precepts nicely!
                 font.getData().setScale(1f); // Reset scale
 
             } else if (world.zote.playerIsClose) {
                 // Draw the interaction guide near the middle/bottom of the screen
                 Texture button = GameAssetManager.eButton;
-
-                // NOTE: I changed these to floats (added 'f').
-                // Integer division (677 / 3) cuts off decimals and can cause subtle jitter!
                 float width = 677f / 3f;
                 float height = 369f / 3f;
 
-                // Your math for centering the Texture was already perfect
                 batch.draw(button, Gdx.graphics.getWidth() / 2f - width / 2f,
                         Gdx.graphics.getHeight() / 2f - 300f, width, height);
 
+                font.getData().setScale(1f);
                 font.draw(batch,
                         "Press E to interact",
-                        0, // Start X at 0
-                        Gdx.graphics.getHeight() / 2f - 300f, // Y position
-                        Gdx.graphics.getWidth(), // Target width is full screen
-                        Align.center, // Tell LibGDX to center it
-                        false); // Word wrap (false)
+                        0,
+                        Gdx.graphics.getHeight() / 2f - 300f,
+                        Gdx.graphics.getWidth(),
+                        Align.center,
+                        false);
             }
         }
         batch.end();

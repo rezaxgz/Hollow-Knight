@@ -74,7 +74,7 @@ public class GameController {
             }
             // Advance Dialogue
             else if (keycode == Input.Keys.ENTER) {
-                world.zote.advanceDialogue();
+                world.zote.interact();
             }
         }
 
