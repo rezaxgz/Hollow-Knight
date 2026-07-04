@@ -164,6 +164,7 @@ public class CrystalGuardian extends Enemy {
 
     // --- State & Animation Manager ---
     private void changeState(State newState) {
+        State pastState = currentState;
         currentState = newState;
         stateTimer = 0f;
 
@@ -179,7 +180,8 @@ public class CrystalGuardian extends Enemy {
                 // it will naturally hold on its final frame while firing the laser.
                 break;
             case RUN:
-                runTimer = 0f;
+                if (pastState != State.TURN)
+                    runTimer = 0f;
                 setAnimation(RUN_ANIMATION);
                 break;
             case TURN:

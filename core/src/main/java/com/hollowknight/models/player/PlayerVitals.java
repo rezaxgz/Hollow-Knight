@@ -80,6 +80,14 @@ public class PlayerVitals {
         }
     }
 
+    public boolean canHeal() {
+        for (HealthMask h : health) {
+            if (!h.isFull() && h.state != HealthMaskState.HEALING)
+                return true;
+        }
+        return false;
+    }
+
     public void heal(int amount) {
         for (HealthMask h : health) {
             if (h.state == HealthMaskState.EMPTY || h.state == HealthMaskState.BREAKING) {

@@ -338,7 +338,7 @@ public class Player {
             status.setHoldingDown(true);
 
         if (status.isSpectatorMode())
-            status.moveVertically(dir);
+            status.moveVertically(-dir);
     }
 
     public void stopVerticalMovement(int releasedDir) {
@@ -350,7 +350,7 @@ public class Player {
         if (!status.isSpectatorMode())
             return;
 
-        if (releasedDir == status.getVerticalDirection()) {
+        if (releasedDir == -status.getVerticalDirection()) {
             status.stopVerticalMovement();
             velocity.y = 0;
         }
@@ -384,7 +384,6 @@ public class Player {
         status.setAttackTimer(Constants.SLASH_TIME);
 
         if (status.isHoldingUp()) {
-            System.out.println("up");
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
         } else if (!status.isOnGround() && status.isHoldingDown()) {
             currentAttackAnimation = PlayerAnimation.DOWN_SLASH;
@@ -467,7 +466,7 @@ public class Player {
     private boolean canFocus() {
         return status.isOnGround() && movementState != MovementState.DASH &&
                 vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
-                && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH;
+                && vitals.canHeal();
     }
 
     private void focus() {
