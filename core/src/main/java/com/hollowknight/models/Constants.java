@@ -47,6 +47,12 @@ public class Constants {
     public static final int SOUL_SCREAM_HITBOX_HEIGHT = 260;
     public static final int SOUL_SCREAM_HITBOX_WIDTH = 260;
 
+    public static final float SPIRIT_CAST_TIME = 0.8f;
+    public static final float PROJECTILE_SPEED = 800f;
+    public static final float PROJECTILE_MAX_RANGE = 2000f;
+    public static final int PROJECTILE_DAMAGE = 25;
+    public static final int PROJECTILE_SIZE = 100;
+
     // General Enemy Logic
     public static final float ENEMY_ACTIVE_RADIUS = 1500f;
     public static final float ENEMY_RESPAWN_RADIUS = 3000f;

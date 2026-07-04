@@ -8,8 +8,10 @@ public enum PlayerEffect {
     DOWN_SLASH("animation/Effects/DownSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
     UP_SLASH("animation/Effects/UpSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
     SOUL_SCREAM("animation/Effects/SoulScream.png", 13, Constants.SOUL_SCREAM_TIME, 0,
-            Constants.PLAYER_HITBOX_HEIGHT - 20);
-    ;
+            Constants.PLAYER_HITBOX_HEIGHT - 20),
+    BLAST("animation/Effects/BlastSoul.png", 8, Constants.SPIRIT_CAST_TIME, 0, -100),
+    SOUL_BALL("animation/Projectile/SoulBall.png", 4, Constants.SPIRIT_CAST_TIME, 0, 0),
+    SOUL_BALL_END("animation/Projectile/Ball End.png", 3, Constants.SPIRIT_CAST_TIME, 0, 0);
 
     public final String path;
     public final int frameCount;

@@ -20,6 +20,7 @@ import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffect;
 import com.hollowknight.models.world.GameWorld;
+import com.hollowknight.models.world.PlayerProjectile;
 
 public class GameRenderer {
     SpriteBatch batch;
@@ -133,6 +134,7 @@ public class GameRenderer {
         renderEnemies(batch);
         renderPlayer(batch);
         renderPlayerEffects(batch);
+        renderProjectiles(batch);
         renderLasers(batch);
 
         batch.end();
@@ -153,6 +155,7 @@ public class GameRenderer {
         // Render enemy hitboxes
         shapeRenderer.setColor(Color.RED);
         renderEnemyHitBoxes(shapeRenderer);
+        renderProjectileHitboxes(shapeRenderer);
         // Render player attack hitboxes
         shapeRenderer.setColor(Color.ORANGE);
         renderPlayerAttackHitboxe(shapeRenderer);
@@ -270,34 +273,58 @@ public class GameRenderer {
     }
 
     private void renderPlayerEffects(SpriteBatch batch) {
-        // We check if the player is currently in the SCREAM state
+        PlayerEffect activeEffect = null;
+
         if (world.player.combatState == com.hollowknight.models.player.states.CombatState.SCREAM) {
+            activeEffect = PlayerEffect.SOUL_SCREAM;
+        } else if (world.player.combatState == com.hollowknight.models.player.states.CombatState.CAST) {
+            activeEffect = PlayerEffect.BLAST;
+        }
 
-            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap
-                    .get(PlayerEffect.SOUL_SCREAM);
-
-            // The player's animationTime perfectly tracks how long they've been screaming
+        if (activeEffect != null) {
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(activeEffect);
             TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
 
             float spriteWidth = keyFrame.getRegionWidth();
             float spriteHeight = keyFrame.getRegionHeight();
-
-            // Center the effect horizontally over the player's hitbox
             float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-            float x = world.player.position.x - xOffset + PlayerEffect.SOUL_SCREAM.xOffset;
 
-            // Place it above the player using your enum's yOffset
-            float y = world.player.position.y + PlayerEffect.SOUL_SCREAM.yOffset;
+            float x = world.player.position.x - xOffset + activeEffect.xOffset;
+            float y = world.player.position.y + activeEffect.yOffset;
 
-            // Draw the effect (scaleX is 1 because the scream doesn't need to flip based on
-            // direction)
+            // Flip horizontal if it's BLAST
+            float scaleX = (activeEffect == PlayerEffect.BLAST) ? -world.player.getDirection() : 1f;
+
             batch.draw(keyFrame,
                     x, y,
-                    spriteWidth / 2f, 0, // Origin
+                    spriteWidth / 2f, spriteHeight / 2f, // Origin for flipping
                     spriteWidth, spriteHeight,
-                    1, 1, // Scale X and Y
-                    0 // Rotation
-            );
+                    scaleX, 1, 0);
+        }
+    }
+
+    private void renderProjectiles(SpriteBatch batch) {
+        for (PlayerProjectile proj : world.projectiles) {
+
+            // Swap to explosion sprite if it hit something
+            PlayerEffect effectType = proj.isExploding ? PlayerEffect.SOUL_BALL_END : PlayerEffect.SOUL_BALL;
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
+            TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
+
+            float spriteWidth = keyFrame.getRegionWidth();
+            float spriteHeight = keyFrame.getRegionHeight();
+
+            float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) / 2f;
+            float yOffset = (spriteHeight - Constants.PROJECTILE_SIZE) / 2f;
+
+            batch.draw(
+                    keyFrame,
+                    proj.position.x - xOffset,
+                    proj.position.y - yOffset,
+                    spriteWidth / 2f, spriteHeight / 2f, // Center origin
+                    spriteWidth, spriteHeight,
+                    proj.direction, // Flip sprite depending on travel direction
+                    1, 0);
         }
     }
 
@@ -317,6 +344,15 @@ public class GameRenderer {
         Rectangle screamBounds = world.player.getScreamHitbox();
         if (screamBounds != null) {
             shapeRenderer.rect(screamBounds.x, screamBounds.y, screamBounds.width, screamBounds.height);
+        }
+    }
+
+    private void renderProjectileHitboxes(ShapeRenderer shapeRenderer) {
+        for (PlayerProjectile proj : world.projectiles) {
+            if (proj.isExploding)
+                continue;
+            Rectangle bounds = proj.getBounds();
+            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
 }

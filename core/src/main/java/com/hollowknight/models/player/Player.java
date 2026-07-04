@@ -30,7 +30,9 @@ public class Player {
     public float animationTime = 0;
     private float screamTimer = 0.0f;
     private int screamTicksApplied = 0;
+    private float castTimer = 0.0f;
 
+    public boolean triggerSpiritCast = false;
     public boolean triggerScreamDamage = false;
 
     // States & Vitals
@@ -74,6 +76,8 @@ public class Player {
         if (handleFocusState(delta, solidBlocks))
             return;
         if (handleScreamState(delta, solidBlocks))
+            return;
+        if (handleCastState(delta, solidBlocks))
             return;
 
         // Normal movement & gravity
@@ -232,6 +236,26 @@ public class Player {
         return true;
     }
 
+    private boolean handleCastState(float delta, List<Rectangle> solidBlocks) {
+        if (combatState != CombatState.CAST)
+            return false;
+
+        // Player is suspended in air while casting
+        velocity.x = 0;
+        velocity.y = 0;
+        status.setMovingHorizontally(false);
+
+        castTimer -= delta;
+
+        if (castTimer <= 0) {
+            combatState = CombatState.NONE;
+            movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
+        }
+
+        updateAnimation();
+        return true;
+    }
+
     private void applyNormalPhysics(float delta) {
         velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
         velocity.y += Constants.GRAVITY * delta;
@@ -282,6 +306,7 @@ public class Player {
             case DOWN -> moveVertically(Constants.DOWN_DIRECTION);
             case UP -> moveVertically(Constants.UP_DIRECTION);
             case SCREAM -> soulScream();
+            case SPRITE_CAST -> spiritCast();
         }
     }
 
@@ -378,6 +403,20 @@ public class Player {
             screamTimer = Constants.SOUL_SCREAM_TIME;
             screamTicksApplied = 0;
             triggerScreamDamage = false;
+        }
+    }
+
+    public void spiritCast() {
+        if (combatState == CombatState.DEAD || combatState == CombatState.FOCUS ||
+                combatState == CombatState.SCREAM || combatState == CombatState.CAST) {
+            return;
+        }
+
+        if (vitals.getSouls() >= Constants.ABILITY_COST) {
+            vitals.addSouls(-Constants.ABILITY_COST);
+            combatState = CombatState.CAST;
+            castTimer = Constants.SPIRIT_CAST_TIME;
+            triggerSpiritCast = true; // Signals GameWorld to spawn exactly one projectile
         }
     }
 
@@ -533,6 +572,8 @@ public class Player {
             targetAnimation = PlayerAnimation.IDLE_HURT;
         } else if (combatState == CombatState.SCREAM) {
             targetAnimation = PlayerAnimation.SCREAM;
+        } else if (combatState == CombatState.CAST) {
+            targetAnimation = PlayerAnimation.CAST;
         } else {
             switch (movementState) {
                 case DASH -> targetAnimation = PlayerAnimation.DASH;

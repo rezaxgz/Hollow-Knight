@@ -34,6 +34,8 @@ public class GameWorld {
 
     private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
 
+    public List<PlayerProjectile> projectiles = new ArrayList<>();
+
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(save.gameLevel.tmxPath);
@@ -82,6 +84,33 @@ public class GameWorld {
 
         checkPlayerAttacks();
         checkSoulScreamAttacks();
+
+        checkSpiritCastAttacks();
+        updateProjectiles(delta);
+    }
+
+    private void checkSpiritCastAttacks() {
+        if (player.combatState == CombatState.CAST && player.triggerSpiritCast) {
+            // Center the projectile vertically with the player's body
+            Vector2 spawnPos = new Vector2(player.position.x,
+                    player.position.y + Constants.PLAYER_HITBOX_HEIGHT / 2 - Constants.PROJECTILE_SIZE / 2);
+
+            projectiles.add(new PlayerProjectile(spawnPos, player.getDirection()));
+            player.triggerSpiritCast = false;
+        }
+    }
+
+    private void updateProjectiles(float delta) {
+        // Iterator safely removes finished projectiles during the loop
+        java.util.Iterator<PlayerProjectile> iterator = projectiles.iterator();
+        while (iterator.hasNext()) {
+            PlayerProjectile proj = iterator.next();
+            proj.update(delta, solidBlocks, enemies);
+
+            if (proj.isFinished) {
+                iterator.remove();
+            }
+        }
     }
 
     private void checkLaserCollisions() {

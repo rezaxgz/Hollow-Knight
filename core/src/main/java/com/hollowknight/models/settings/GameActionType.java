@@ -9,5 +9,6 @@ public enum GameActionType {
     ATTACK,
     DASH,
     FOCUS,
-    SCREAM
+    SCREAM,
+    SPRITE_CAST
 }
