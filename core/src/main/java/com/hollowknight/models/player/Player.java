@@ -332,15 +332,25 @@ public class Player {
     }
 
     public void moveVertically(int dir) {
+        if (dir == Constants.UP_DIRECTION)
+            status.setHoldingUp(true);
+        if (dir == Constants.DOWN_DIRECTION)
+            status.setHoldingDown(true);
+
         if (status.isSpectatorMode())
             status.moveVertically(dir);
     }
 
     public void stopVerticalMovement(int releasedDir) {
+        if (releasedDir == Constants.UP_DIRECTION)
+            status.setHoldingUp(false);
+        if (releasedDir == Constants.DOWN_DIRECTION)
+            status.setHoldingDown(false);
+
         if (!status.isSpectatorMode())
             return;
 
-        if (releasedDir == -status.getVerticalDirection()) {
+        if (releasedDir == status.getVerticalDirection()) {
             status.stopVerticalMovement();
             velocity.y = 0;
         }
@@ -373,9 +383,10 @@ public class Player {
         combatState = CombatState.ATTACK;
         status.setAttackTimer(Constants.SLASH_TIME);
 
-        if (velocity.y > 0) {
+        if (status.isHoldingUp()) {
+            System.out.println("up");
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
-        } else if (!status.isOnGround() && velocity.y < 0) {
+        } else if (!status.isOnGround() && status.isHoldingDown()) {
             currentAttackAnimation = PlayerAnimation.DOWN_SLASH;
         } else {
             currentAttackAnimation = Math.random() > 0.5 ? PlayerAnimation.SLASH : PlayerAnimation.SLASH_ALT;
@@ -411,6 +422,13 @@ public class Player {
             status.setCastTimer(Constants.SPIRIT_CAST_TIME);
             triggerSpiritCast = true; // Signals GameWorld to spawn exactly one projectile
         }
+    }
+
+    public void pogo() {
+        velocity.y = Constants.JUMP_SPEED;
+        status.resetDash();
+        // Give the player exactly 1 jump to use in mid-air (avoids resetting to 2)
+        status.setRemainingJumps(Math.max(status.getJumpsRemaining(), 1));
     }
 
     public boolean takeDamage(int amount, float sourceX) {

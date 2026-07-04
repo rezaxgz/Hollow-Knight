@@ -79,6 +79,7 @@ public class GameController {
         } else if (keycode == controls.focus) {
             world.player.stopFocus();
         } else if (keycode == controls.up) {
+            System.out.println("up released");
             world.player.stopVerticalMovement(Constants.UP_DIRECTION);
         } else if (keycode == controls.down) {
             world.player.stopVerticalMovement(Constants.DOWN_DIRECTION);

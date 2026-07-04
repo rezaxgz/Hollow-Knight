@@ -66,9 +66,9 @@ public class Controls {
         if (key == focus)
             return GameActionType.FOCUS;
         if (key == up)
-            return GameActionType.DOWN;
-        if (key == down)
             return GameActionType.UP;
+        if (key == down)
+            return GameActionType.DOWN;
         if (key == scream)
             return GameActionType.SCREAM;
         if (key == cast)

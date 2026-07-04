@@ -70,7 +70,6 @@ public class GameWorld {
 
             enemies.add(EnemyFactory.newEnemy(point, enemyType));
         }
-
     }
 
     public void update(float delta) {
@@ -129,7 +128,7 @@ public class GameWorld {
 
                 // If laserBounds is not null, the laser is currently firing
                 if (laserBounds != null && playerBounds.overlaps(laserBounds)) {
-                    // Taking damage from laser (You can adjust damage value or use a constant)
+                    // Taking damage from laser
                     player.takeDamage(2, guardian.position.x);
                     break; // Exit loop after taking damage once per frame
                 }
@@ -155,8 +154,16 @@ public class GameWorld {
 
     private void checkHazards() {
         Rectangle playerBounds = player.getBounds();
+        Rectangle attackBounds = player.combatState == CombatState.ATTACK ? player.getAttackHitbox() : null;
+        boolean isDownSlashing = player.animation != null && player.animation.name().contains("DOWN_SLASH");
 
         for (Hazard hazard : hazards) {
+
+            // Allow a Pogo bounce if attacking downward onto the hazard
+            if (isDownSlashing && attackBounds != null && attackBounds.overlaps(hazard.getBounds())) {
+                player.pogo();
+                continue; // Skip processing damage for this hazard this frame
+            }
 
             if (!playerBounds.overlaps(hazard.getBounds()))
                 continue;
@@ -209,6 +216,8 @@ public class GameWorld {
         if (attackBounds == null)
             return;
 
+        boolean isDownSlashing = player.animation != null && player.animation.name().contains("DOWN_SLASH");
+
         for (Enemy enemy : enemies) {
             if (enemy.isDead)
                 continue;
@@ -224,10 +233,9 @@ public class GameWorld {
                     enemiesHitThisAttack.add(enemy);
                     player.getVitals().addSouls(Constants.ATTACK_HIT_SOULS_BONUS);
 
-                    // TODO: The classic Hollow Knight "Pogo" bounce!
-                    // if (player.animation.name().contains("DOWN_SLASH")) {
-                    // player.velocity.y = Constants.JUMP_SPEED;
-                    // }
+                    if (isDownSlashing) {
+                        player.pogo();
+                    }
                 }
             }
         }

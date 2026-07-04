@@ -10,6 +10,10 @@ public class PlayerStatus {
     private int facingDirection = Constants.RIGHT_DIRECTION;
     private boolean movementLocked = false;
 
+    // Directional Holding state
+    private boolean holdingUp = false;
+    private boolean holdingDown = false;
+
     // Abilities
     private boolean canDash = true;
     private int jumpsRemaining = 2;
@@ -111,6 +115,26 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
+    // Directional Holding Setters & Getters
+    // -------------------------------------------------
+
+    public boolean isHoldingUp() {
+        return holdingUp;
+    }
+
+    public void setHoldingUp(boolean holdingUp) {
+        this.holdingUp = holdingUp;
+    }
+
+    public boolean isHoldingDown() {
+        return holdingDown;
+    }
+
+    public void setHoldingDown(boolean holdingDown) {
+        this.holdingDown = holdingDown;
+    }
+
+    // -------------------------------------------------
     // Timers Getters & Setters
     // -------------------------------------------------
 
@@ -201,10 +225,6 @@ public class PlayerStatus {
 
     public void setRemainingJumps(int n) {
         jumpsRemaining = n;
-    }
-
-    public void rechargeAirJump() {
-        jumpsRemaining = Math.max(jumpsRemaining, 1);
     }
 
     // -------------------------------------------------
