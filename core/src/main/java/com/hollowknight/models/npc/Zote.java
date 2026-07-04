@@ -15,9 +15,11 @@ public class Zote {
     // Dialogue properties
     public int dialogueIndex = 0;
     public String[] dialogues = {
-            "I am Zote the Mighty, a knight of great renown!",
-            "Cross my path, and you shall face my nail, 'Life Ender'.",
-            "Do not expect me to save you, fool. I have my own glory to chase."
+            "Look at meeeee!",
+            "I'm as helpless as a kitten up a tree",
+            "And I feel like I'm clinging to a cloud",
+            "I can't understand I get misty just holding your hand",
+            "Misty!!!!!!!!"
     };
 
     public Zote(Vector2 position) {
