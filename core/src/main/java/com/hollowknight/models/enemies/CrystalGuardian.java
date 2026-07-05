@@ -92,6 +92,7 @@ public class CrystalGuardian extends Enemy {
                 // Watch for player
                 if (canSeePlayer(player)) {
                     changeState(State.SHOOT);
+                    // Locks in the initial direction when the player is first seen
                     facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION
                             : Constants.LEFT_DIRECTION;
                 }
@@ -103,12 +104,8 @@ public class CrystalGuardian extends Enemy {
 
                 // Wait for the "charge up" animation to finish
                 if (stateTimer >= SHOOT_ANIMATION.totalDuration) {
-                    // Lock onto the player's direction before firing
-                    if (player.position.x < this.position.x) {
-                        facingDirection = Constants.LEFT_DIRECTION;
-                    } else {
-                        facingDirection = Constants.RIGHT_DIRECTION;
-                    }
+                    // Removed the tracking code here! He now fires strictly
+                    // in the direction he locked into during the IDLE state.
                     changeState(State.FIRE);
                 }
                 break;
@@ -134,12 +131,25 @@ public class CrystalGuardian extends Enemy {
                     break;
                 }
 
+                // ACTIVE TRACKING: Check if the player has moved behind the Guardian
+                boolean playerIsToTheRight = player.position.x > this.position.x;
+                boolean playerIsToTheLeft = player.position.x < this.position.x;
+
+                if ((facingDirection == Constants.RIGHT_DIRECTION && playerIsToTheLeft) ||
+                        (facingDirection == Constants.LEFT_DIRECTION && playerIsToTheRight)) {
+                    // Player crossed over, turn around!
+                    changeState(State.TURN);
+                    break;
+                }
+
                 velocity.x = Constants.GUARDIAN_SPEED * facingDirection;
                 boolean hitWall = moveX(velocity.x * delta, solidBlocks);
 
-                // Turn if he hits a solid block
+                // If he hits a wall while chasing the player, stop running.
+                // (Otherwise he will infinitely loop between TURN and RUN against the wall).
                 if (hitWall) {
-                    changeState(State.TURN);
+                    changeState(State.IDLE);
+                    runTimer = 0;
                 }
                 break;
 
