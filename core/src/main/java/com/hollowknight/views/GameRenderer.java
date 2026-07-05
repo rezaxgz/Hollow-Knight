@@ -98,24 +98,49 @@ public class GameRenderer {
         // Track the player first
         camera.position.set(world.player.position, 0);
 
-        // --- CAMERA CLAMPING LOGIC ---
         float cameraHalfWidth = camera.viewportWidth / 2f;
         float cameraHalfHeight = camera.viewportHeight / 2f;
 
-        // Clamp X: Ensure camera doesn't spill past left/right edges
-        if (mapWidth > camera.viewportWidth) {
-            camera.position.x = MathUtils.clamp(camera.position.x, cameraHalfWidth, mapWidth - cameraHalfWidth);
-        } else {
-            camera.position.x = mapWidth / 2f; // Center map if it's smaller than screen width
-        }
+        if (world.isBossFightActive()) {
+            // --- BOSS ROOM CLAMPING LOGIC ---
+            Rectangle bounds = world.bossRoomBounds;
 
-        // Clamp Y: Ensure camera doesn't spill past bottom/top edges
-        if (mapHeight > camera.viewportHeight) {
-            camera.position.y = MathUtils.clamp(camera.position.y, cameraHalfHeight, mapHeight - cameraHalfHeight);
+            // Clamp X: Keep camera inside the Boss Room's left/right edges
+            if (bounds.width > camera.viewportWidth) {
+                float minX = bounds.x + cameraHalfWidth;
+                float maxX = bounds.x + bounds.width - cameraHalfWidth;
+                camera.position.x = MathUtils.clamp(camera.position.x, minX, maxX);
+            } else {
+                // If the screen is wider than the room, center it
+                camera.position.x = bounds.x + bounds.width / 2f;
+            }
+
+            // Clamp Y: Keep camera inside the Boss Room's bottom/top edges
+            if (bounds.height > camera.viewportHeight) {
+                float minY = bounds.y + cameraHalfHeight;
+                float maxY = bounds.y + bounds.height - cameraHalfHeight;
+                camera.position.y = MathUtils.clamp(camera.position.y, minY, maxY);
+            } else {
+                // If the screen is taller than the room, center it
+                camera.position.y = bounds.y + bounds.height / 2f;
+            }
+
         } else {
-            camera.position.y = mapHeight / 2f; // Center map if it's smaller than screen height
+            // --- NORMAL MAP CLAMPING LOGIC ---
+            // Clamp X: Ensure camera doesn't spill past left/right edges of the whole map
+            if (mapWidth > camera.viewportWidth) {
+                camera.position.x = MathUtils.clamp(camera.position.x, cameraHalfWidth, mapWidth - cameraHalfWidth);
+            } else {
+                camera.position.x = mapWidth / 2f;
+            }
+
+            // Clamp Y: Ensure camera doesn't spill past bottom/top edges of the whole map
+            if (mapHeight > camera.viewportHeight) {
+                camera.position.y = MathUtils.clamp(camera.position.y, cameraHalfHeight, mapHeight - cameraHalfHeight);
+            } else {
+                camera.position.y = mapHeight / 2f;
+            }
         }
-        // ------------------------------
     }
 
     public void render() {

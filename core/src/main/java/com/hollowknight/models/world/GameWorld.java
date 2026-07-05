@@ -39,6 +39,8 @@ public class GameWorld {
 
     public Zote zote;
 
+    public Rectangle bossRoomBounds;
+
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(save.gameLevel.tmxPath);
@@ -81,6 +83,16 @@ public class GameWorld {
                     Vector2 point = ((PointMapObject) obj).getPoint();
                     zote = new Zote(point);
                     break; // Assuming only one Zote exists
+                }
+            }
+        }
+
+        MapLayer regionsLayer = map.getLayers().get("Regions");
+        if (regionsLayer != null) {
+            for (MapObject obj : regionsLayer.getObjects()) {
+                if (obj instanceof RectangleMapObject && "BossRoom".equals(obj.getName())) {
+                    bossRoomBounds = ((RectangleMapObject) obj).getRectangle();
+                    break;
                 }
             }
         }
@@ -281,6 +293,25 @@ public class GameWorld {
             // Turn the flag off so we don't double-hit before the next scheduled tick
             player.triggerScreamDamage = false;
         }
+    }
+
+    public boolean isBossFightActive() {
+        if (bossRoomBounds == null)
+            return false;
+
+        // Check if player is inside the boss room bounds
+        if (!bossRoomBounds.overlaps(player.getBounds()))
+            return false;
+        return true;
+
+        // // Check if the boss is alive.
+        // for (Enemy enemy : enemies) {
+        // if (enemy instanceof FalseKnight && !enemy.isDead) {
+        // return true;
+        // }
+        // }
+
+        // return false;
     }
 
     public void applyCheat(GameCheat cheat) {

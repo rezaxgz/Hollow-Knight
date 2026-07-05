@@ -54,6 +54,10 @@
             "scaleInEditor": 1
         },
         "cd_room_BG_01.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "cd_spikes_BG.tsx": {
             "scaleInDock": 1
         },
         "cd_tollbooth_lamp.tsx": {
@@ -211,6 +215,9 @@
             "scaleInEditor": 1
         },
         "pole_04.tsx": {
+            "scaleInDock": 1
+        },
+        "ruin_village_thing_0002_a.tsx": {
             "scaleInDock": 1
         },
         "ruins_resting_extra_bits_0040_Layer-142.tsx": {
