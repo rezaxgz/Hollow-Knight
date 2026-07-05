@@ -68,6 +68,10 @@ public class Zote {
             animation = ZoteAnimation.IDLE;
             dialogueIndex = 0;
         }
+        if (isTalking && animation == ZoteAnimation.IDLE) {
+            animation = ZoteAnimation.TALK;
+            animationTime = 0;
+        }
     }
 
     public void interact() {
