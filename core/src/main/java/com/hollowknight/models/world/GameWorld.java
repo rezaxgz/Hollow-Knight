@@ -18,6 +18,7 @@ import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyFactory;
 import com.hollowknight.models.enemies.EnemyType;
+import com.hollowknight.models.enemies.FalseKnight;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.npc.Zote;
 import com.hollowknight.models.player.Player;
@@ -164,10 +165,17 @@ public class GameWorld {
                 }
             }
         }
+
     }
 
     private void updateEnemies(float delta) {
         for (Enemy enemy : enemies) {
+            if (enemy instanceof FalseKnight) {
+                if (!enemy.isDead) {
+                    enemy.update(delta, player, solidBlocks);
+                }
+                continue; // Skip standard enemy radius checks
+            }
             float dist = player.position.dst(enemy.position);
             if (dist >= Constants.ENEMY_IGNORE_RADIUS) {
                 continue;
@@ -302,16 +310,15 @@ public class GameWorld {
         // Check if player is inside the boss room bounds
         if (!bossRoomBounds.overlaps(player.getBounds()))
             return false;
-        return true;
 
-        // // Check if the boss is alive.
-        // for (Enemy enemy : enemies) {
-        // if (enemy instanceof FalseKnight && !enemy.isDead) {
-        // return true;
-        // }
-        // }
+        // Check if the boss is alive.
+        for (Enemy enemy : enemies) {
+            if (enemy instanceof FalseKnight && !enemy.isDead) {
+                return true;
+            }
+        }
 
-        // return false;
+        return false;
     }
 
     public void applyCheat(GameCheat cheat) {

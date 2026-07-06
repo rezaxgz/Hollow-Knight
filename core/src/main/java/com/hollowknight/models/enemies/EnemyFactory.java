@@ -15,6 +15,8 @@ public class EnemyFactory {
                 return Mossfly.newEnemy(point);
             case CRYSTAL_GAURDIAN:
                 return CrystalGuardian.newEnemy(point);
+            case FALSE_KNIGHT:
+                return FalseKnight.newEnemy(point);
             default:
                 return null;
         }

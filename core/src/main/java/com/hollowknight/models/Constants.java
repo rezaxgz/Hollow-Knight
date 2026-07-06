@@ -96,6 +96,12 @@ public class Constants {
     // Zote
     public static final float ZOTE_ATTACK_TIME = 0.8f;
 
+    // False Knight
+    public static final int FALSE_KNIGHT_HITBOX_WIDTH = 260;
+    public static final int FALSE_KNIGHT_HITBOX_HEIGHT = 350;
+    public static final int FALSE_KNIGHT_HP = 400;
+    public static final int FALSE_KNIGHT_ATTACK_DAMAGE = 2;
+
     // debug
     public static int a = 0;
     public static int b = 0;

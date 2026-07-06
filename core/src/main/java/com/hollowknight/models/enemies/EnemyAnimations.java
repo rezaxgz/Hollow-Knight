@@ -34,6 +34,22 @@ public enum EnemyAnimations {
     CRYSTALLIZED_TURN("animation/Crystallized/Turn.png", 3, 0.1f, AnimationType.ONESHOT),
     CRYSTALLIZED_DEATH("animation/Crystallized/Death.png", 6, 1.5f, AnimationType.ONESHOT),
 
+    // False Knight
+    FALSE_KNIGHT_IDLE("animation/False_knight/Idle.png", 5, 1f, AnimationType.LOOP_PINGPONG),
+    FALSE_KNIGHT_ATTACK_ANTICIPATE("animation/False_knight/Attack Antic.png", 6, 1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_ATTACK("animation/False_knight/Attack.png", 3, 0.5f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_ATTACK_RECOVER("animation/False_knight/Attack Recover.png", 5, 1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_JUMP_ANTICIPATE("animation/False_knight/Jump Antic.png", 3, 1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_JUMP_ATTACK("animation/False_knight/Jump Attack.png", 8, 1.2f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_JUMP("animation/False_knight/Jump.png", 4, 0.6f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_LAND("animation/False_knight/Land.png", 5, 1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_RUN_ANTICIPATE("animation/False_knight/Run Antic.png", 2, 1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_RUN("animation/False_knight/Run.png", 5, 1f, AnimationType.LOOP_PINGPONG),
+    FALSE_KNIGHT_TURN("animation/False_knight/Turn.png", 2, 0.1f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_STUN_RECOVER("animation/False_knight/Stun Recover.png", 6, 2f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_DEATH("animation/False_knight/Death.png", 14, 3f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_DEATH_HIT("animation/False_knight/DeathHit.png", 3, 0.7f, AnimationType.ONESHOT),
+
     ;
 
     public final String path;
