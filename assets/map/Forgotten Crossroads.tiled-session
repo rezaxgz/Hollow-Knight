@@ -1,5 +1,5 @@
 {
-    "activeFile": "grass animation.tsx",
+    "activeFile": "forgotten_crossroads.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -64,7 +64,9 @@
             "scaleInDock": 1
         },
         "cetipede.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 0.25
         },
         "floor corner.tsx": {
             "scaleInDock": 1,
@@ -82,15 +84,15 @@
         },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
-                8,
                 12,
-                11
+                11,
+                8
             ],
-            "scale": 0.33,
-            "selectedLayer": 18,
+            "scale": 0.25,
+            "selectedLayer": 23,
             "viewCenter": {
-                "x": 2618.181818181818,
-                "y": 1343.939393939394
+                "x": 6256,
+                "y": 1090
             }
         },
         "fung_new_0054_Layer-288.tsx": {
@@ -167,7 +169,9 @@
             "scaleInDock": 1
         },
         "light animation.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 0.25
         },
         "nailmaster_benches_0002_2.tsx": {
             "scaleInDock": 1
@@ -190,7 +194,8 @@
         },
         "nailsmith_light.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 0.25
         },
         "pillar_cell.tsx": {
             "scaleInDock": 1,
@@ -286,23 +291,25 @@
     "openFiles": [
         "forgotten_crossroads.tmx",
         "grass animation.tsx",
-        "grass animation.tsx"
+        "cetipede.tsx",
+        "nailsmith_light.tsx",
+        "light animation.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "forgotten_crossroads.tmx",
+        "light animation.tsx",
+        "nailsmith_light.tsx",
+        "cetipede.tsx",
         "grass animation.tsx",
+        "forgotten_crossroads.tmx",
         "GreenPath.tsx",
         "fung_new_0127_02.tsx",
         "wall1.tsx",
         "fung_new_0131_Layer-238.tsx",
         "pillar_cell.tsx",
         "FG_platform.tsx",
-        "well_extension_0001_1.tsx",
-        "FK_break__0000_wall_default.tsx",
-        "ruins_resting_extra_bits_0040_Layer-142.tsx",
-        "cd_floor_02.tsx"
+        "well_extension_0001_1.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
