@@ -35,6 +35,10 @@
             "scaleInDock": 0.33,
             "scaleInEditor": 1
         },
+        "Slug_Shrine_0000_a.tsx": {
+            "dynamicWrapping": false,
+            "scaleInEditor": 1
+        },
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx": {
             "scaleInDock": 0.5,
             "scaleInEditor": 1
@@ -298,6 +302,7 @@
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "Slug_Shrine_0000_a.tsx",
         "light animation.tsx",
         "nailsmith_light.tsx",
         "cetipede.tsx",
@@ -308,8 +313,7 @@
         "wall1.tsx",
         "fung_new_0131_Layer-238.tsx",
         "pillar_cell.tsx",
-        "FG_platform.tsx",
-        "well_extension_0001_1.tsx"
+        "FG_platform.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
