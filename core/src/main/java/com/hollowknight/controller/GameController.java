@@ -37,6 +37,39 @@ public class GameController {
 
     public boolean handleKeyDown(int keycode) {
         Controls controls = Settings.getInstance().getControls();
+        // debug variables
+        boolean isDebug = false;
+        if (keycode == Input.Keys.NUMPAD_8) {
+            Constants.y++;
+            isDebug = true;
+        } else if (keycode == Input.Keys.NUMPAD_2) {
+            isDebug = true;
+            Constants.y--;
+        } else if (keycode == Input.Keys.NUMPAD_6) {
+            isDebug = true;
+            Constants.x++;
+        } else if (keycode == Input.Keys.NUMPAD_4) {
+            isDebug = true;
+            Constants.x--;
+        } else if (keycode == Input.Keys.NUMPAD_9) {
+            Constants.y1++;
+            isDebug = true;
+        } else if (keycode == Input.Keys.NUMPAD_3) {
+            isDebug = true;
+            Constants.y1--;
+        } else if (keycode == Input.Keys.NUMPAD_7) {
+            isDebug = true;
+            Constants.x1++;
+        } else if (keycode == Input.Keys.NUMPAD_1) {
+            isDebug = true;
+            Constants.x1--;
+        } else if (keycode == Input.Keys.NUMPAD_5) {
+            Constants.flag = !Constants.flag;
+            isDebug = true;
+        }
+        if (isDebug) {
+            System.out.printf("(%d, %d, %d, %d)\n", Constants.x, Constants.y, Constants.x1, Constants.y1);
+        }
         if (keycode == Input.Keys.ESCAPE) {
             PauseModal pauseModal = new PauseModal() {
                 @Override

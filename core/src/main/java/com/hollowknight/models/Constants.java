@@ -103,6 +103,9 @@ public class Constants {
     public static final int FALSE_KNIGHT_ATTACK_DAMAGE = 2;
 
     // debug
-    public static int a = 0;
-    public static int b = 0;
+    public static int x = 0;
+    public static int y = 0;
+    public static int x1 = 0;
+    public static int y1 = 0;
+    public static boolean flag = false;
 }

@@ -47,7 +47,7 @@ public enum EnemyAnimations {
     FALSE_KNIGHT_RUN("animation/False_knight/Run.png", 5, 1f, AnimationType.LOOP_PINGPONG),
     FALSE_KNIGHT_TURN("animation/False_knight/Turn.png", 2, 0.1f, AnimationType.ONESHOT),
     FALSE_KNIGHT_STUN_RECOVER("animation/False_knight/Stun Recover.png", 6, 2f, AnimationType.ONESHOT),
-    FALSE_KNIGHT_DEATH("animation/False_knight/Death.png", 14, 3f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_DEATH("animation/False_knight/Death.png", 14, 1.5f, AnimationType.ONESHOT),
     FALSE_KNIGHT_DEATH_HIT("animation/False_knight/DeathHit.png", 3, 0.7f, AnimationType.ONESHOT),
 
     ;

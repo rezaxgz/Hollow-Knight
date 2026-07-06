@@ -434,8 +434,6 @@ public class FalseKnight extends Enemy {
             case POWER_JUMP_ATTACK:
                 setAnimation(JUMP_ATTACK_ANIMATION);
                 break;
-            default:
-                break;
         }
     }
 
@@ -495,7 +493,22 @@ public class FalseKnight extends Enemy {
 
     @Override
     public Rectangle getBounds() {
-        return new Rectangle(position.x, position.y,
-                Constants.FALSE_KNIGHT_HITBOX_WIDTH, Constants.FALSE_KNIGHT_HITBOX_HEIGHT);
+        Rectangle res = new Rectangle(position.x + Constants.x1, position.y + Constants.y1,
+                Constants.FALSE_KNIGHT_HITBOX_WIDTH + Constants.x, Constants.FALSE_KNIGHT_HITBOX_HEIGHT + Constants.y);
+        return switch (currentState) {
+            case ATTACK -> res;
+            case ATTACK_ANTICIPATE -> res;
+            case ATTACK_RECOVER -> res;
+            case DEAD -> res;
+            case IDLE -> res;
+            case JUMP_ANTICIPATE -> res;
+            case JUMP_ATTACK -> res;
+            case JUMP_BACK -> res;
+            case LAND -> res;
+            case POWER_JUMP_ATTACK -> res;
+            case RUN -> res;
+            case RUN_ANTICIPATE -> res;
+        };
+
     }
 }

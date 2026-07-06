@@ -35,8 +35,15 @@
             "scaleInDock": 0.33,
             "scaleInEditor": 1
         },
+        "No_eyes_temple_0000_6.tsx": {
+            "scaleInDock": 1
+        },
+        "No_eyes_temple_0005_1.tsx": {
+            "scaleInDock": 1
+        },
         "Slug_Shrine_0000_a.tsx": {
             "dynamicWrapping": false,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "SpriteAtlasTexture-Grub_Wall-1024x1024-fmt12.tsx": {
@@ -49,6 +56,12 @@
         "back_mid_wall_no_eyes_temple.tsx": {
             "scaleInDock": 1
         },
+        "break_floor_0007_b1.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_FG_rock_20.tsx": {
+            "scaleInDock": 1
+        },
         "cd_floor_02.tsx": {
             "scaleInDock": 2,
             "scaleInEditor": 1
@@ -57,9 +70,15 @@
             "scaleInDock": 3,
             "scaleInEditor": 1
         },
+        "cd_mid_wall_detail_lamp_l.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_pillar_01.tsx": {
+            "scaleInDock": 1
+        },
         "cd_room_BG_01.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1
+            "scaleInDock": 0.5
         },
         "cd_spikes_BG.tsx": {
             "scaleInDock": 1
@@ -88,15 +107,15 @@
         },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
-                12,
                 11,
-                8
+                8,
+                12
             ],
-            "scale": 0.25,
-            "selectedLayer": 23,
+            "scale": 0.5,
+            "selectedLayer": 20,
             "viewCenter": {
-                "x": 6256,
-                "y": 1090
+                "x": 5274,
+                "y": 1379
             }
         },
         "fung_new_0054_Layer-288.tsx": {
@@ -178,6 +197,9 @@
             "scaleInEditor": 0.25
         },
         "nailmaster_benches_0002_2.tsx": {
+            "scaleInDock": 1
+        },
+        "nailmaster_fung_hut_02.tsx": {
             "scaleInDock": 1
         },
         "nailmaster_hut_01_0001_b.tsx": {
@@ -302,12 +324,12 @@
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "Slug_Shrine_0000_a.tsx",
         "light animation.tsx",
         "nailsmith_light.tsx",
         "cetipede.tsx",
         "grass animation.tsx",
         "forgotten_crossroads.tmx",
+        "Slug_Shrine_0000_a.tsx",
         "GreenPath.tsx",
         "fung_new_0127_02.tsx",
         "wall1.tsx",

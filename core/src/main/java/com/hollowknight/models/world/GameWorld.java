@@ -100,6 +100,9 @@ public class GameWorld {
     }
 
     public void update(float delta) {
+        if (Constants.flag) {
+            return;
+        }
         player.update(delta, solidBlocks);
         checkHazards();
 
@@ -171,9 +174,7 @@ public class GameWorld {
     private void updateEnemies(float delta) {
         for (Enemy enemy : enemies) {
             if (enemy instanceof FalseKnight) {
-                if (!enemy.isDead) {
-                    enemy.update(delta, player, solidBlocks);
-                }
+                enemy.update(delta, player, solidBlocks);
                 continue; // Skip standard enemy radius checks
             }
             float dist = player.position.dst(enemy.position);
