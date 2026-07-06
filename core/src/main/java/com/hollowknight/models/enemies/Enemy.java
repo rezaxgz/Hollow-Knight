@@ -3,8 +3,10 @@ package com.hollowknight.models.enemies;
 import java.util.List;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.Player;
+import com.hollowknight.views.GameAssetManager;
 
 public abstract class Enemy {
     public final Vector2 respawnPosition;
@@ -41,6 +43,7 @@ public abstract class Enemy {
 
     public void takeDamage(int damage, float sourceX) {
         this.hp -= damage;
+        AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
         if (hp <= 0) {
             this.kill();
         }

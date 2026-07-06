@@ -2,6 +2,7 @@ package com.hollowknight.views.screens;
 
 import com.hollowknight.controller.GameController;
 import com.hollowknight.models.world.GameWorld;
+import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.GameRenderer;
 
 public class GameScreen extends AbstractScreen {
@@ -19,6 +20,7 @@ public class GameScreen extends AbstractScreen {
     public void show() {
         super.show();
         renderer.show();
+        GameAssetManager.menuBgm.stop();
     }
 
     @Override

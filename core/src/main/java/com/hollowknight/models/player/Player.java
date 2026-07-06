@@ -513,6 +513,11 @@ public class Player {
         if (status.isInvincible() && !vitals.isDead())
             return;
         AudioController.getInstance().playSfx(GameAssetManager.deathSfx);
+        status.setMovementLocked(true);
+        status.stopVerticalMovement();
+        status.setMovingHorizontally(false);
+        velocity.x = 0;
+        velocity.y = 0;
         combatState = CombatState.DEAD;
     }
 
@@ -527,6 +532,7 @@ public class Player {
         combatState = CombatState.NONE;
         status.setFacingDirection(Constants.RIGHT_DIRECTION);
         status.setMovingHorizontally(false);
+        status.setMovementLocked(false);
     }
 
     // =========================================================================================
