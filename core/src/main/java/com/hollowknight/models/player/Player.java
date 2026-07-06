@@ -4,12 +4,14 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.states.CombatState;
 import com.hollowknight.models.player.states.MovementState;
 import com.hollowknight.models.player.states.PlayerStatus;
 import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
+import com.hollowknight.views.GameAssetManager;
 
 public class Player {
 
@@ -166,6 +168,8 @@ public class Player {
 
                 vitals.addSouls(-Constants.HEALING_COST_IN_SOULS);
                 vitals.heal(1);
+                AudioController.getInstance().playSfx(GameAssetManager.focusHealSfx);
+                AudioController.getInstance().playSfx(GameAssetManager.focusReadySfx);
 
                 if (canFocus()) {
                     animationTime = 0; // Reset focus timer loop
@@ -315,6 +319,11 @@ public class Player {
             velocity.y = Constants.JUMP_SPEED;
             status.useJump();
             movementState = !status.canJump() ? MovementState.DOUBLE_JUMP : MovementState.JUMP;
+            if (movementState == MovementState.JUMP) {
+                AudioController.getInstance().playSfx(GameAssetManager.jumpSfx);
+            } else {
+                AudioController.getInstance().playSfx(GameAssetManager.evadeSfx);
+            }
         }
     }
 
@@ -325,7 +334,7 @@ public class Player {
             movementState = MovementState.DASH;
             status.consumeDash();
             status.setDashTimer(Constants.DASH_DURATION);
-
+            AudioController.getInstance().playSfx(GameAssetManager.dashSfx);
             velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0;
         }
@@ -435,6 +444,7 @@ public class Player {
             return false;
 
         vitals.takeDamage(amount);
+        AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
 
         // Break out of locks cleanly
@@ -478,11 +488,13 @@ public class Player {
             vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
                     Constants.HEALTH_REFIL_TIME);
             animationTime = 0; // Essential for subsequent loop checks
+            AudioController.getInstance().playSfx(GameAssetManager.focusChargingSfx);
         }
     }
 
     public void stopFocus() {
         if (combatState == CombatState.FOCUS) {
+            GameAssetManager.focusChargingSfx.stop();
             combatState = CombatState.NONE;
             unlockMovement();
 
@@ -500,6 +512,7 @@ public class Player {
         // Don't allow instant death on god mode
         if (status.isInvincible() && !vitals.isDead())
             return;
+        AudioController.getInstance().playSfx(GameAssetManager.deathSfx);
         combatState = CombatState.DEAD;
     }
 

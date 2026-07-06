@@ -2,6 +2,7 @@ package com.hollowknight.models.npc;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.player.Player;
 
 public class Zote {
@@ -98,6 +99,10 @@ public class Zote {
                 // If he is already saying a rule and the player presses 'E', stop talking
                 isTalking = false;
             }
+        }
+
+        if (isTalking) {
+            AudioController.getInstance().playRandomZoteVoice();
         }
     }
 

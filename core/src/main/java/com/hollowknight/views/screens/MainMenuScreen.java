@@ -6,7 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.controller.GeneralController;
+import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
 
 public class MainMenuScreen extends AbstractScreen {
@@ -67,6 +69,8 @@ public class MainMenuScreen extends AbstractScreen {
                 Gdx.app.exit();
             }
         });
+
+        AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.hollowknight.views;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -38,8 +39,32 @@ public class GameAssetManager {
 
     public static final Texture eButton = new Texture("E_button.png");
 
+    // Music
+    public static com.badlogic.gdx.audio.Music menuBgm;
+    public static com.badlogic.gdx.audio.Music map1Bgm;
+    public static com.badlogic.gdx.audio.Music map2Bgm;
+
+    // sfx
+    public static com.badlogic.gdx.audio.Sound jumpSfx;
+    public static com.badlogic.gdx.audio.Sound dashSfx;
+    public static com.badlogic.gdx.audio.Sound knightHurtSfx;
+    public static com.badlogic.gdx.audio.Sound evadeSfx;
+    public static com.badlogic.gdx.audio.Sound fallingSfx;
+    public static com.badlogic.gdx.audio.Sound walkSfx;
+    public static com.badlogic.gdx.audio.Sound deathSfx;
+    public static com.badlogic.gdx.audio.Sound focusChargingSfx;
+    public static com.badlogic.gdx.audio.Sound focusHealSfx;
+    public static com.badlogic.gdx.audio.Sound focusReadySfx;
+    public static com.badlogic.gdx.audio.Sound enemyHurtSfx;
+    public static com.badlogic.gdx.audio.Music wallSlideSfx;
+
+    public static Sound[] zoteVoices = new Sound[6];
+
     public static void init() {
         loadSkins();
+        loadMusic();
+        loadSfx();
+        loadZoteVoices();
 
         for (PlayerAnimation type : PlayerAnimation.values()) {
             loadPlayerAnimation(type);
@@ -232,5 +257,33 @@ public class GameAssetManager {
             }
             enemyAnimationMap.put(type, animation);
         }
+    }
+
+    private static void loadSfx() {
+        jumpSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_jump.wav"));
+        dashSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_dash.wav"));
+        knightHurtSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_damage.wav"));
+        evadeSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_evade.wav"));
+        fallingSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_falling.wav"));
+        walkSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_walk_footsteps_stone.wav"));
+        deathSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_death.wav"));
+        focusChargingSfx = Gdx.audio.newSound(Gdx.files.internal("audio/focus_health_charging.wav"));
+        focusHealSfx = Gdx.audio.newSound(Gdx.files.internal("audio/focus_health_heal.wav"));
+        focusReadySfx = Gdx.audio.newSound(Gdx.files.internal("audio/focus_ready.wav"));
+        enemyHurtSfx = Gdx.audio.newSound(Gdx.files.internal("audio/enemy_damage.wav"));
+        wallSlideSfx = Gdx.audio.newMusic(Gdx.files.internal("audio/hero_wall_slide.wav"));
+    }
+
+    private static void loadMusic() {
+        menuBgm = Gdx.audio.newMusic(Gdx.files.internal("audio/mainMenuSong.wav"));
+        map2Bgm = Gdx.audio.newMusic(Gdx.files.internal("audio/crossroads.wav"));
+        map1Bgm = Gdx.audio.newMusic(Gdx.files.internal("audio/S26 Crystal MAIN.wav"));
+    }
+
+    private static void loadZoteVoices() {
+        for (int i = 0; i < 5; i++) {
+            zoteVoices[i] = Gdx.audio.newSound(Gdx.files.internal("audio/Zote/Zote_0" + (i + 1) + ".wav"));
+        }
+        zoteVoices[5] = Gdx.audio.newSound(Gdx.files.internal("audio/Zote/Zote_03 #030084.wav"));
     }
 }

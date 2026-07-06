@@ -12,9 +12,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.language.Language;
 import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.Settings;
+import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
@@ -104,6 +106,7 @@ public class SettingsMenuScreen extends AbstractScreen {
             public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 int value = Math.round(musicSlider.getValue());
                 settings.setMusicLoudness(value);
+                AudioController.getInstance().setMusicVolume(value);
                 musicValueLabel.setText(String.valueOf(value));
             }
         });
@@ -123,6 +126,7 @@ public class SettingsMenuScreen extends AbstractScreen {
             public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 int value = Math.round(sfxSlider.getValue());
                 settings.setSfxLoudness(value);
+                AudioController.getInstance().setSfxVolume(value);
                 sfxValueLabel.setText(String.valueOf(value));
             }
         });
@@ -188,6 +192,8 @@ public class SettingsMenuScreen extends AbstractScreen {
         main.add(backBtn).colspan(3).right().padTop(20);
 
         rootTable.add(main).expand().fill();
+
+        AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
 
     private void addControlRow(Table main, GameActionType actionType, int keyCode) {
