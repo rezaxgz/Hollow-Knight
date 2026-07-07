@@ -38,6 +38,13 @@ public class GameWorld {
     public Zote zote;
     public Rectangle bossRoomBounds;
 
+    private Rectangle activationZone;
+    public Rectangle bossDoor;
+    private Vector2 falseKnightSpawnPoint;
+    private boolean bossFightActivated = false;
+    private boolean bossFightCompleted = false;
+    public float gateDropProgress = 0.0f;
+
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(save.gameLevel.tmxPath);
@@ -69,7 +76,11 @@ public class GameWorld {
             Object typeObj = obj.getProperties().get("type");
             int type = typeObj != null ? (int) typeObj : 0;
             EnemyType enemyType = EnemyType.fromInt(type);
-            enemies.add(EnemyFactory.newEnemy(point, enemyType));
+            if (enemyType == EnemyType.FALSE_KNIGHT) {
+                falseKnightSpawnPoint = point;
+            } else {
+                enemies.add(EnemyFactory.newEnemy(point, enemyType));
+            }
         }
 
         MapLayer zoteLayer = map.getLayers().get("Zote");
@@ -96,11 +107,26 @@ public class GameWorld {
                 }
             }
         }
+
+        MapLayer bossLayer = map.getLayers().get("Boss");
+        if (bossLayer != null) {
+            for (MapObject obj : bossLayer.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                    if ("activationZone".equals(obj.getName())) {
+                        activationZone = rect;
+                    } else if ("BossDoor".equals(obj.getName())) {
+                        bossDoor = rect;
+                    }
+                }
+            }
+        }
     }
 
     public void update(float delta) {
         if (Constants.flag)
             return;
+        updateBossFight(delta);
         player.update(delta, solidBlocks);
         checkHazards();
         updateEnemies(delta);
@@ -113,6 +139,58 @@ public class GameWorld {
 
         if (zote != null)
             zote.update(delta, player);
+    }
+
+    private void updateBossFight(float delta) {
+        // 1. Check for Activation Trigger
+        if (activationZone != null && !bossFightActivated && !bossFightCompleted) {
+            if (player.getBounds().overlaps(activationZone)) {
+                bossFightActivated = true;
+
+                // Spawn the False Knight boss dynamically
+                if (falseKnightSpawnPoint != null) {
+                    enemies.add(EnemyFactory.newEnemy(falseKnightSpawnPoint, EnemyType.FALSE_KNIGHT));
+                }
+
+                // Close the doors by turning them into hard collision blocks
+                solidBlocks.add(bossDoor);
+            }
+        }
+
+        // 2. Check for Boss Defeat
+        if (bossFightActivated && !bossFightCompleted) {
+            boolean bossIsDead = true;
+            for (Enemy enemy : enemies) {
+                if (enemy instanceof FalseKnight) {
+                    if (!enemy.isDead) {
+                        bossIsDead = false;
+                        break;
+                    }
+                }
+            }
+
+            // If the boss was spawned and is now dead, lift doors
+            if (bossIsDead) {
+                bossFightActivated = false;
+                bossFightCompleted = true;
+
+                // Open the room by clearing out the door solid fields
+                solidBlocks.remove(bossDoor);
+            }
+        }
+
+        if (bossFightActivated) {
+            // Slam down quickly (multiplied by 4f means it takes 0.25 seconds to fall
+            // completely)
+            gateDropProgress += delta * 4f;
+            if (gateDropProgress > 1f)
+                gateDropProgress = 1f;
+        } else if (bossFightCompleted) {
+            // Lift up slightly slower (multiplied by 2f means it takes 0.5 seconds to open)
+            gateDropProgress -= delta * 2f;
+            if (gateDropProgress < 0f)
+                gateDropProgress = 0f;
+        }
     }
 
     private void checkSpiritCastAttacks() {
@@ -283,16 +361,8 @@ public class GameWorld {
         }
     }
 
-    public boolean isBossFightActive() {
-        if (bossRoomBounds == null)
-            return false;
-        if (!bossRoomBounds.overlaps(player.getBounds()))
-            return false;
-        for (Enemy enemy : enemies) {
-            if (enemy instanceof FalseKnight && !enemy.isDead)
-                return true;
-        }
-        return false;
+    public boolean isBossFightActivated() {
+        return bossFightActivated && !bossFightCompleted;
     }
 
     public void applyCheat(GameCheat cheat) {

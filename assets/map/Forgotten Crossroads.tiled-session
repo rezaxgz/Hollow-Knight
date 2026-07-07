@@ -91,6 +91,9 @@
             "scaleInDock": 0.5,
             "scaleInEditor": 0.25
         },
+        "crossroads_false_door_0000_4.tsx": {
+            "scaleInDock": 1
+        },
         "floor corner.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 4

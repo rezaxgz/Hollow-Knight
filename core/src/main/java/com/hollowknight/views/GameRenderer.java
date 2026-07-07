@@ -163,6 +163,7 @@ public class GameRenderer {
         renderLasers(batch);
         renderZote(batch);
         renderShockwaves(batch);
+        renderBossFightEffects(batch);
         batch.end();
 
         mapRenderer.render(foregroundLayers);
@@ -186,6 +187,20 @@ public class GameRenderer {
 
         stage.act();
         stage.draw();
+    }
+
+    private void renderBossFightEffects(SpriteBatch batch) {
+        Rectangle bossDoor = world.bossDoor;
+        // When progress is 0, visual Y is shifted up by its entire height (hidden in
+        // ceiling)
+        // When progress is 1, visual Y is exactly doorBounds.y (resting on ground)
+        float animatedY = bossDoor.y + (bossDoor.height * (1f - world.gateDropProgress));
+
+        batch.draw(GameAssetManager.gateTexture,
+                bossDoor.x,
+                animatedY,
+                bossDoor.width,
+                bossDoor.height);
     }
 
     private void renderShockwaves(SpriteBatch batch) {

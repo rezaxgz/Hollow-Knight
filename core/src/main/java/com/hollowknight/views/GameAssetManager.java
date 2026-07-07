@@ -31,6 +31,7 @@ public class GameAssetManager {
     public static final HashMap<ZoteAnimation, Animation<TextureRegion>> zoteAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
+    public static final Texture gateTexture = new Texture("sprites/bossDoor.png");
 
     public static final Texture[] soulsTextures = new Texture[19];
 
