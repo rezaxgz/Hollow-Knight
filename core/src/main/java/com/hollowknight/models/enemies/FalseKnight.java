@@ -446,7 +446,7 @@ public class FalseKnight extends Enemy {
     }
 
     @Override
-    public void takeDamage(int damage, float sourceX, boolean knockback) {
+    public void takeDamage(int damage, float sourceX, boolean knockback, float knockbackMultiplier) {
         if (isDead)
             return;
 
@@ -465,7 +465,7 @@ public class FalseKnight extends Enemy {
             if (actualDamage <= 0)
                 return;
 
-            super.takeDamage(actualDamage, sourceX, false);
+            super.takeDamage(actualDamage, sourceX, false, knockbackMultiplier);
             damageTakenDuringStun += actualDamage;
 
             // Switch animation and ALWAYS reset animation timer as requested
@@ -474,7 +474,7 @@ public class FalseKnight extends Enemy {
             return;
         }
 
-        super.takeDamage(damage, sourceX, true);
+        super.takeDamage(damage, sourceX, true, knockbackMultiplier);
 
         if (!hasBeenStunned && this.hp <= FALSE_KNIGHT_HP / 2) {
             hasBeenStunned = true;

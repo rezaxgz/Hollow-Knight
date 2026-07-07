@@ -1,13 +1,16 @@
 package com.hollowknight.models.player;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.player.states.CombatState;
 import com.hollowknight.models.player.states.MovementState;
 import com.hollowknight.models.player.states.PlayerStatus;
@@ -40,6 +43,10 @@ public class Player {
 
     // Effects
     public List<ActiveEffect> activeEffects = new ArrayList<>();
+
+    // Inventory & Charms
+    public CharmType[] charmNotches = { null, null, null };
+    private Set<Enemy> hitEnemiesThisDash = new HashSet<Enemy>();
 
     // =========================================================================================
     // CONSTRUCTOR
@@ -157,14 +164,17 @@ public class Player {
         if (movementState != MovementState.DASH)
             return false;
 
-        velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
+        float dashSpeed = hasCharm(CharmType.SHARP_SHADOW) ? Constants.DASH_SPEED * 1.2f : Constants.DASH_SPEED;
+        velocity.x = dashSpeed * status.getFacingDirection();
         velocity.y = 0; // Ignore gravity while dashing
 
         updatePosition(delta, solidBlocks);
 
         if (status.getDashTimer() <= 0) {
             setStateAfterDash();
-            status.setDashCooldownTimer(Constants.DASH_COOLDOWN);
+            float cooldown = hasCharm(CharmType.DASH_MASTER) ? Constants.DASH_COOLDOWN * 0.5f : Constants.DASH_COOLDOWN;
+            status.setDashCooldownTimer(cooldown);
+            hitEnemiesThisDash.clear();
         }
 
         updateAnimation();
@@ -179,7 +189,10 @@ public class Player {
         velocity.y += Constants.GRAVITY * delta;
         updatePosition(delta, solidBlocks);
 
-        if (animationTime >= Constants.HEALTH_REFIL_TIME) {
+        float healTime = hasCharm(CharmType.QUICK_FOCUS) ? Constants.HEALTH_REFIL_TIME * 0.8f
+                : Constants.HEALTH_REFIL_TIME;
+
+        if (animationTime >= healTime) {
             if (vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
                     && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH) {
 
@@ -191,7 +204,7 @@ public class Player {
                 if (canFocus()) {
                     animationTime = 0; // Reset focus timer loop
                     vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
-                            Constants.HEALTH_REFIL_TIME);
+                            healTime);
                 } else {
                     stopFocus();
                 }
@@ -353,7 +366,8 @@ public class Player {
             status.setDashTimer(Constants.DASH_DURATION);
             addEffect(PlayerEffectAnimation.DASH);
             AudioController.getInstance().playSfx(GameAssetManager.dashSfx);
-            velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
+            float dashSpeed = hasCharm(CharmType.SHARP_SHADOW) ? Constants.DASH_SPEED * 1.2f : Constants.DASH_SPEED;
+            velocity.x = dashSpeed * status.getFacingDirection();
             velocity.y = 0;
         }
     }
@@ -412,7 +426,8 @@ public class Player {
         }
 
         combatState = CombatState.ATTACK;
-        status.setAttackTimer(Constants.SLASH_TIME);
+        float slashTime = hasCharm(CharmType.QUICK_SLASH) ? Constants.SLASH_TIME * 0.6f : Constants.SLASH_TIME;
+        status.setAttackTimer(slashTime);
 
         if (status.isHoldingUp()) {
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
@@ -443,7 +458,13 @@ public class Player {
             combatState = CombatState.SCREAM;
             status.setScreamTimer(Constants.SOUL_SCREAM_TIME);
             status.setScreamTicksApplied(0);
-            addEffect(PlayerEffectAnimation.SOUL_SCREAM);
+
+            if (hasCharm(CharmType.VOID_HEART)) {
+                addEffect(PlayerEffectAnimation.SHADOW_SCREAM);
+            } else {
+                addEffect(PlayerEffectAnimation.SOUL_SCREAM);
+            }
+
             triggerScreamDamage = false;
         }
     }
@@ -517,8 +538,9 @@ public class Player {
                 combatState = CombatState.FOCUS;
                 lockMovement();
             }
-            vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
-                    Constants.HEALTH_REFIL_TIME);
+            float healTime = hasCharm(CharmType.QUICK_FOCUS) ? Constants.HEALTH_REFIL_TIME * 0.8f
+                    : Constants.HEALTH_REFIL_TIME;
+            vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS, healTime);
             animationTime = 0; // Essential for subsequent loop checks
             AudioController.getInstance().playSfx(GameAssetManager.focusChargingSfx);
         }
@@ -636,7 +658,11 @@ public class Player {
         } else if (combatState == CombatState.DEAD) {
             targetAnimation = PlayerAnimation.DEAD;
         } else if (combatState == CombatState.FOCUS) {
-            targetAnimation = PlayerAnimation.FOCUS;
+            if (hasCharm(CharmType.QUICK_FOCUS)) {
+                targetAnimation = PlayerAnimation.QUICK_FOCUS;
+            } else {
+                targetAnimation = PlayerAnimation.FOCUS;
+            }
         } else if (combatState == CombatState.ATTACK) {
             targetAnimation = currentAttackAnimation;
         } else if (combatState == CombatState.HURT) {
@@ -647,7 +673,9 @@ public class Player {
             targetAnimation = PlayerAnimation.CAST;
         } else {
             switch (movementState) {
-                case DASH -> targetAnimation = PlayerAnimation.DASH;
+                case DASH ->
+                    targetAnimation = hasCharm(CharmType.SHARP_SHADOW) ? PlayerAnimation.SHARP_SHADOW_DASH
+                            : PlayerAnimation.DASH;
                 case DOUBLE_JUMP -> targetAnimation = PlayerAnimation.DOUBLE_JUMP;
                 case JUMP -> targetAnimation = PlayerAnimation.JUMP;
                 case FALL -> targetAnimation = PlayerAnimation.FALL;
@@ -738,5 +766,58 @@ public class Player {
             case TP_TO_BOSS -> {
             }
         }
+    }
+
+    // =========================================================================================
+    // CHARM EFFECTS & STATS
+    // =========================================================================================
+
+    public boolean hasCharm(CharmType charmType) {
+        for (CharmType charm : charmNotches) {
+            if (charm != null && charm == charmType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean shouldDamageWithDash(Enemy enemy) {
+        return hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH
+                && !hitEnemiesThisDash.contains(enemy);
+    }
+
+    public boolean shouldTakeDamageWithCollision() {
+        return !(hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH);
+    }
+
+    public void hitEnemyWithDash(Enemy enemy) {
+        hitEnemiesThisDash.add(enemy);
+        enemy.takeDamage(Constants.SHARP_SHADOW_DASH_DAMAGE, position.x, true, 0.3f);
+    }
+
+    public int getNailDamage() {
+        return hasCharm(CharmType.UNBREAKABLE_STRENGHT) ? (int) (Constants.PLAYER_SLASH_DAMAGE * 1.5f)
+                : Constants.PLAYER_SLASH_DAMAGE;
+    }
+
+    public int getSoulHitBonus() {
+        return hasCharm(CharmType.SOUL_CATCHER) ? (int) (Constants.SUCCESSFUL_ATTACK_SOUL_BONUS * 1.5f)
+                : Constants.SUCCESSFUL_ATTACK_SOUL_BONUS;
+    }
+
+    public float getKnockbackMultiplier() {
+        return hasCharm(CharmType.HEAVY_BLOW) ? 1.5f : 1.0f;
+    }
+
+    public int getSpellDamage(int baseDamage) {
+        return hasCharm(CharmType.VOID_HEART) ? (int) (baseDamage * 1.5f) : baseDamage;
+    }
+
+    public PlayerEffectAnimation getProjectileAnimation() {
+        return hasCharm(CharmType.VOID_HEART) ? PlayerEffectAnimation.SHADOW_BALL : PlayerEffectAnimation.SOUL_BALL;
+    }
+
+    public PlayerEffectAnimation getProjectileEndAnimation() {
+        return hasCharm(CharmType.VOID_HEART) ? null : PlayerEffectAnimation.SOUL_BALL_END;
     }
 }

@@ -31,6 +31,7 @@ public class Constants {
     public static final float KNOCKBACK_SPEED_X = 500f; // Horizontal push force
     public static final float KNOCKBACK_SPEED_Y = 430f; // Vertical pop-up force
     public static final int ATTACK_HIT_SOULS_BONUS = 11;
+    public static final int SHARP_SHADOW_DASH_DAMAGE = 7;
 
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;

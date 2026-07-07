@@ -3,6 +3,7 @@ package com.hollowknight.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.settings.Controls;
 import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
@@ -90,6 +91,14 @@ public class GameController {
                 world.applyCheat(cheat);
                 return false;
             }
+        }
+
+        if (keycode <= Input.Keys.NUM_8 && keycode >= Input.Keys.NUM_1) {
+            int i = keycode - Input.Keys.NUM_1;
+            world.player.charmNotches[0] = CharmType.values()[i];
+            System.out.println("activated " + i);
+        } else if (keycode == Input.Keys.NUM_0) {
+            world.player.charmNotches[0] = null;
         }
 
         GameActionType action = controls.getAction(keycode);

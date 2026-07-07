@@ -19,15 +19,18 @@ public class PlayerProjectile {
     public boolean isFinished = false;
     public float animationTime = 0;
 
+    private int damage;
+
     // Tracks enemies hit so we don't apply damage every single frame
     private Set<Enemy> hitEnemies = new HashSet<>();
 
-    public PlayerProjectile(Vector2 startPos, int direction) {
+    public PlayerProjectile(Vector2 startPos, int direction, int damage) {
         this.position = new Vector2(startPos);
         // Spawn slightly in front of the player
         this.position.x += direction * (Constants.PLAYER_HITBOX_WIDTH + 10f);
         this.startX = this.position.x;
         this.direction = direction;
+        this.damage = damage;
     }
 
     public void update(float delta, List<Rectangle> solidBlocks, List<Enemy> enemies) {
@@ -66,7 +69,7 @@ public class PlayerProjectile {
                 continue;
 
             if (bounds.overlaps(enemy.getBounds())) {
-                enemy.takeDamage(Constants.PROJECTILE_DAMAGE, position.x, true);
+                enemy.takeDamage(damage, position.x, true, 0.5f);
                 hitEnemies.add(enemy);
             }
         }

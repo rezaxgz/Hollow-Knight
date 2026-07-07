@@ -41,7 +41,7 @@ public abstract class Enemy {
         this.velocity.set(0, 0);
     }
 
-    public void takeDamage(int damage, float sourceX, boolean knockback) {
+    public void takeDamage(int damage, float sourceX, boolean knockback, float knockbackMultiplier) {
         this.hp -= damage;
         AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
         if (hp <= 0) {
@@ -51,8 +51,8 @@ public abstract class Enemy {
         if (knockback) {
             this.knockbackTimer = Constants.ENEMY_KNOCKBACK_DURATION;
             float knockbackDir = (this.position.x < sourceX) ? -1f : 1f;
-            this.velocity.x = Constants.ENEMY_KNOCKBACK_SPEED_X * knockbackDir;
-            this.velocity.y = Constants.ENEMY_KNOCKBACK_SPEED_Y;
+            this.velocity.x = Constants.ENEMY_KNOCKBACK_SPEED_X * knockbackDir * knockbackMultiplier;
+            this.velocity.y = Constants.ENEMY_KNOCKBACK_SPEED_Y * knockbackMultiplier;
             this.isOnGround = false;
         }
     }

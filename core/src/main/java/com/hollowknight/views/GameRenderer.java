@@ -22,6 +22,7 @@ import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.enemies.FalseKnight;
 import com.hollowknight.models.player.ActiveEffect;
+import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffectAnimation;
 import com.hollowknight.models.world.GameWorld;
@@ -366,13 +367,15 @@ public class GameRenderer {
 
     private void renderProjectiles(SpriteBatch batch) {
         for (PlayerProjectile proj : world.projectiles) {
-            PlayerEffectAnimation effectType = proj.isExploding ? PlayerEffectAnimation.SOUL_BALL_END
-                    : PlayerEffectAnimation.SOUL_BALL;
+            PlayerEffectAnimation effectType = world.player.hasCharm(CharmType.VOID_HEART)
+                    ? (proj.isExploding ? PlayerEffectAnimation.SHADOW_BALL_END : PlayerEffectAnimation.SHADOW_BALL)
+                    : (proj.isExploding ? PlayerEffectAnimation.SOUL_BALL_END
+                            : PlayerEffectAnimation.SOUL_BALL);
             Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
             TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
             float spriteWidth = keyFrame.getRegionWidth();
             float spriteHeight = keyFrame.getRegionHeight();
-            float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) / 2f;
+            float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) * 0.75f;
             float yOffset = (spriteHeight - Constants.PROJECTILE_SIZE) / 2f;
             batch.draw(keyFrame, proj.position.x - xOffset, proj.position.y - yOffset,
                     spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, proj.direction, 1, 0);

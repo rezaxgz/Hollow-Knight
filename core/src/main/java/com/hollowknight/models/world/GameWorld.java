@@ -203,7 +203,8 @@ public class GameWorld {
         if (player.combatState == CombatState.CAST && player.triggerSpiritCast) {
             Vector2 spawnPos = new Vector2(player.position.x,
                     player.position.y + Constants.PLAYER_HITBOX_HEIGHT / 2 - Constants.PROJECTILE_SIZE / 2);
-            projectiles.add(new PlayerProjectile(spawnPos, player.getDirection()));
+            projectiles.add(new PlayerProjectile(spawnPos, player.getDirection(),
+                    player.getSpellDamage(Constants.PROJECTILE_DAMAGE)));
             player.triggerSpiritCast = false;
         }
     }
@@ -312,7 +313,11 @@ public class GameWorld {
 
             // Standard Body Contact collision
             if (playerBounds.overlaps(enemy.getBounds())) {
-                player.takeDamage(enemy.getCollisionDamage(), enemy.position.x);
+                if (player.shouldDamageWithDash(enemy)) {
+                    player.hitEnemyWithDash(enemy);
+                } else if (player.shouldTakeDamageWithCollision()) {
+                    player.takeDamage(enemy.getCollisionDamage(), enemy.position.x);
+                }
                 break;
             }
         }
@@ -337,9 +342,9 @@ public class GameWorld {
 
             if (attackBounds.overlaps(enemy.getBounds())) {
                 if (!enemiesHitThisAttack.contains(enemy)) {
-                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE, player.position.x, true);
+                    enemy.takeDamage(player.getNailDamage(), player.position.x, true, player.getKnockbackMultiplier());
                     enemiesHitThisAttack.add(enemy);
-                    player.getVitals().addSouls(Constants.ATTACK_HIT_SOULS_BONUS);
+                    player.getVitals().addSouls(player.getSoulHitBonus());
                     if (isDownSlashing)
                         player.pogo();
                 }
@@ -360,7 +365,8 @@ public class GameWorld {
                     continue;
 
                 if (screamHitbox.overlaps(enemy.getBounds())) {
-                    enemy.takeDamage(Constants.SOUL_SCREAM_TICK_DAMAGE, player.position.x, true);
+                    enemy.takeDamage(player.getSpellDamage(Constants.SOUL_SCREAM_TICK_DAMAGE), player.position.x, true,
+                            0.5f);
                 }
             }
             player.triggerScreamDamage = false;
