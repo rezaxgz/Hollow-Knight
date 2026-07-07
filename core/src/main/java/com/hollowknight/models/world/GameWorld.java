@@ -34,6 +34,7 @@ public class GameWorld {
     public List<Enemy> enemies = new ArrayList<>();
     private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
     public List<PlayerProjectile> projectiles = new ArrayList<>();
+    public List<Rectangle> regions = new ArrayList<>();
     public Zote zote;
     public Rectangle bossRoomBounds;
 
@@ -85,9 +86,13 @@ public class GameWorld {
         MapLayer regionsLayer = map.getLayers().get("Regions");
         if (regionsLayer != null) {
             for (MapObject obj : regionsLayer.getObjects()) {
-                if (obj instanceof RectangleMapObject && "BossRoom".equals(obj.getName())) {
-                    bossRoomBounds = ((RectangleMapObject) obj).getRectangle();
-                    break;
+                if (obj instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                    regions.add(rect); // Store every region
+
+                    if ("BossRoom".equals(obj.getName())) {
+                        bossRoomBounds = rect;
+                    }
                 }
             }
         }

@@ -13,7 +13,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -43,6 +42,8 @@ public class GameRenderer {
     private float mapHeight;
     private int[] backgroundLayers;
     private int[] foregroundLayers;
+
+    private boolean isCameraInitialized = false;
 
     public GameRenderer(GameWorld world) {
         this.world = world;
@@ -90,22 +91,58 @@ public class GameRenderer {
     }
 
     private void setCameraPosition() {
-        Vector2 pos = world.player.position.cpy();
-        camera.position.set(pos, 0);
+        Rectangle currentRegion = null;
+        Rectangle playerBounds = world.player.getBounds();
+
+        // Use the center of the player to determine region overlap
+        float playerCenterX = playerBounds.x + playerBounds.width / 2f;
+        float playerCenterY = playerBounds.y + playerBounds.height / 2f;
+
+        // Find which region the player is currently in
+        for (Rectangle region : world.regions) {
+            if (region.contains(playerCenterX, playerCenterY)) {
+                currentRegion = region;
+                break;
+            }
+        }
+
+        // Define bounding limits based on the current region, fallback to the entire
+        // map
+        float minX = currentRegion != null ? currentRegion.x : 0;
+        float minY = currentRegion != null ? currentRegion.y : 0;
+        float maxX = currentRegion != null ? currentRegion.x + currentRegion.width : mapWidth;
+        float maxY = currentRegion != null ? currentRegion.y + currentRegion.height : mapHeight;
 
         float cameraHalfWidth = camera.viewportWidth / 2f;
         float cameraHalfHeight = camera.viewportHeight / 2f;
 
-        if (mapWidth > camera.viewportWidth) {
-            camera.position.x = MathUtils.clamp(camera.position.x, cameraHalfWidth, mapWidth - cameraHalfWidth);
+        float targetX = world.player.position.x;
+        float targetY = world.player.position.y;
+
+        // Clamp target X to region boundaries
+        if (maxX - minX > camera.viewportWidth) {
+            targetX = MathUtils.clamp(targetX, minX + cameraHalfWidth, maxX - cameraHalfWidth);
         } else {
-            camera.position.x = mapWidth / 2f;
+            // Center the camera horizontally if the region is smaller than the viewport
+            targetX = minX + (maxX - minX) / 2f;
         }
 
-        if (mapHeight > camera.viewportHeight) {
-            camera.position.y = MathUtils.clamp(camera.position.y, cameraHalfHeight, mapHeight - cameraHalfHeight);
+        // Clamp target Y to region boundaries
+        if (maxY - minY > camera.viewportHeight) {
+            targetY = MathUtils.clamp(targetY, minY + cameraHalfHeight, maxY - cameraHalfHeight);
         } else {
-            camera.position.y = mapHeight / 2f;
+            // Center the camera vertically if the region is smaller than the viewport
+            targetY = minY + (maxY - minY) / 2f;
+        }
+
+        // Apply smooth camera follow or snap instantly on the very first frame
+        if (!isCameraInitialized) {
+            camera.position.set(targetX, targetY, 0);
+            isCameraInitialized = true;
+        } else {
+            float lerpSpeed = 5.0f;
+            camera.position.x += (targetX - camera.position.x) * lerpSpeed * Gdx.graphics.getDeltaTime();
+            camera.position.y += (targetY - camera.position.y) * lerpSpeed * Gdx.graphics.getDeltaTime();
         }
     }
 
