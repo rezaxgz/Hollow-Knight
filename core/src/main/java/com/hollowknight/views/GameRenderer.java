@@ -20,6 +20,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
+import com.hollowknight.models.enemies.EnemyAnimations;
+import com.hollowknight.models.enemies.FalseKnight;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffect;
 import com.hollowknight.models.world.GameWorld;
@@ -33,16 +35,11 @@ public class GameRenderer {
     GameProcessor gameProcessor;
     Stage stage;
     GameWorld world;
-
     private OrthogonalTiledMapRenderer mapRenderer;
-
     private HUDRenderer hudRenderer;
     private OrthographicCamera hudCamera;
-
     private float mapWidth;
     private float mapHeight;
-
-    // Arrays to hold the layer indices
     private int[] backgroundLayers;
     private int[] foregroundLayers;
 
@@ -65,7 +62,6 @@ public class GameRenderer {
 
         mapRenderer = new OrthogonalTiledMapRenderer(world.map);
 
-        // Extract map dimensions from properties
         int tileWidth = world.map.getProperties().get("tilewidth", Integer.class);
         int tileHeight = world.map.getProperties().get("tileheight", Integer.class);
         int mapWidthInTiles = world.map.getProperties().get("width", Integer.class);
@@ -74,7 +70,6 @@ public class GameRenderer {
         this.mapWidth = mapWidthInTiles * tileWidth;
         this.mapHeight = mapHeightInTiles * tileHeight;
 
-        // Define your layers here.
         backgroundLayers = new int[] {
                 world.map.getLayers().getIndex("background"),
                 world.map.getLayers().getIndex("main")
@@ -86,9 +81,7 @@ public class GameRenderer {
 
         hudRenderer = new HUDRenderer(world);
         hudCamera = new OrthographicCamera();
-        hudCamera.setToOrtho(false,
-                Gdx.graphics.getWidth(),
-                Gdx.graphics.getHeight());
+        hudCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void resize(int width, int height) {
@@ -96,94 +89,109 @@ public class GameRenderer {
     }
 
     private void setCameraPosition() {
-        // Track the player first
         Vector2 pos = world.player.position.cpy();
-
         camera.position.set(pos, 0);
 
         float cameraHalfWidth = camera.viewportWidth / 2f;
         float cameraHalfHeight = camera.viewportHeight / 2f;
 
-        // Clamp X: Ensure camera doesn't spill past left/right edges of the whole map
         if (mapWidth > camera.viewportWidth) {
             camera.position.x = MathUtils.clamp(camera.position.x, cameraHalfWidth, mapWidth - cameraHalfWidth);
         } else {
             camera.position.x = mapWidth / 2f;
         }
 
-        // Clamp Y: Ensure camera doesn't spill past bottom/top edges of the whole map
         if (mapHeight > camera.viewportHeight) {
             camera.position.y = MathUtils.clamp(camera.position.y, cameraHalfHeight, mapHeight - cameraHalfHeight);
         } else {
             camera.position.y = mapHeight / 2f;
         }
-
     }
 
     public void render() {
         setCameraPosition();
         camera.update();
-
         mapRenderer.setView(camera);
 
-        // 1. Render Background and Main map layers FIRST
         mapRenderer.render(backgroundLayers);
 
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
-
         batch.begin();
-
-        // 2 Render enemies and player
         renderEnemies(batch);
         renderPlayer(batch);
         renderPlayerEffects(batch);
         renderProjectiles(batch);
         renderLasers(batch);
         renderZote(batch);
-
+        renderShockwaves(batch);
         batch.end();
 
-        // 3. Render the Foreground map layer OVER the player
         mapRenderer.render(foregroundLayers);
 
-        // 4. render HUD
         hudCamera.update();
         hudRenderer.render(hudCamera);
 
-        // 5. Render Debug Shapes
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        // Render player hitboxe
         shapeRenderer.setColor(Color.GREEN);
         renderPlayerHitBox(shapeRenderer);
-        // Render enemy hitboxes
+
         shapeRenderer.setColor(Color.RED);
         renderEnemyHitBoxes(shapeRenderer);
         renderProjectileHitboxes(shapeRenderer);
-        // Render player attack hitboxes
+
         shapeRenderer.setColor(Color.ORANGE);
         renderPlayerAttackHitboxe(shapeRenderer);
-
         shapeRenderer.end();
 
         renderZoteDialouges(batch);
 
-        // 6. Update and Draw Stage (UI)
         stage.act();
         stage.draw();
     }
 
+    private void renderShockwaves(SpriteBatch batch) {
+        for (Enemy enemy : world.enemies) {
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+
+                for (FalseKnight.Shockwave wave : fk.shockwaves) {
+                    Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap
+                            .get(EnemyAnimations.FALSE_KNIGHT_SHOCKWAVE);
+
+                    // Assumes your Shockwave class has an animationTime tracker.
+                    // If it doesn't, you will need to add one to FalseKnight.Shockwave and update
+                    // it in your GameProcessor.
+                    TextureRegion frame = animation.getKeyFrame(wave.lifetime);
+
+                    float spriteWidth = frame.getRegionWidth();
+                    float spriteHeight = frame.getRegionHeight();
+
+                    // Centers the sprite on the hitbox bounds
+                    float xOffset = (spriteWidth - wave.bounds.width) / 2f;
+
+                    // Assumes you want to flip the sprite based on travel direction.
+                    // If your wave stores direction (e.g., 1 for right, -1 for left), replace the
+                    // '1' scaleX parameter below with wave.direction
+                    batch.draw(frame,
+                            wave.bounds.x - xOffset,
+                            wave.bounds.y + spriteHeight / 2 - 15,
+                            spriteWidth / 2f, spriteHeight / 2f,
+                            spriteWidth, spriteHeight,
+                            wave.getDir() * 2, 2, 0); // Change the first '1' to -1 or wave.direction to flip
+                                                      // horizontally
+                }
+            }
+        }
+    }
+
     private void renderEnemies(SpriteBatch batch) {
         for (Enemy enemy : world.enemies) {
-
             Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
-
             TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
             float spriteWidth = frame.getRegionWidth();
             float spriteHeight = frame.getRegionHeight();
 
-            // Simple camera culling
             if (enemy.position.x + spriteWidth < camera.position.x - viewport.getWorldWidth() / 2f ||
                     enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
                     enemy.position.y + spriteHeight < camera.position.y - viewport.getWorldHeight() / 2f ||
@@ -192,17 +200,10 @@ public class GameRenderer {
             }
 
             float xOffset = (spriteWidth - enemy.getBounds().width) / 2f;
-            batch.draw(
-                    frame,
-                    enemy.position.x - xOffset,
-                    enemy.position.y,
-                    spriteWidth / 2f,
-                    0,
-                    spriteWidth,
-                    spriteHeight,
-                    -enemy.facingDirection, // 1 = right, -1 = left
-                    1,
-                    0);
+            float yOffset = (enemy instanceof FalseKnight) ? -30 : 0;
+            batch.draw(frame, enemy.position.x - xOffset, enemy.position.y + yOffset,
+                    spriteWidth / 2f, 0, spriteWidth, spriteHeight,
+                    -enemy.facingDirection, 1, 0);
         }
     }
 
@@ -215,14 +216,31 @@ public class GameRenderer {
                 }
             }
 
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+
+                // 1. Render Melee Attack Hitbox (Magenta)
+                Rectangle mace = fk.getActiveAttackHitbox();
+                if (mace != null) {
+                    shapeRenderer.setColor(Color.MAGENTA);
+                    shapeRenderer.rect(mace.x, mace.y, mace.width, mace.height);
+                }
+
+                // 2. Render Floor Shockwaves (Yellow)
+                shapeRenderer.setColor(Color.YELLOW);
+                for (FalseKnight.Shockwave wave : fk.shockwaves) {
+                    shapeRenderer.rect(wave.bounds.x, wave.bounds.y, wave.bounds.width, wave.bounds.height);
+                }
+
+                // Reset color back to Red for the main body hitboxes
+                shapeRenderer.setColor(Color.RED);
+            }
+
             Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
-
             TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
-
             float width = frame.getRegionWidth();
             float height = frame.getRegionHeight();
 
-            // Simple camera culling
             if (enemy.position.x + width < camera.position.x - viewport.getWorldWidth() / 2f ||
                     enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
                     enemy.position.y + height < camera.position.y - viewport.getWorldHeight() / 2f ||
@@ -240,19 +258,10 @@ public class GameRenderer {
             if (enemy instanceof CrystalGuardian) {
                 CrystalGuardian guardian = (CrystalGuardian) enemy;
                 Rectangle laserBounds = guardian.getActiveLaserBounds(world.solidBlocks);
-
                 if (laserBounds != null) {
-                    // Enable Additive Blending: Black becomes transparent, colors glow!
                     batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
-
-                    // Draw the laser stretched over the calculated bounds
                     batch.draw(GameAssetManager.laserTexture[guardian.getLaserAnimationIndex()],
-                            laserBounds.x,
-                            laserBounds.y,
-                            laserBounds.width,
-                            laserBounds.height);
-
-                    // Reset blending back to normal so the rest of the game renders correctly
+                            laserBounds.x, laserBounds.y, laserBounds.width, laserBounds.height);
                     batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     batch.draw(GameAssetManager.laserStartTexture, guardian.getLaserCircleStartX(),
                             guardian.getLaserCircleStartY());
@@ -264,74 +273,48 @@ public class GameRenderer {
     private void renderPlayer(SpriteBatch batch) {
         if (world.player.shouldFlash())
             return;
-
         PlayerAnimation currentAnimation = world.player.animation;
         Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
         TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
         float spriteWidth = keyFrame.getRegionWidth();
         float spriteHeight = keyFrame.getRegionHeight();
         float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-        batch.draw(keyFrame,
-                world.player.position.x - xOffset, // Adjusted X to co-locate
-                world.player.position.y, // Keep Y co-located with ground
-                spriteWidth / 2f, 0, // Center of origin for flipping
-                spriteWidth, spriteHeight,
+        batch.draw(keyFrame, world.player.position.x - xOffset, world.player.position.y,
+                spriteWidth / 2f, 0, spriteWidth, spriteHeight,
                 -world.player.getDirection(), 1, 0);
     }
 
     private void renderPlayerEffects(SpriteBatch batch) {
         PlayerEffect activeEffect = null;
-
         if (world.player.combatState == com.hollowknight.models.player.states.CombatState.SCREAM) {
             activeEffect = PlayerEffect.SOUL_SCREAM;
         } else if (world.player.combatState == com.hollowknight.models.player.states.CombatState.CAST) {
             activeEffect = PlayerEffect.BLAST;
         }
-
         if (activeEffect != null) {
             Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(activeEffect);
             TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
-
             float spriteWidth = keyFrame.getRegionWidth();
             float spriteHeight = keyFrame.getRegionHeight();
             float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-
             float x = world.player.position.x - xOffset + activeEffect.xOffset;
             float y = world.player.position.y + activeEffect.yOffset;
-
-            // Flip horizontal if it's BLAST
             float scaleX = (activeEffect == PlayerEffect.BLAST) ? -world.player.getDirection() : 1f;
-
-            batch.draw(keyFrame,
-                    x, y,
-                    spriteWidth / 2f, spriteHeight / 2f, // Origin for flipping
-                    spriteWidth, spriteHeight,
-                    scaleX, 1, 0);
+            batch.draw(keyFrame, x, y, spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, scaleX, 1, 0);
         }
     }
 
     private void renderProjectiles(SpriteBatch batch) {
         for (PlayerProjectile proj : world.projectiles) {
-
-            // Swap to explosion sprite if it hit something
             PlayerEffect effectType = proj.isExploding ? PlayerEffect.SOUL_BALL_END : PlayerEffect.SOUL_BALL;
             Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
             TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
-
             float spriteWidth = keyFrame.getRegionWidth();
             float spriteHeight = keyFrame.getRegionHeight();
-
             float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) / 2f;
             float yOffset = (spriteHeight - Constants.PROJECTILE_SIZE) / 2f;
-
-            batch.draw(
-                    keyFrame,
-                    proj.position.x - xOffset,
-                    proj.position.y - yOffset,
-                    spriteWidth / 2f, spriteHeight / 2f, // Center origin
-                    spriteWidth, spriteHeight,
-                    proj.direction, // Flip sprite depending on travel direction
-                    1, 0);
+            batch.draw(keyFrame, proj.position.x - xOffset, proj.position.y - yOffset,
+                    spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, proj.direction, 1, 0);
         }
     }
 
@@ -341,13 +324,10 @@ public class GameRenderer {
     }
 
     private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
-        // Draw normal slash hitbox
         Rectangle attackBounds = world.player.getAttackHitbox();
         if (attackBounds != null) {
             shapeRenderer.rect(attackBounds.x, attackBounds.y, attackBounds.width, attackBounds.height);
         }
-
-        // Draw Soul Scream hitbox
         Rectangle screamBounds = world.player.getScreamHitbox();
         if (screamBounds != null) {
             shapeRenderer.rect(screamBounds.x, screamBounds.y, screamBounds.width, screamBounds.height);
@@ -366,11 +346,8 @@ public class GameRenderer {
     private void renderZote(SpriteBatch batch) {
         if (world.zote == null)
             return;
-
         Animation<TextureRegion> animation = GameAssetManager.zoteAnimationMap.get(world.zote.animation);
         TextureRegion frame = animation.getKeyFrame(world.zote.animationTime);
-
-        // Draw Zote at his spawned coordinates
         batch.draw(frame, world.zote.position.x - frame.getRegionWidth() / 2, world.zote.position.y);
     }
 
@@ -381,43 +358,23 @@ public class GameRenderer {
 
         if (world.zote != null) {
             if (world.zote.isTalking) {
+                String textToDraw = !world.zote.hasCompletedFirstDialogue
+                        ? world.zote.dialogues[world.zote.dialogueIndex]
+                        : world.zote.rules[world.zote.currentRuleIndex];
 
-                // 1. Determine which text to draw based on our new flag
-                String textToDraw;
-                if (!world.zote.hasCompletedFirstDialogue) {
-                    textToDraw = world.zote.dialogues[world.zote.dialogueIndex];
-                } else {
-                    textToDraw = world.zote.rules[world.zote.currentRuleIndex];
-                }
-
-                // 2. Draw the dialogue box at the top of the screen
                 font.getData().setScale(1.5f);
-                font.draw(batch,
-                        textToDraw,
-                        0,
-                        Gdx.graphics.getHeight() - 130f,
-                        Gdx.graphics.getWidth(),
-                        Align.center,
-                        true); // CHANGED TO TRUE: This wraps long Precepts nicely!
-                font.getData().setScale(1f); // Reset scale
-
+                font.draw(batch, textToDraw, 0, Gdx.graphics.getHeight() - 130f,
+                        Gdx.graphics.getWidth(), Align.center, true);
+                font.getData().setScale(1f);
             } else if (world.zote.playerIsClose) {
-                // Draw the interaction guide near the middle/bottom of the screen
                 Texture button = GameAssetManager.eButton;
                 float width = 677f / 3f;
                 float height = 369f / 3f;
-
                 batch.draw(button, Gdx.graphics.getWidth() / 2f - width / 2f,
                         Gdx.graphics.getHeight() / 2f - 300f, width, height);
-
                 font.getData().setScale(1f);
-                font.draw(batch,
-                        "Press E to interact",
-                        0,
-                        Gdx.graphics.getHeight() / 2f - 300f,
-                        Gdx.graphics.getWidth(),
-                        Align.center,
-                        false);
+                font.draw(batch, "Press E to interact", 0,
+                        Gdx.graphics.getHeight() / 2f - 300f, Gdx.graphics.getWidth(), Align.center, false);
             }
         }
         batch.end();

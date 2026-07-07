@@ -40,7 +40,7 @@ public enum EnemyAnimations {
     FALSE_KNIGHT_ATTACK("animation/False_knight/Attack.png", 3, 0.5f, AnimationType.ONESHOT),
     FALSE_KNIGHT_ATTACK_RECOVER("animation/False_knight/Attack Recover.png", 5, 1f, AnimationType.ONESHOT),
     FALSE_KNIGHT_JUMP_ANTICIPATE("animation/False_knight/Jump Antic.png", 3, 1f, AnimationType.ONESHOT),
-    FALSE_KNIGHT_JUMP_ATTACK("animation/False_knight/Jump Attack.png", 8, 1.2f, AnimationType.ONESHOT),
+    FALSE_KNIGHT_JUMP_ATTACK("animation/False_knight/JumpAttack.png", 12, 2f, AnimationType.ONESHOT),
     FALSE_KNIGHT_JUMP("animation/False_knight/Jump.png", 4, 0.6f, AnimationType.ONESHOT),
     FALSE_KNIGHT_LAND("animation/False_knight/Land.png", 5, 1f, AnimationType.ONESHOT),
     FALSE_KNIGHT_RUN_ANTICIPATE("animation/False_knight/Run Antic.png", 2, 1f, AnimationType.ONESHOT),
@@ -49,8 +49,7 @@ public enum EnemyAnimations {
     FALSE_KNIGHT_STUN_RECOVER("animation/False_knight/Stun Recover.png", 6, 2f, AnimationType.ONESHOT),
     FALSE_KNIGHT_DEATH("animation/False_knight/Death.png", 14, 1.5f, AnimationType.ONESHOT),
     FALSE_KNIGHT_DEATH_HIT("animation/False_knight/DeathHit.png", 3, 0.7f, AnimationType.ONESHOT),
-
-    ;
+    FALSE_KNIGHT_SHOCKWAVE("animation/Effects/Shockwave.png", 8, 2.5f, AnimationType.ONESHOT);
 
     public final String path;
     public final int frameCount;

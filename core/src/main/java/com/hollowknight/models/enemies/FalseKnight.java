@@ -1,5 +1,7 @@
 package com.hollowknight.models.enemies;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -9,6 +11,13 @@ import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.Player;
 
 public class FalseKnight extends Enemy {
+
+    // --- NEW CONSTANTS ---
+    public static final int FALSE_KNIGHT_HITBOX_WIDTH = 260;
+    public static final int FALSE_KNIGHT_HITBOX_HEIGHT = 350;
+    public static final int FALSE_KNIGHT_HP = 400;
+    public static final int FALSE_KNIGHT_ATTACK_DAMAGE = 2;
+
     public final static EnemyAnimations IDLE_ANIMATION = EnemyAnimations.FALSE_KNIGHT_IDLE;
     public final static EnemyAnimations ATTACK_ANTICIPATE_ANIMATION = EnemyAnimations.FALSE_KNIGHT_ATTACK_ANTICIPATE;
     public final static EnemyAnimations ATTACK_ANIMATION = EnemyAnimations.FALSE_KNIGHT_ATTACK;
@@ -25,26 +34,21 @@ public class FalseKnight extends Enemy {
     public enum State {
         IDLE, ATTACK_ANTICIPATE, ATTACK, ATTACK_RECOVER,
         RUN_ANTICIPATE, RUN,
-        JUMP_ANTICIPATE, JUMP_ATTACK, POWER_JUMP_ATTACK, LAND, JUMP_BACK, // Added POWER_JUMP_ATTACK
+        JUMP_ANTICIPATE, NORMAL_JUMP, POWER_JUMP_ATTACK, LAND, JUMP_BACK,
         DEAD
     }
 
     private enum ActionType {
-        ATTACK, RUN, JUMP, POWER_JUMP // Added POWER_JUMP
+        ATTACK, RUN, NORMAL_JUMP, POWER_JUMP
     }
 
     public State currentState = State.IDLE;
 
     // Timers & Variables
     private float stateTimer = 0f;
-
     private final Random random = new Random();
     private ActionType lastAction = null;
     private int lastActionRepeatCount = 0;
-    private boolean pendingJumpIsDefensive = false;
-
-    // Tracks damage taken over a short rolling window to trigger the
-    // "jump back" panic response when the player deals a lot of damage fast.
     private int recentDamageTaken = 0;
     private float recentDamageTimer = 0f;
 
@@ -52,42 +56,34 @@ public class FalseKnight extends Enemy {
     private boolean isPhaseTwo = false;
     private ActionType pendingJumpType = null;
 
-    // New Tunables for the Power Slam
-    private static final float POWER_JUMP_SPEED_X = 200f;
-    private static final float POWER_JUMP_SPEED_Y = 650f; // Noticeably higher than standard 520f
+    // Shockwave Tracker
+    public List<Shockwave> shockwaves = new ArrayList<>();
 
-    // --- Tunables ---
-    private static final float IDLE_THINK_TIME = 0.4f; // Small pause before he picks his next move
-
-    // Distance thresholds used to weight the decision
+    // Tunables
+    private static final float POWER_JUMP_SPEED_Y = 900f;
+    private static final float IDLE_THINK_TIME = 0.4f;
     private static final float CLOSE_RANGE = 140f;
     private static final float FAR_RANGE = 400f;
-
     private static final float RUN_SPEED = 220f;
-    private static final float RUN_MAX_DURATION = 4f; // Safety cap so he can't run forever
+    private static final float RUN_MAX_DURATION = 4f;
 
     private static final float JUMP_ATTACK_SPEED_X = 260f;
-    private static final float JUMP_ATTACK_SPEED_Y = 520f;
+    private static final float JUMP_ATTACK_SPEED_Y = 800f;
 
     private static final float DEFENSIVE_JUMP_SPEED_X = 300f;
-    private static final float DEFENSIVE_JUMP_SPEED_Y = 480f;
-
-    private static final float MACE_HITBOX_WIDTH = 70f;
-    private static final float MACE_HITBOX_HEIGHT = 60f;
+    private static final float DEFENSIVE_JUMP_SPEED_Y = 750f;
 
     private static final int BODY_CONTACT_DAMAGE = 4;
     private static final int JUMP_ATTACK_DAMAGE = 6;
+    private static final float DAMAGE_BURST_WINDOW = 2.5f;
+    private static final int DAMAGE_BURST_THRESHOLD = 25;
+    private static final int MAX_CONSECUTIVE_REPEATS = 2;
 
-    private static final float DAMAGE_BURST_WINDOW = 2.5f; // Rolling window length
-    private static final int DAMAGE_BURST_THRESHOLD = 25; // Damage within the window that triggers a jump back
-
-    private static final int MAX_CONSECUTIVE_REPEATS = 2; // Never pick the same move more than this many times in a row
-
-    private FalseKnight(Vector2 pos) {
+    public FalseKnight(Vector2 pos) {
         super(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
         changeState(State.IDLE);
-        this.hp = Constants.FALSE_KNIGHT_HP;
+        this.hp = FALSE_KNIGHT_HP;
         this.facingDirection = Constants.LEFT_DIRECTION;
     }
 
@@ -95,9 +91,6 @@ public class FalseKnight extends Enemy {
         return new FalseKnight(pos);
     }
 
-    // Bosses don't respawn once they're dead - this is intentionally a no-op.
-    // GameWorld also special-cases FalseKnight so this is never even called
-    // while he's alive, but overriding it as a no-op is a safety net.
     @Override
     public void respawn() {
         if (isDead)
@@ -108,7 +101,16 @@ public class FalseKnight extends Enemy {
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
         animationTime += delta;
 
-        // Decay the damage-burst window
+        // Update active shockwaves
+        Iterator<Shockwave> iter = shockwaves.iterator();
+        while (iter.hasNext()) {
+            Shockwave wave = iter.next();
+            wave.update(delta);
+            if (wave.lifetime > wave.maxLifetime) {
+                iter.remove();
+            }
+        }
+
         if (recentDamageTimer > 0) {
             recentDamageTimer -= delta;
             if (recentDamageTimer <= 0) {
@@ -117,7 +119,6 @@ public class FalseKnight extends Enemy {
             }
         }
 
-        // 1. Handle Knockback
         if (knockbackTimer > 0) {
             knockbackTimer -= delta;
             velocity.y += Constants.GRAVITY * delta;
@@ -129,7 +130,6 @@ public class FalseKnight extends Enemy {
             return;
         }
 
-        // 2. Handle Death
         if (isDead) {
             velocity.x = 0;
             velocity.y += Constants.GRAVITY * delta;
@@ -137,166 +137,128 @@ public class FalseKnight extends Enemy {
             return;
         }
 
-        // 3. Reactive interrupt: took too much damage too fast, jump back
         if (canTriggerDefensiveJump()) {
-            beginDefensiveJump();
+            launchDefensiveJump(player); // Instantly jump back without anticipation
         }
 
-        // Apply gravity for active states
         velocity.y += Constants.GRAVITY * delta;
 
-        // 4. State Machine
         switch (currentState) {
             case IDLE:
                 velocity.x = 0;
                 stateTimer += delta;
-                if (stateTimer >= IDLE_THINK_TIME) {
+                if (stateTimer >= IDLE_THINK_TIME)
                     decideNextAction(player);
-                }
                 break;
-
             case ATTACK_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += delta;
-                if (stateTimer >= ATTACK_ANTICIPATE_ANIMATION.totalDuration) {
+                if (stateTimer >= ATTACK_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.ATTACK);
-                }
                 break;
-
             case ATTACK:
                 velocity.x = 0;
                 stateTimer += delta;
-                // Damage is applied by GameWorld via getActiveAttackHitbox() while this
-                // state is active - see checkFalseKnightAttacks in GameWorld.
-                if (stateTimer >= ATTACK_ANIMATION.totalDuration) {
+                if (stateTimer >= ATTACK_ANIMATION.totalDuration)
                     changeState(State.ATTACK_RECOVER);
-                }
                 break;
-
             case ATTACK_RECOVER:
                 velocity.x = 0;
                 stateTimer += delta;
-                if (stateTimer >= ATTACK_RECOVER_ANIMATION.totalDuration) {
+                if (stateTimer >= ATTACK_RECOVER_ANIMATION.totalDuration)
                     changeState(State.IDLE);
-                }
                 break;
-
             case RUN_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += delta;
-                if (stateTimer >= RUN_ANTICIPATE_ANIMATION.totalDuration) {
+                if (stateTimer >= RUN_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.RUN);
-                }
                 break;
-
             case RUN:
                 stateTimer += delta;
-
-                // Follows the player while running
-                facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION
-                        : Constants.LEFT_DIRECTION;
+                facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
                 velocity.x = RUN_SPEED * facingDirection;
                 boolean hitWall = moveX(velocity.x * delta, solidBlocks);
-
                 float distanceToPlayer = Math.abs(player.position.x - position.x);
                 if (hitWall || distanceToPlayer <= CLOSE_RANGE || stateTimer >= RUN_MAX_DURATION) {
                     changeState(State.IDLE);
                 }
                 break;
-            // Update your JUMP_ANTICIPATE case:
             case JUMP_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += delta;
                 if (stateTimer >= JUMP_ANTICIPATE_ANIMATION.totalDuration) {
-                    if (pendingJumpIsDefensive) {
-                        launchDefensiveJump(player);
-                    } else if (pendingJumpType == ActionType.POWER_JUMP) {
-                        launchPowerJump(player); // Launch the new high jump
+                    if (pendingJumpType == ActionType.POWER_JUMP) {
+                        launchPowerJump(player);
                     } else {
-                        launchOffensiveJump(player);
+                        launchNormalJump(player);
                     }
                 }
                 break;
-
-            // Add this entirely new case under JUMP_ATTACK:
             case POWER_JUMP_ATTACK:
-                // Airborne - wait for gravity to bring him back down
+                moveX(velocity.x * delta, solidBlocks);
                 if (isOnGround) {
-                    triggerShockwave = true; // Signal GameWorld to spawn the wave!
+                    triggerShockwave = true;
+                    // Spawn floor shockwave at edge of hitbox
+                    float spawnX = facingDirection == Constants.RIGHT_DIRECTION
+                            ? position.x + FALSE_KNIGHT_HITBOX_WIDTH
+                            : position.x - 40;
+                    shockwaves.add(new Shockwave(spawnX, position.y, facingDirection));
                     changeState(State.LAND);
                 }
                 break;
-
-            case JUMP_ATTACK:
-                // Airborne - just wait for gravity to bring him back down
-                if (isOnGround) {
+            case NORMAL_JUMP:
+                moveX(velocity.x * delta, solidBlocks);
+                if (isOnGround)
                     changeState(State.LAND);
-                }
                 break;
-
             case JUMP_BACK:
-                if (isOnGround) {
-                    changeState(State.IDLE);
-                }
+                moveX(velocity.x * delta, solidBlocks);
+                if (isOnGround)
+                    changeState(State.LAND);
                 break;
-
             case LAND:
                 velocity.x = 0;
                 stateTimer += delta;
-                if (stateTimer >= LAND_ANIMATION.totalDuration) {
+                if (stateTimer >= LAND_ANIMATION.totalDuration)
                     changeState(State.IDLE);
-                }
                 break;
-
             case DEAD:
                 velocity.x = 0;
                 break;
         }
 
-        // Vertical collision
         moveY(velocity.y * delta, solidBlocks);
     }
 
-    // --- Decision System ---
     private void decideNextAction(Player player) {
         float distance = Math.abs(player.position.x - position.x);
         ActionType action = chooseNextAction(distance);
-
-        // Lock in the direction he's committing to at the moment of the decision
         facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
 
-        if (action == lastAction) {
+        if (action == lastAction)
             lastActionRepeatCount++;
-        } else {
+        else {
             lastAction = action;
             lastActionRepeatCount = 1;
         }
 
         switch (action) {
-            case ATTACK:
-                changeState(State.ATTACK_ANTICIPATE);
-                break;
-            case RUN:
-                changeState(State.RUN_ANTICIPATE);
-                break;
-            case JUMP:
-                pendingJumpIsDefensive = false;
-                pendingJumpType = ActionType.JUMP; // Track standard jump
+            case ATTACK -> changeState(State.ATTACK_ANTICIPATE);
+            case RUN -> changeState(State.RUN_ANTICIPATE);
+            case NORMAL_JUMP -> {
+                pendingJumpType = ActionType.NORMAL_JUMP;
                 changeState(State.JUMP_ANTICIPATE);
-                break;
-            case POWER_JUMP:
-                pendingJumpIsDefensive = false;
-                pendingJumpType = ActionType.POWER_JUMP; // Track power jump
+            }
+            case POWER_JUMP -> {
+                pendingJumpType = ActionType.POWER_JUMP;
                 changeState(State.JUMP_ANTICIPATE);
-                break;
+            }
         }
     }
 
     private ActionType chooseNextAction(float distance) {
-        float attackWeight;
-        float runWeight;
-        float jumpWeight;
-        float powerJumpWeight = 0f; // New weight
+        float attackWeight, runWeight, jumpWeight, powerJumpWeight = 0f;
 
         if (distance <= CLOSE_RANGE) {
             attackWeight = 70f;
@@ -306,24 +268,20 @@ public class FalseKnight extends Enemy {
             attackWeight = 5f;
             runWeight = 55f;
             jumpWeight = 40f;
-            if (isPhaseTwo)
-                powerJumpWeight = 25f; // Add chance to power jump from afar
+            powerJumpWeight = 25f;
         } else {
             attackWeight = 35f;
             runWeight = 35f;
             jumpWeight = 30f;
-            if (isPhaseTwo)
-                powerJumpWeight = 20f; // Add chance to power jump from mid-range
+            powerJumpWeight = 20f;
         }
 
-        // Apply anti-repeat penalties (Add POWER_JUMP to your existing switch
-        // statement)
         if (lastAction != null) {
             float penalty = (lastActionRepeatCount >= MAX_CONSECUTIVE_REPEATS) ? 0f : 0.35f;
             switch (lastAction) {
                 case ATTACK -> attackWeight *= penalty;
                 case RUN -> runWeight *= penalty;
-                case JUMP -> jumpWeight *= penalty;
+                case NORMAL_JUMP -> jumpWeight *= penalty;
                 case POWER_JUMP -> powerJumpWeight *= penalty;
             }
         }
@@ -342,18 +300,16 @@ public class FalseKnight extends Enemy {
             return ActionType.RUN;
         roll -= runWeight;
         if (roll < jumpWeight)
-            return ActionType.JUMP;
+            return ActionType.NORMAL_JUMP;
         return ActionType.POWER_JUMP;
     }
 
-    // --- Defensive Jump (reactive, not part of the weighted choice) ---
     private boolean canTriggerDefensiveJump() {
         if (recentDamageTaken < DAMAGE_BURST_THRESHOLD)
             return false;
-
-        // Don't interrupt a jump that's already happening, or the death state
         return currentState != State.JUMP_ANTICIPATE
-                && currentState != State.JUMP_ATTACK
+                && currentState != State.NORMAL_JUMP
+                && currentState != State.POWER_JUMP_ATTACK
                 && currentState != State.JUMP_BACK
                 && currentState != State.LAND
                 && currentState != State.DEAD;
@@ -361,79 +317,62 @@ public class FalseKnight extends Enemy {
 
     private void launchPowerJump(Player player) {
         facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
-        velocity.x = POWER_JUMP_SPEED_X * facingDirection;
         velocity.y = POWER_JUMP_SPEED_Y;
+
+        // No X movement: knight jumps straight up in place
+        velocity.x = 0;
+
         isOnGround = false;
         changeState(State.POWER_JUMP_ATTACK);
     }
 
-    private void beginDefensiveJump() {
-        recentDamageTaken = 0;
-        recentDamageTimer = 0;
-        pendingJumpIsDefensive = true;
-        changeState(State.JUMP_ANTICIPATE);
-    }
-
-    private void launchOffensiveJump(Player player) {
-        facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
-        velocity.x = JUMP_ATTACK_SPEED_X * facingDirection;
+    private void launchNormalJump(Player player) {
         velocity.y = JUMP_ATTACK_SPEED_Y;
+
+        // Exact targeting using physics calculation so he lands directly on the player
+        float dx = player.position.x - position.x;
+        float timeInAir = Math.abs(2 * JUMP_ATTACK_SPEED_Y / Constants.GRAVITY);
+
+        if (timeInAir > 0.1f) {
+            velocity.x = dx / timeInAir;
+        } else {
+            velocity.x = JUMP_ATTACK_SPEED_X * (dx > 0 ? 1 : -1);
+        }
+
+        facingDirection = velocity.x > 0 ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
         isOnGround = false;
-        changeState(State.JUMP_ATTACK);
+        changeState(State.NORMAL_JUMP);
     }
 
     private void launchDefensiveJump(Player player) {
-        // Jump away from wherever the player currently is
+        recentDamageTaken = 0;
+        recentDamageTimer = 0;
+
+        // Explicitly forces jump in opposite X direction of player
         int awayDirection = player.position.x > position.x ? Constants.LEFT_DIRECTION : Constants.RIGHT_DIRECTION;
-        facingDirection = awayDirection;
+        facingDirection = -awayDirection;
         velocity.x = DEFENSIVE_JUMP_SPEED_X * awayDirection;
         velocity.y = DEFENSIVE_JUMP_SPEED_Y;
         isOnGround = false;
         changeState(State.JUMP_BACK);
     }
 
-    // --- State & Animation Manager ---
     private void changeState(State newState) {
         currentState = newState;
         stateTimer = 0f;
-
         switch (newState) {
-            case IDLE:
-                setAnimation(IDLE_ANIMATION);
-                break;
-            case ATTACK_ANTICIPATE:
-                setAnimation(ATTACK_ANTICIPATE_ANIMATION);
-                break;
-            case ATTACK:
-                setAnimation(ATTACK_ANIMATION);
-                break;
-            case ATTACK_RECOVER:
-                setAnimation(ATTACK_RECOVER_ANIMATION);
-                break;
-            case RUN_ANTICIPATE:
-                setAnimation(RUN_ANTICIPATE_ANIMATION);
-                break;
-            case RUN:
-                setAnimation(RUN_ANIMATION);
-                break;
-            case JUMP_ANTICIPATE:
-                setAnimation(JUMP_ANTICIPATE_ANIMATION);
-                break;
-            case JUMP_ATTACK:
-                setAnimation(JUMP_ATTACK_ANIMATION);
-                break;
-            case JUMP_BACK:
-                setAnimation(JUMP_ANIMATION);
-                break;
-            case LAND:
-                setAnimation(LAND_ANIMATION);
-                break;
-            case DEAD:
-                setAnimation(DEATH_ANIMATION);
-                break;
-            case POWER_JUMP_ATTACK:
-                setAnimation(JUMP_ATTACK_ANIMATION);
-                break;
+            case IDLE -> setAnimation(IDLE_ANIMATION);
+            case ATTACK_ANTICIPATE -> setAnimation(ATTACK_ANTICIPATE_ANIMATION);
+            case ATTACK -> setAnimation(ATTACK_ANIMATION);
+            case ATTACK_RECOVER -> setAnimation(ATTACK_RECOVER_ANIMATION);
+            case RUN_ANTICIPATE -> setAnimation(RUN_ANTICIPATE_ANIMATION);
+            case RUN -> setAnimation(RUN_ANIMATION);
+            case JUMP_ANTICIPATE -> setAnimation(JUMP_ANTICIPATE_ANIMATION);
+            case NORMAL_JUMP -> setAnimation(JUMP_ANIMATION);
+            case JUMP_BACK -> setAnimation(JUMP_ANIMATION);
+            case LAND -> setAnimation(LAND_ANIMATION);
+            case DEAD -> setAnimation(DEATH_ANIMATION);
+            case POWER_JUMP_ATTACK -> setAnimation(JUMP_ATTACK_ANIMATION);
         }
     }
 
@@ -454,61 +393,81 @@ public class FalseKnight extends Enemy {
     @Override
     public void takeDamage(int damage, float sourceX) {
         super.takeDamage(damage, sourceX);
-
         if (isDead)
             return;
-
-        // Phase 2 activation check
-        if (!isPhaseTwo && hp <= Constants.FALSE_KNIGHT_HP / 2) {
+        if (!isPhaseTwo && hp <= FALSE_KNIGHT_HP / 2)
             isPhaseTwo = true;
-        }
-
-        // Feed the damage-burst tracker used by the defensive jump trigger
         recentDamageTaken += damage;
         recentDamageTimer = DAMAGE_BURST_WINDOW;
     }
 
     @Override
     public int getCollisionDamage() {
-        return (currentState == State.JUMP_ATTACK) ? JUMP_ATTACK_DAMAGE : BODY_CONTACT_DAMAGE;
+        return (currentState == State.POWER_JUMP_ATTACK) ? JUMP_ATTACK_DAMAGE : BODY_CONTACT_DAMAGE;
     }
 
-    /**
-     * The mace's actual damage hitbox, separate from his body. Only active
-     * during the ATTACK state. GameWorld checks this the same way it checks
-     * CrystalGuardian's laser bounds.
-     */
     public Rectangle getActiveAttackHitbox() {
-        if (currentState != State.ATTACK || isDead) {
+        if (currentState != State.ATTACK || isDead)
             return null;
-        }
 
+        float hitboxWidth = 220f;
+        float hitboxHeight = 280f;
+
+        // Positioned in front AND extending above him
         float x = (facingDirection == Constants.RIGHT_DIRECTION)
-                ? position.x + Constants.FALSE_KNIGHT_HITBOX_WIDTH
-                : position.x - MACE_HITBOX_WIDTH;
-        float y = position.y;
+                ? position.x + FALSE_KNIGHT_HITBOX_WIDTH - 30
+                : position.x - hitboxWidth + 30;
 
-        return new Rectangle(x, y, MACE_HITBOX_WIDTH, MACE_HITBOX_HEIGHT);
+        float y = position.y + (FALSE_KNIGHT_HITBOX_HEIGHT / 3f);
+
+        return new Rectangle(x, y, hitboxWidth, hitboxHeight);
     }
 
     @Override
     public Rectangle getBounds() {
         Rectangle res = new Rectangle(position.x + Constants.x1, position.y + Constants.y1,
-                Constants.FALSE_KNIGHT_HITBOX_WIDTH + Constants.x, Constants.FALSE_KNIGHT_HITBOX_HEIGHT + Constants.y);
-        return switch (currentState) {
-            case ATTACK -> res;
-            case ATTACK_ANTICIPATE -> res;
-            case ATTACK_RECOVER -> res;
-            case DEAD -> res;
-            case IDLE -> res;
-            case JUMP_ANTICIPATE -> res;
-            case JUMP_ATTACK -> res;
-            case JUMP_BACK -> res;
-            case LAND -> res;
-            case POWER_JUMP_ATTACK -> res;
-            case RUN -> res;
-            case RUN_ANTICIPATE -> res;
-        };
+                FALSE_KNIGHT_HITBOX_WIDTH + Constants.x, FALSE_KNIGHT_HITBOX_HEIGHT + Constants.y);
+        return res;
+    }
 
+    // --- NESTED SHOCKWAVE CLASS ---
+    public static class Shockwave {
+        public Rectangle bounds;
+        public float velocityX;
+        public int damage;
+        public float maxLifetime = 2.5f;
+        public float lifetime = 0f;
+
+        public Shockwave(float startX, float startY, int direction) {
+            bounds = new Rectangle(startX, startY, 40, 40);
+            velocityX = 350f * direction;
+            damage = 1;
+        }
+
+        public void update(float delta) {
+            lifetime += delta;
+            bounds.x += velocityX * delta;
+
+            // Grows larger as it travels
+            float growSpeed = 70f;
+            bounds.width += growSpeed * delta;
+            bounds.height += growSpeed * delta;
+
+            // Compensate X growth if traveling left so the front continues correctly
+            if (velocityX < 0) {
+                bounds.x -= growSpeed * delta;
+            }
+
+            // Grows stronger
+            if (lifetime > 1.5f) {
+                damage = FALSE_KNIGHT_ATTACK_DAMAGE + 1;
+            } else if (lifetime > 0.75f) {
+                damage = FALSE_KNIGHT_ATTACK_DAMAGE;
+            }
+        }
+
+        public int getDir() {
+            return velocityX > 0 ? 1 : -1;
+        }
     }
 }
