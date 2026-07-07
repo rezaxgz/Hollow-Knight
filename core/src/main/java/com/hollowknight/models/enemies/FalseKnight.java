@@ -429,8 +429,14 @@ public class FalseKnight extends Enemy {
 
     @Override
     public Rectangle getBounds() {
-        Rectangle res = new Rectangle(position.x + Constants.x1, position.y + Constants.y1,
-                FALSE_KNIGHT_HITBOX_WIDTH + Constants.x, FALSE_KNIGHT_HITBOX_HEIGHT + Constants.y);
+        int diffx = 0;
+        int diffy = 0;
+        if (currentState == State.DEAD) {
+            diffx = 82;
+            diffy = -140;
+        }
+        Rectangle res = new Rectangle(position.x, position.y,
+                FALSE_KNIGHT_HITBOX_WIDTH + diffx, FALSE_KNIGHT_HITBOX_HEIGHT + diffy);
         return res;
     }
 
