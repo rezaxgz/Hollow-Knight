@@ -735,6 +735,8 @@ public class Player {
             }
             case KILL_ENEMIES -> {
             }
+            case TP_TO_BOSS -> {
+            }
         }
     }
 }

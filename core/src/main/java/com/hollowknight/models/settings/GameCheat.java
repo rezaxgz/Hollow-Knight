@@ -6,5 +6,6 @@ public enum GameCheat {
     FILL_SOULS,
     GOD_MODE,
     SPECTATOR_MODE,
-    KILL_ENEMIES
+    KILL_ENEMIES,
+    TP_TO_BOSS
 }

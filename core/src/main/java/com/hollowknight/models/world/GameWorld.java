@@ -44,6 +44,7 @@ public class GameWorld {
     private boolean bossFightActivated = false;
     private boolean bossFightCompleted = false;
     public float gateDropProgress = 0.0f;
+    private Vector2 playerTPPoint = new Vector2();
 
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
@@ -117,6 +118,11 @@ public class GameWorld {
                         activationZone = rect;
                     } else if ("BossDoor".equals(obj.getName())) {
                         bossDoor = rect;
+                    }
+                } else if (obj instanceof PointMapObject) {
+                    Vector2 point = ((PointMapObject) obj).getPoint();
+                    if (obj.getName().equals("Player TP")) {
+                        playerTPPoint = point.cpy();
                     }
                 }
             }
@@ -372,6 +378,8 @@ public class GameWorld {
                     enemy.kill();
                 }
             }
+        } else if (cheat == GameCheat.TP_TO_BOSS) {
+            player.position.set(playerTPPoint);
         } else {
             player.applyCheat(cheat);
         }

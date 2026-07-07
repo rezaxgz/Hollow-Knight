@@ -22,6 +22,7 @@ public class Controls {
     public int godMode = Input.Keys.G;
     public int specMode = Input.Keys.S;
     public int killEnemies = Input.Keys.K;
+    public int tpBoss = Input.Keys.T;
 
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
@@ -90,6 +91,8 @@ public class Controls {
             return GameCheat.SPECTATOR_MODE;
         if (key == killEnemies)
             return GameCheat.KILL_ENEMIES;
+        if (key == tpBoss)
+            return GameCheat.TP_TO_BOSS;
         return null;
     }
 }
