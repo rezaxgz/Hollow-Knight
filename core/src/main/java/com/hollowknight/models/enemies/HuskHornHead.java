@@ -251,10 +251,12 @@ public class HuskHornHead extends Enemy {
     }
 
     @Override
-    public void takeDamage(int damage, float sourceX) {
-        super.takeDamage(damage, sourceX);
+    public void takeDamage(int damage, float sourceX, boolean knockback) {
+        super.takeDamage(damage, sourceX, knockback);
         // apply less knock back because hornhead is heavy
-        this.velocity.x -= 100;
-        this.velocity.y -= 20;
+        if (knockback) {
+            this.velocity.x -= 100;
+            this.velocity.y -= 20;
+        }
     }
 }

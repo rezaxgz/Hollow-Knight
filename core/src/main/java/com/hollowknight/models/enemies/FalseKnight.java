@@ -35,7 +35,7 @@ public class FalseKnight extends Enemy {
         IDLE, ATTACK_ANTICIPATE, ATTACK, ATTACK_RECOVER,
         RUN_ANTICIPATE, RUN,
         JUMP_ANTICIPATE, NORMAL_JUMP, POWER_JUMP_ATTACK, LAND, JUMP_BACK,
-        DEAD
+        DEAD, STUNNED, STUN_RECOVER
     }
 
     private enum ActionType {
@@ -55,6 +55,14 @@ public class FalseKnight extends Enemy {
     public boolean triggerShockwave = false;
     private boolean isPhaseTwo = false;
     private ActionType pendingJumpType = null;
+
+    // Phase 2 & Stun Variables
+    private boolean hasBeenStunned = false;
+    private int damageTakenDuringStun = 0;
+    private float currentRunSpeed = 220f; // Default RUN_SPEED
+    private float currentIdleThinkTime = 0.4f; // Default IDLE_THINK_TIME
+    private float timeScale = 1.3f; // Used to scale animation and state time globally
+    private static final float STUN_DURATION = 9.0f;
 
     // Shockwave Tracker
     public List<Shockwave> shockwaves = new ArrayList<>();
@@ -99,20 +107,22 @@ public class FalseKnight extends Enemy {
 
     @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
-        animationTime += delta;
+        // Apply scaled time for animations and state checks
+        float scaledDelta = delta * timeScale;
+        animationTime += scaledDelta;
 
         // Update active shockwaves
         Iterator<Shockwave> iter = shockwaves.iterator();
         while (iter.hasNext()) {
             Shockwave wave = iter.next();
-            wave.update(delta);
+            wave.update(delta); // Unscaled delta for physics entities
             if (wave.lifetime > wave.maxLifetime) {
                 iter.remove();
             }
         }
 
         if (recentDamageTimer > 0) {
-            recentDamageTimer -= delta;
+            recentDamageTimer -= delta; // Real time tracking
             if (recentDamageTimer <= 0) {
                 recentDamageTimer = 0;
                 recentDamageTaken = 0;
@@ -146,38 +156,38 @@ public class FalseKnight extends Enemy {
         switch (currentState) {
             case IDLE:
                 velocity.x = 0;
-                stateTimer += delta;
-                if (stateTimer >= IDLE_THINK_TIME)
+                stateTimer += scaledDelta;
+                if (stateTimer >= currentIdleThinkTime)
                     decideNextAction(player);
                 break;
             case ATTACK_ANTICIPATE:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= ATTACK_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.ATTACK);
                 break;
             case ATTACK:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= ATTACK_ANIMATION.totalDuration)
                     changeState(State.ATTACK_RECOVER);
                 break;
             case ATTACK_RECOVER:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= ATTACK_RECOVER_ANIMATION.totalDuration)
                     changeState(State.IDLE);
                 break;
             case RUN_ANTICIPATE:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= RUN_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.RUN);
                 break;
             case RUN:
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
-                velocity.x = RUN_SPEED * facingDirection;
+                velocity.x = currentRunSpeed * facingDirection;
                 boolean hitWall = moveX(velocity.x * delta, solidBlocks);
                 float distanceToPlayer = Math.abs(player.position.x - position.x);
                 if (hitWall || distanceToPlayer <= CLOSE_RANGE || stateTimer >= RUN_MAX_DURATION) {
@@ -186,7 +196,7 @@ public class FalseKnight extends Enemy {
                 break;
             case JUMP_ANTICIPATE:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= JUMP_ANTICIPATE_ANIMATION.totalDuration) {
                     if (pendingJumpType == ActionType.POWER_JUMP) {
                         launchPowerJump(player);
@@ -219,9 +229,24 @@ public class FalseKnight extends Enemy {
                 break;
             case LAND:
                 velocity.x = 0;
-                stateTimer += delta;
+                stateTimer += scaledDelta;
                 if (stateTimer >= LAND_ANIMATION.totalDuration)
                     changeState(State.IDLE);
+                break;
+            case STUNNED:
+                velocity.x = 0;
+                stateTimer += scaledDelta;
+                if (stateTimer >= STUN_DURATION) {
+                    changeState(State.STUN_RECOVER);
+                }
+                break;
+            case STUN_RECOVER:
+                velocity.x = 0;
+                stateTimer += scaledDelta;
+                if (stateTimer >= EnemyAnimations.FALSE_KNIGHT_STUN_RECOVER.totalDuration) {
+                    triggerPhaseTwo();
+                    changeState(State.IDLE);
+                }
                 break;
             case DEAD:
                 velocity.x = 0;
@@ -276,6 +301,11 @@ public class FalseKnight extends Enemy {
             powerJumpWeight = 20f;
         }
 
+        // Restrict power jumps completely if not in Phase Two
+        if (!isPhaseTwo) {
+            powerJumpWeight = 0f;
+        }
+
         if (lastAction != null) {
             float penalty = (lastActionRepeatCount >= MAX_CONSECUTIVE_REPEATS) ? 0f : 0.35f;
             switch (lastAction) {
@@ -312,7 +342,9 @@ public class FalseKnight extends Enemy {
                 && currentState != State.POWER_JUMP_ATTACK
                 && currentState != State.JUMP_BACK
                 && currentState != State.LAND
-                && currentState != State.DEAD;
+                && currentState != State.DEAD
+                && currentState != State.STUNNED
+                && currentState != State.STUN_RECOVER;
     }
 
     private void launchPowerJump(Player player) {
@@ -373,6 +405,11 @@ public class FalseKnight extends Enemy {
             case LAND -> setAnimation(LAND_ANIMATION);
             case DEAD -> setAnimation(DEATH_ANIMATION);
             case POWER_JUMP_ATTACK -> setAnimation(JUMP_ATTACK_ANIMATION);
+            case STUNNED -> {
+                knockbackTimer = 0; // Clear residual knockback momentum
+                setAnimation(DEATH_ANIMATION);
+            }
+            case STUN_RECOVER -> setAnimation(EnemyAnimations.FALSE_KNIGHT_STUN_RECOVER);
         }
     }
 
@@ -383,6 +420,24 @@ public class FalseKnight extends Enemy {
         }
     }
 
+    /**
+     * Changes all animation frame durations and total durations by a constant
+     * factor.
+     * Since Enum fields are final in Java, we achieve this by scaling
+     * the time increment (delta) for animations and state timers.
+     */
+    private void applyAnimationSpeedFactor(float factor) {
+        this.timeScale = 1.0f / factor;
+    }
+
+    private void triggerPhaseTwo() {
+        isPhaseTwo = true;
+        // Speeds up animations logic by *0.8
+        applyAnimationSpeedFactor(0.8f);
+        currentRunSpeed = RUN_SPEED * 1.25f; // Faster running
+        currentIdleThinkTime = IDLE_THINK_TIME * 0.8f; // Faster decision making
+    }
+
     @Override
     public void kill() {
         isDead = true;
@@ -391,12 +446,42 @@ public class FalseKnight extends Enemy {
     }
 
     @Override
-    public void takeDamage(int damage, float sourceX) {
-        super.takeDamage(damage, sourceX);
+    public void takeDamage(int damage, float sourceX, boolean knockback) {
         if (isDead)
             return;
-        if (!isPhaseTwo && hp <= FALSE_KNIGHT_HP / 2)
-            isPhaseTwo = true;
+
+        if (currentState == State.STUNNED) {
+            int maxAllowedDamage = (FALSE_KNIGHT_HP / 4) - damageTakenDuringStun;
+            if (maxAllowedDamage <= 0)
+                return; // Prevent any more damage past the 1/4 cap
+
+            int actualDamage = Math.min(damage, maxAllowedDamage);
+
+            // Stun mode grants immunity to death
+            if (this.hp - actualDamage <= 0) {
+                actualDamage = this.hp - 1;
+            }
+
+            if (actualDamage <= 0)
+                return;
+
+            super.takeDamage(actualDamage, sourceX, false);
+            damageTakenDuringStun += actualDamage;
+
+            // Switch animation and ALWAYS reset animation timer as requested
+            animation = EnemyAnimations.FALSE_KNIGHT_DEATH_HIT;
+            animationTime = 0;
+            return;
+        }
+
+        super.takeDamage(damage, sourceX, true);
+
+        if (!hasBeenStunned && this.hp <= FALSE_KNIGHT_HP / 2) {
+            hasBeenStunned = true;
+            changeState(State.STUNNED);
+            return;
+        }
+
         recentDamageTaken += damage;
         recentDamageTimer = DAMAGE_BURST_WINDOW;
     }
@@ -431,7 +516,7 @@ public class FalseKnight extends Enemy {
     public Rectangle getBounds() {
         int diffx = 0;
         int diffy = 0;
-        if (currentState == State.DEAD) {
+        if (currentState == State.DEAD || currentState == State.STUNNED) {
             diffx = 82;
             diffy = -140;
         }

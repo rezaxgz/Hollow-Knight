@@ -14,11 +14,11 @@ public class PlayerProjectile {
     public Vector2 position;
     public float startX;
     public int direction;
-    
+
     public boolean isExploding = false;
     public boolean isFinished = false;
     public float animationTime = 0;
-    
+
     // Tracks enemies hit so we don't apply damage every single frame
     private Set<Enemy> hitEnemies = new HashSet<>();
 
@@ -33,7 +33,8 @@ public class PlayerProjectile {
     public void update(float delta, List<Rectangle> solidBlocks, List<Enemy> enemies) {
         animationTime += delta;
 
-        // If it hit something, wait for the explosion animation to finish before destroying
+        // If it hit something, wait for the explosion animation to finish before
+        // destroying
         if (isExploding) {
             if (animationTime >= PlayerEffectAnimation.SOUL_BALL_END.duration) {
                 isFinished = true;
@@ -61,10 +62,11 @@ public class PlayerProjectile {
 
         // 3. Check Enemy Collisions (Piercing)
         for (Enemy enemy : enemies) {
-            if (enemy.isDead || hitEnemies.contains(enemy)) continue;
-            
+            if (enemy.isDead || hitEnemies.contains(enemy))
+                continue;
+
             if (bounds.overlaps(enemy.getBounds())) {
-                enemy.takeDamage(Constants.PROJECTILE_DAMAGE, position.x);
+                enemy.takeDamage(Constants.PROJECTILE_DAMAGE, position.x, true);
                 hitEnemies.add(enemy);
             }
         }

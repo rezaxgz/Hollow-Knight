@@ -337,7 +337,7 @@ public class GameWorld {
 
             if (attackBounds.overlaps(enemy.getBounds())) {
                 if (!enemiesHitThisAttack.contains(enemy)) {
-                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE, player.position.x);
+                    enemy.takeDamage(Constants.PLAYER_SLASH_DAMAGE, player.position.x, true);
                     enemiesHitThisAttack.add(enemy);
                     player.getVitals().addSouls(Constants.ATTACK_HIT_SOULS_BONUS);
                     if (isDownSlashing)
@@ -360,7 +360,7 @@ public class GameWorld {
                     continue;
 
                 if (screamHitbox.overlaps(enemy.getBounds())) {
-                    enemy.takeDamage(Constants.SOUL_SCREAM_TICK_DAMAGE, player.position.x);
+                    enemy.takeDamage(Constants.SOUL_SCREAM_TICK_DAMAGE, player.position.x, true);
                 }
             }
             player.triggerScreamDamage = false;
