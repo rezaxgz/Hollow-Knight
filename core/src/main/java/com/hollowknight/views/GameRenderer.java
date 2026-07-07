@@ -146,7 +146,7 @@ public class GameRenderer {
         }
     }
 
-    public void render() {
+    public void renderWorld() {
         setCameraPosition();
         camera.update();
         mapRenderer.setView(camera);
@@ -168,9 +168,6 @@ public class GameRenderer {
 
         mapRenderer.render(foregroundLayers);
 
-        hudCamera.update();
-        hudRenderer.render(hudCamera);
-
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.GREEN);
         renderPlayerHitBox(shapeRenderer);
@@ -182,10 +179,15 @@ public class GameRenderer {
         shapeRenderer.setColor(Color.ORANGE);
         renderPlayerAttackHitboxe(shapeRenderer);
         shapeRenderer.end();
+    }
+
+    public void renderUI(float delta) {
+        hudCamera.update();
+        hudRenderer.render(hudCamera);
 
         renderZoteDialouges(batch);
 
-        stage.act();
+        stage.act(delta);
         stage.draw();
     }
 

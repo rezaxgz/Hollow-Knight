@@ -15,15 +15,6 @@ public class Controls {
     public int cast = Input.Keys.D;
     public int interact = Input.Keys.E;
 
-    // cheats (activated with key + Ctrl)
-    public int takeDamage = Input.Keys.NUMPAD_SUBTRACT;
-    public int heal = Input.Keys.NUMPAD_ADD;
-    public int fillSouls = Input.Keys.UP;
-    public int godMode = Input.Keys.G;
-    public int specMode = Input.Keys.S;
-    public int killEnemies = Input.Keys.K;
-    public int tpBoss = Input.Keys.T;
-
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
             case MOVE_LEFT -> left = key;
@@ -79,20 +70,11 @@ public class Controls {
     }
 
     public GameCheat getCheat(int key) {
-        if (key == takeDamage)
-            return GameCheat.TAKE_DAMAGE;
-        if (key == heal)
-            return GameCheat.HEAL;
-        if (key == fillSouls)
-            return GameCheat.FILL_SOULS;
-        if (key == godMode)
-            return GameCheat.GOD_MODE;
-        if (key == specMode)
-            return GameCheat.SPECTATOR_MODE;
-        if (key == killEnemies)
-            return GameCheat.KILL_ENEMIES;
-        if (key == tpBoss)
-            return GameCheat.TP_TO_BOSS;
+        for (final GameCheat cheat : GameCheat.values()) {
+            if (cheat.key == key) {
+                return cheat;
+            }
+        }
         return null;
     }
 }

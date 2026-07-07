@@ -8,14 +8,13 @@ import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.models.settings.Settings;
 import com.hollowknight.models.world.GameWorld;
-import com.hollowknight.views.UiManager;
 import com.hollowknight.views.actors.modals.PauseModal;
-import com.hollowknight.views.screens.MainMenuScreen;
 
 public class GameController {
     private static GameController instance;
-    GameWorld world;
+    public GameWorld world;
     PlayerController playerController;
+    public boolean isPaused = false;
 
     public static GameController init(GameWorld world) {
         instance = new GameController(world);
@@ -32,6 +31,8 @@ public class GameController {
     }
 
     public void update(float delta) {
+        if (isPaused)
+            return;
         world.update(delta);
     }
 
@@ -71,19 +72,15 @@ public class GameController {
             System.out.printf("(%d, %d, %d, %d)\n", Constants.x, Constants.y, Constants.x1, Constants.y1);
         }
         if (keycode == Input.Keys.ESCAPE) {
-            PauseModal pauseModal = new PauseModal() {
-                @Override
-                public void onResume() {
-                    this.hide();
-                }
-
-                @Override
-                public void onExit() {
-                    UiManager.setScreen(new MainMenuScreen());
-                }
-            };
+            if (isPaused)
+                return false;
+            isPaused = true;
+            PauseModal pauseModal = new PauseModal();
             pauseModal.show();
         }
+
+        if (isPaused)
+            return false;
 
         // Only check for and apply cheats if Ctrl is held
         if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
@@ -101,12 +98,7 @@ public class GameController {
         }
 
         if (world.zote != null) {
-            // Start Interaction
-            if (keycode == controls.interact) {
-                world.zote.interact();
-            }
-            // Advance Dialogue
-            else if (keycode == Input.Keys.ENTER) {
+            if ((keycode == controls.interact || keycode == Input.Keys.ENTER) && world.zote.playerIsClose) {
                 world.zote.interact();
             }
         }
