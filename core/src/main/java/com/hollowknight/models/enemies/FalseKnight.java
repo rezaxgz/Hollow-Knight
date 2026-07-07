@@ -410,17 +410,21 @@ public class FalseKnight extends Enemy {
         if (currentState != State.ATTACK || isDead)
             return null;
 
-        float hitboxWidth = 220f;
-        float hitboxHeight = 280f;
+        float totalDur = animation.totalDuration;
+        float ratio = animationTime / totalDur;
 
-        // Positioned in front AND extending above him
-        float x = (facingDirection == Constants.RIGHT_DIRECTION)
-                ? position.x + FALSE_KNIGHT_HITBOX_WIDTH - 30
-                : position.x - hitboxWidth + 30;
-
-        float y = position.y + (FALSE_KNIGHT_HITBOX_HEIGHT / 3f);
-
-        return new Rectangle(x, y, hitboxWidth, hitboxHeight);
+        if (ratio <= 0.333f) {
+            return new Rectangle(position.x, position.y + Constants.FALSE_KNIGHT_HITBOX_HEIGHT,
+                    Constants.FALSE_KNIGHT_HITBOX_WIDTH, 190);
+        } else {
+            float hitboxWidth = 250;
+            float hitboxHeight = Constants.FALSE_KNIGHT_HITBOX_HEIGHT / 2;
+            float x = (facingDirection == Constants.RIGHT_DIRECTION)
+                    ? position.x + FALSE_KNIGHT_HITBOX_WIDTH
+                    : position.x - hitboxWidth;
+            float y = (ratio <= 0.666f) ? position.y + Constants.FALSE_KNIGHT_HITBOX_HEIGHT / 2 : position.y;
+            return new Rectangle(x, y, hitboxWidth, hitboxHeight);
+        }
     }
 
     @Override
@@ -434,13 +438,15 @@ public class FalseKnight extends Enemy {
     public static class Shockwave {
         public Rectangle bounds;
         public float velocityX;
+        private int direction;
         public int damage;
         public float maxLifetime = 2.5f;
         public float lifetime = 0f;
 
         public Shockwave(float startX, float startY, int direction) {
             bounds = new Rectangle(startX, startY, 40, 40);
-            velocityX = 350f * direction;
+            velocityX = 600f * direction;
+            this.direction = direction;
             damage = 1;
         }
 
@@ -467,7 +473,7 @@ public class FalseKnight extends Enemy {
         }
 
         public int getDir() {
-            return velocityX > 0 ? 1 : -1;
+            return direction;
         }
     }
 }
