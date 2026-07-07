@@ -22,8 +22,9 @@ import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.enemies.FalseKnight;
+import com.hollowknight.models.player.ActiveEffect;
 import com.hollowknight.models.player.PlayerAnimation;
-import com.hollowknight.models.player.PlayerEffect;
+import com.hollowknight.models.player.PlayerEffectAnimation;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.models.world.PlayerProjectile;
 
@@ -285,28 +286,34 @@ public class GameRenderer {
     }
 
     private void renderPlayerEffects(SpriteBatch batch) {
-        PlayerEffect activeEffect = null;
-        if (world.player.combatState == com.hollowknight.models.player.states.CombatState.SCREAM) {
-            activeEffect = PlayerEffect.SOUL_SCREAM;
-        } else if (world.player.combatState == com.hollowknight.models.player.states.CombatState.CAST) {
-            activeEffect = PlayerEffect.BLAST;
-        }
-        if (activeEffect != null) {
-            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(activeEffect);
-            TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
+        for (ActiveEffect effect : world.player.activeEffects) {
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effect.type);
+            if (animation == null)
+                continue;
+
+            TextureRegion keyFrame = animation.getKeyFrame(effect.timer);
             float spriteWidth = keyFrame.getRegionWidth();
             float spriteHeight = keyFrame.getRegionHeight();
-            float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-            float x = world.player.position.x - xOffset + activeEffect.xOffset;
-            float y = world.player.position.y + activeEffect.yOffset;
-            float scaleX = (activeEffect == PlayerEffect.BLAST) ? -world.player.getDirection() : 1f;
-            batch.draw(keyFrame, x, y, spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, scaleX, 1, 0);
+
+            // Calculate base offset
+            float baseOffsetX = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
+
+            // Apply direction to the effect's specific xOffset
+            float x = world.player.position.x - baseOffsetX + (effect.type.xOffset * effect.direction);
+            float y = world.player.position.y + effect.type.yOffset;
+
+            // Preserve original Blast inverted scaling, otherwise scale based on direction
+            float scaleX = (effect.type == PlayerEffectAnimation.BLAST) ? -effect.direction : effect.direction;
+
+            batch.draw(keyFrame, x, y, spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight,
+                    scaleX * effect.type.sclaeX, 1, 0);
         }
     }
 
     private void renderProjectiles(SpriteBatch batch) {
         for (PlayerProjectile proj : world.projectiles) {
-            PlayerEffect effectType = proj.isExploding ? PlayerEffect.SOUL_BALL_END : PlayerEffect.SOUL_BALL;
+            PlayerEffectAnimation effectType = proj.isExploding ? PlayerEffectAnimation.SOUL_BALL_END
+                    : PlayerEffectAnimation.SOUL_BALL;
             Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
             TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
             float spriteWidth = keyFrame.getRegionWidth();

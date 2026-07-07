@@ -27,7 +27,7 @@ public enum PlayerAnimation {
     public final AnimationType animationType;
     public final float frameDuration;
     public boolean isReversed = false;
-    public PlayerEffect effect = null;
+    public PlayerEffectAnimation effect = null;
 
     PlayerAnimation(String path, int frameCount, int colCount, int rowCount,
             AnimationType animationType, float frameDuration) {
@@ -78,7 +78,7 @@ public enum PlayerAnimation {
     }
 
     PlayerAnimation(String path, int frameCount, float totalDuration, AnimationType animationType,
-            PlayerEffect effect) {
+            PlayerEffectAnimation effect) {
         this.effect = effect;
         this.path = path;
         this.frameCount = frameCount;

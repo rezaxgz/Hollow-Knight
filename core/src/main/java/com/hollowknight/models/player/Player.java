@@ -1,5 +1,7 @@
 package com.hollowknight.models.player;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.badlogic.gdx.math.Rectangle;
@@ -36,6 +38,9 @@ public class Player {
     public CombatState combatState = CombatState.NONE;
     private PlayerVitals vitals = new PlayerVitals();
 
+    // Effects
+    public List<ActiveEffect> activeEffects = new ArrayList<>();
+
     // =========================================================================================
     // CONSTRUCTOR
     // =========================================================================================
@@ -54,6 +59,7 @@ public class Player {
         status.update(delta); // Updates all ability/combat timers and invincibility
         updateTimers(delta);
 
+        updateEffects(delta);
         if (checkDeathAndRespawn())
             return;
 
@@ -89,6 +95,17 @@ public class Player {
 
         if (status.getAttackTimer() <= 0 && combatState == CombatState.ATTACK) {
             combatState = CombatState.NONE;
+        }
+    }
+
+    private void updateEffects(float delta) {
+        Iterator<ActiveEffect> it = activeEffects.iterator();
+        while (it.hasNext()) {
+            ActiveEffect effect = it.next();
+            effect.update(delta);
+            if (effect.isFinished()) {
+                it.remove();
+            }
         }
     }
 
@@ -334,6 +351,7 @@ public class Player {
             movementState = MovementState.DASH;
             status.consumeDash();
             status.setDashTimer(Constants.DASH_DURATION);
+            addEffect(PlayerEffectAnimation.DASH);
             AudioController.getInstance().playSfx(GameAssetManager.dashSfx);
             velocity.x = Constants.DASH_SPEED * status.getFacingDirection();
             velocity.y = 0;
@@ -383,6 +401,10 @@ public class Player {
     // COMBAT & DAMAGE
     // =========================================================================================
 
+    public void addEffect(PlayerEffectAnimation effectType) {
+        activeEffects.add(new ActiveEffect(effectType, status.getFacingDirection()));
+    }
+
     private void attack() {
         if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.ATTACK
                 || status.getAttackCooldownTimer() > 0) {
@@ -394,10 +416,18 @@ public class Player {
 
         if (status.isHoldingUp()) {
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
+            addEffect(PlayerEffectAnimation.UP_SLASH);
         } else if (!status.isOnGround() && status.isHoldingDown()) {
             currentAttackAnimation = PlayerAnimation.DOWN_SLASH;
+            addEffect(PlayerEffectAnimation.DOWN_SLASH);
         } else {
-            currentAttackAnimation = Math.random() > 0.5 ? PlayerAnimation.SLASH : PlayerAnimation.SLASH_ALT;
+            if (Math.random() > 0.5) {
+                currentAttackAnimation = PlayerAnimation.SLASH;
+                addEffect(PlayerEffectAnimation.SLASH);
+            } else {
+                currentAttackAnimation = PlayerAnimation.SLASH_ALT;
+                addEffect(PlayerEffectAnimation.SLASH_ALT);
+            }
         }
     }
 
@@ -413,6 +443,7 @@ public class Player {
             combatState = CombatState.SCREAM;
             status.setScreamTimer(Constants.SOUL_SCREAM_TIME);
             status.setScreamTicksApplied(0);
+            addEffect(PlayerEffectAnimation.SOUL_SCREAM);
             triggerScreamDamage = false;
         }
     }
@@ -428,6 +459,7 @@ public class Player {
             lockMovement();
             combatState = CombatState.CAST;
             status.setCastTimer(Constants.SPIRIT_CAST_TIME);
+            addEffect(PlayerEffectAnimation.BLAST);
             triggerSpiritCast = true; // Signals GameWorld to spawn exactly one projectile
         }
     }

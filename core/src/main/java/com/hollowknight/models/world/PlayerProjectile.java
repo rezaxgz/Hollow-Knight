@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.enemies.Enemy;
-import com.hollowknight.models.player.PlayerEffect;
+import com.hollowknight.models.player.PlayerEffectAnimation;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +35,7 @@ public class PlayerProjectile {
 
         // If it hit something, wait for the explosion animation to finish before destroying
         if (isExploding) {
-            if (animationTime >= PlayerEffect.SOUL_BALL_END.duration) {
+            if (animationTime >= PlayerEffectAnimation.SOUL_BALL_END.duration) {
                 isFinished = true;
             }
             return;

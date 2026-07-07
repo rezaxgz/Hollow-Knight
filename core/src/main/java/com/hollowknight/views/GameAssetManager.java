@@ -15,7 +15,7 @@ import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.npc.ZoteAnimation;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
-import com.hollowknight.models.player.PlayerEffect;
+import com.hollowknight.models.player.PlayerEffectAnimation;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class GameAssetManager {
     public static final HashMap<PlayerAnimation, Animation<TextureRegion>> playerAnimationMap = new HashMap<>();
     public static final HashMap<HealthMaskState, Animation<TextureRegion>> healthAnimationMap = new HashMap<>();
     public static final HashMap<EnemyAnimations, Animation<TextureRegion>> enemyAnimationMap = new HashMap<>();
-    public static final HashMap<PlayerEffect, Animation<TextureRegion>> playerEffectAnimationMap = new HashMap<>();
+    public static final HashMap<PlayerEffectAnimation, Animation<TextureRegion>> playerEffectAnimationMap = new HashMap<>();
     public static final HashMap<ZoteAnimation, Animation<TextureRegion>> zoteAnimationMap = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
@@ -140,7 +140,7 @@ public class GameAssetManager {
     }
 
     private static void loadPlayerEffectAnimations() {
-        for (PlayerEffect effect : PlayerEffect.values()) {
+        for (PlayerEffectAnimation effect : PlayerEffectAnimation.values()) {
             Texture texture = new Texture(effect.path);
 
             int tileWidth = texture.getWidth() / effect.frameCount;
