@@ -2,6 +2,8 @@ package com.hollowknight.views;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -35,6 +37,9 @@ public class GameAssetManager {
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
     public static final Texture gateTexture = new Texture("sprites/bossDoor.png");
     public static final Texture pixelTexture = new Texture("pixle.png");
+
+    public static Cursor customCursor;
+    public static Cursor blankCursor;
 
     public static final Texture[] soulsTextures = new Texture[19];
 
@@ -70,6 +75,8 @@ public class GameAssetManager {
         loadSfx();
         loadZoteVoices();
 
+        loadCursors();
+
         for (PlayerAnimation type : PlayerAnimation.values()) {
             loadPlayerAnimation(type);
         }
@@ -88,6 +95,18 @@ public class GameAssetManager {
         loadZoteAnimations();
 
         loadCharmLogos();
+    }
+
+    public static void loadCursors() {
+
+        Pixmap cursorPixmap = new Pixmap(Gdx.files.internal("Cursor.png"));
+
+        customCursor = Gdx.graphics.newCursor(cursorPixmap, 0, 0);
+        cursorPixmap.dispose();
+
+        Pixmap blankPixmap = new Pixmap(16, 16, Pixmap.Format.RGBA8888);
+        blankCursor = Gdx.graphics.newCursor(blankPixmap, 0, 0);
+        blankPixmap.dispose();
     }
 
     private static void loadCharmLogos() {

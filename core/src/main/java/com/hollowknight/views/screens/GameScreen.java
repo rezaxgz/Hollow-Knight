@@ -41,6 +41,7 @@ public class GameScreen extends AbstractScreen {
             // does
             multiplexer.addProcessor(0, this.stage);
         }
+
     }
 
     @Override
@@ -51,7 +52,15 @@ public class GameScreen extends AbstractScreen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (controller.isPaused) {
+        boolean isPaused = GameController.getInstance().isPaused;
+
+        if (isPaused) {
+            Gdx.graphics.setCursor(GameAssetManager.customCursor);
+        } else {
+            Gdx.graphics.setCursor(GameAssetManager.blankCursor);
+        }
+
+        if (isPaused) {
             // 1. Initialize FBO at 1/4 resolution for the blur effect
             if (blurFbo == null) {
                 blurFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth() / 4,

@@ -46,6 +46,7 @@ public abstract class AbstractScreen implements Screen {
         stage.addActor(mainStack);
 
         Gdx.input.setInputProcessor(stage);
+        Gdx.graphics.setCursor(GameAssetManager.customCursor);
     }
 
     @Override
