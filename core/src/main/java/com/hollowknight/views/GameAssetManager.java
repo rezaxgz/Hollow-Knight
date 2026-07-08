@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.npc.ZoteAnimation;
+import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.player.HealthMaskState;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffectAnimation;
@@ -29,6 +30,7 @@ public class GameAssetManager {
     public static final HashMap<EnemyAnimations, Animation<TextureRegion>> enemyAnimationMap = new HashMap<>();
     public static final HashMap<PlayerEffectAnimation, Animation<TextureRegion>> playerEffectAnimationMap = new HashMap<>();
     public static final HashMap<ZoteAnimation, Animation<TextureRegion>> zoteAnimationMap = new HashMap<>();
+    public static final HashMap<CharmType, Texture> charmLogos = new HashMap<>();
 
     public static final Texture healthBar = new Texture("animation/HUD/HUD Cln_161.png");
     public static final Texture gateTexture = new Texture("sprites/bossDoor.png");
@@ -84,6 +86,14 @@ public class GameAssetManager {
         loadLaserTexture();
 
         loadZoteAnimations();
+
+        loadCharmLogos();
+    }
+
+    private static void loadCharmLogos() {
+        for (CharmType c : CharmType.values()) {
+            charmLogos.put(c, new Texture(c.path));
+        }
     }
 
     private static void loadSkins() {

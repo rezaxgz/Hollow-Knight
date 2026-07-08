@@ -9,6 +9,7 @@ import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.models.settings.Settings;
 import com.hollowknight.models.world.GameWorld;
+import com.hollowknight.views.actors.modals.InventoryModal;
 import com.hollowknight.views.actors.modals.PauseModal;
 
 public class GameController {
@@ -78,6 +79,12 @@ public class GameController {
             isPaused = true;
             PauseModal pauseModal = new PauseModal();
             pauseModal.show();
+        } else if (keycode == Input.Keys.I) {
+            if (isPaused)
+                return false;
+            isPaused = true;
+            InventoryModal inventoryModal = new InventoryModal();
+            inventoryModal.show();
         }
 
         if (isPaused)
