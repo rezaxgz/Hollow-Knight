@@ -168,7 +168,9 @@ public class Mossfly extends Enemy {
         }
     }
 
+    @Override
     public void kill() {
+        super.kill();
         isDead = true;
         velocity.set(0, 0); // Stop momentum before gravity takes over
         changeState(State.DEAD);

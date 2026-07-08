@@ -128,7 +128,9 @@ public class GroundEnemy extends Enemy {
         setAnimation(type.turnAnimation);
     }
 
+    @Override
     public void kill() {
+        super.kill();
         isDead = true;
         velocity.set(0, 0); // Stop all momentum
         setAnimation(type.deathAnimation);

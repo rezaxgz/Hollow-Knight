@@ -46,6 +46,12 @@ public class GameWorld {
     public float gateDropProgress = 0.0f;
     private Vector2 playerTPPoint = new Vector2();
 
+    private int numberOfEnemiesKilled = 0;
+    private int numberOfDeaths = 0;
+    private float passedTimeBuffer = 0;
+    private long totalPassedTime = 0;
+    public boolean bossJustDefeated = false;
+
     public GameWorld(GameSave save) {
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(save.gameLevel.tmxPath);
@@ -132,6 +138,7 @@ public class GameWorld {
     public void update(float delta) {
         if (Constants.flag)
             return;
+        updateTimers(delta);
         updateBossFight(delta);
         player.update(delta, solidBlocks);
         checkHazards();
@@ -145,6 +152,29 @@ public class GameWorld {
 
         if (zote != null)
             zote.update(delta, player);
+
+        registerDeaths();
+    }
+
+    private void updateTimers(float delta) {
+        passedTimeBuffer += delta;
+        if (passedTimeBuffer >= 100) {
+            passedTimeBuffer -= 100;
+            totalPassedTime += 100;
+        }
+    }
+
+    private void registerDeaths() {
+        for (Enemy e : enemies) {
+            if (e.hasUnregisteredDeath()) {
+                e.registerDeath();
+                numberOfEnemiesKilled++;
+            }
+        }
+        if (player.hasUnregisteredDeath()) {
+            player.registerDeath();
+            numberOfDeaths++;
+        }
     }
 
     private void updateBossFight(float delta) {
@@ -179,6 +209,7 @@ public class GameWorld {
             if (bossIsDead) {
                 bossFightActivated = false;
                 bossFightCompleted = true;
+                bossJustDefeated = true;
 
                 // Open the room by clearing out the door solid fields
                 solidBlocks.remove(bossDoor);
@@ -394,4 +425,17 @@ public class GameWorld {
     public String getWorldName() {
         return worldName;
     }
+
+    public int getNumberOfEnemiesKilled() {
+        return numberOfEnemiesKilled;
+    }
+
+    public int getNumberOfDeaths() {
+        return numberOfDeaths;
+    }
+
+    public long getTotalPassedTime() {
+        return totalPassedTime;
+    }
+
 }

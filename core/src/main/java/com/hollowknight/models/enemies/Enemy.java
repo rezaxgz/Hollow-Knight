@@ -24,6 +24,8 @@ public abstract class Enemy {
 
     protected int hp;
 
+    private boolean isJustDead = false;
+
     public Enemy(Vector2 pos) {
         this.position = new Vector2(pos);
         this.respawnPosition = new Vector2(pos);
@@ -39,6 +41,15 @@ public abstract class Enemy {
         this.hp = 0;
         this.isDead = true;
         this.velocity.set(0, 0);
+        isJustDead = true;
+    }
+
+    public boolean hasUnregisteredDeath() {
+        return isJustDead;
+    }
+
+    public void registerDeath() {
+        isJustDead = false;
     }
 
     public void takeDamage(int damage, float sourceX, boolean knockback, float knockbackMultiplier) {

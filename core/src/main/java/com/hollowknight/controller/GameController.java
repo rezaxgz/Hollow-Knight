@@ -9,6 +9,7 @@ import com.hollowknight.models.settings.GameActionType;
 import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.models.settings.Settings;
 import com.hollowknight.models.world.GameWorld;
+import com.hollowknight.views.actors.modals.BossDefeatModal;
 import com.hollowknight.views.actors.modals.InventoryModal;
 import com.hollowknight.views.actors.modals.PauseModal;
 
@@ -36,6 +37,14 @@ public class GameController {
         if (isPaused)
             return;
         world.update(delta);
+        if (world.bossJustDefeated) {
+            world.bossJustDefeated = false; // Reset flag so it doesn't loop
+            isPaused = true;
+
+            // Spawn the victory modal and pass the world to read stats
+            BossDefeatModal victoryModal = new BossDefeatModal(world);
+            victoryModal.show();
+        }
     }
 
     public boolean handleKeyDown(int keycode) {

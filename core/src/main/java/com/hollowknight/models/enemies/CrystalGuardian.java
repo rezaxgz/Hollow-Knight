@@ -212,6 +212,7 @@ public class CrystalGuardian extends Enemy {
 
     @Override
     public void kill() {
+        super.kill();
         isDead = true;
         velocity.set(0, 0);
         changeState(State.DEAD);

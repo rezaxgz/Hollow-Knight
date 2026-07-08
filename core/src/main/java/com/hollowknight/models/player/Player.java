@@ -48,6 +48,9 @@ public class Player {
     public CharmType[] charmNotches = { null, null, null };
     private Set<Enemy> hitEnemiesThisDash = new HashSet<Enemy>();
 
+    // Data
+    private boolean isJustDead = false;
+
     // =========================================================================================
     // CONSTRUCTOR
     // =========================================================================================
@@ -566,6 +569,8 @@ public class Player {
         // Don't allow instant death on god mode
         if (status.isInvincible() && !vitals.isDead())
             return;
+        if (combatState == CombatState.DEAD)
+            return;
         AudioController.getInstance().playSfx(GameAssetManager.deathSfx);
         status.setMovementLocked(true);
         status.stopVerticalMovement();
@@ -573,6 +578,15 @@ public class Player {
         velocity.x = 0;
         velocity.y = 0;
         combatState = CombatState.DEAD;
+        isJustDead = true;
+    }
+
+    public boolean hasUnregisteredDeath() {
+        return isJustDead;
+    }
+
+    public void registerDeath() {
+        isJustDead = false;
     }
 
     public boolean isDead() {
