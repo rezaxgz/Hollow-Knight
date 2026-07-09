@@ -156,7 +156,17 @@ public class GameRenderer {
     public void renderWorld() {
         setCameraPosition();
         camera.update();
-        mapRenderer.setView(camera);
+
+        float tilePadding = 100;
+
+        // Calculate the expanded view bounds
+        float viewX = camera.position.x - (camera.viewportWidth / 2f) - tilePadding;
+        float viewY = camera.position.y - (camera.viewportHeight / 2f) - tilePadding;
+        float viewWidth = camera.viewportWidth + (tilePadding * 2f);
+        float viewHeight = camera.viewportHeight + (tilePadding * 2f);
+
+        // Set the view using the expanded bounds instead of just the camera
+        mapRenderer.setView(camera.combined, viewX, viewY, viewWidth, viewHeight);
 
         mapRenderer.render(backgroundLayers);
 
