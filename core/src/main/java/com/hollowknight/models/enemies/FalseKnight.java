@@ -63,20 +63,20 @@ public class FalseKnight extends Enemy {
     // Phase 2 & Stun Variables
     private boolean hasBeenStunned = false;
     private int damageTakenDuringStun = 0;
-    private float currentRunSpeed = 220f; // Default RUN_SPEED
-    private float currentIdleThinkTime = 0.4f; // Default IDLE_THINK_TIME
+    private float currentRunSpeed = RUN_SPEED; // Default RUN_SPEED
+    private float currentIdleThinkTime = IDLE_THINK_TIME; // Default IDLE_THINK_TIME
     private float timeScale = 1f; // Used to scale animation and state time globally
-    private static final float STUN_DURATION = 9.0f;
 
     // Shockwave Tracker
     public List<Shockwave> shockwaves = new ArrayList<>();
 
     // Tunables
+    private static final float STUN_DURATION = 9.0f;
     private static final float POWER_JUMP_SPEED_Y = 900f;
     private static final float IDLE_THINK_TIME = 0.4f;
     private static final float CLOSE_RANGE = 140f;
     private static final float FAR_RANGE = 400f;
-    private static final float RUN_SPEED = 220f;
+    private static final float RUN_SPEED = 400f;
     private static final float RUN_MAX_DURATION = 4f;
 
     private static final float JUMP_ATTACK_SPEED_X = 260f;
@@ -512,9 +512,9 @@ public class FalseKnight extends Enemy {
 
         if (ratio <= 0.333f) {
             return new Rectangle(position.x, position.y + Constants.FALSE_KNIGHT_HITBOX_HEIGHT,
-                    Constants.FALSE_KNIGHT_HITBOX_WIDTH, 190);
+                    Constants.FALSE_KNIGHT_HITBOX_WIDTH, 220);
         } else {
-            float hitboxWidth = 250;
+            float hitboxWidth = ratio <= 0.666f ? 320 : 280;
             float hitboxHeight = Constants.FALSE_KNIGHT_HITBOX_HEIGHT / 2;
             float x = (facingDirection == Constants.RIGHT_DIRECTION)
                     ? position.x + FALSE_KNIGHT_HITBOX_WIDTH
