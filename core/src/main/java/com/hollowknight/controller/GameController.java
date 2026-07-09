@@ -3,6 +3,7 @@ package com.hollowknight.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.gamedata.SaveManager;
 import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.settings.Controls;
 import com.hollowknight.models.settings.GameActionType;
@@ -145,5 +146,9 @@ public class GameController {
             world.player.stopVerticalMovement(Constants.DOWN_DIRECTION);
         }
         return false;
+    }
+
+    public void exit() {
+        SaveManager.saveGame(world);
     }
 }

@@ -79,7 +79,9 @@ public class PauseModal extends Modal {
         exitButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                GameController.getInstance().isPaused = false;
+                GameController gc = GameController.getInstance();
+                gc.isPaused = false;
+                gc.exit();
                 UiManager.setScreen(new MainMenuScreen());
             }
         });

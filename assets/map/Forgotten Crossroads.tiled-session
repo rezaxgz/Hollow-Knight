@@ -10,6 +10,12 @@
         "BG_egg_07_0000_Layer-1.tsx": {
             "scaleInDock": 1
         },
+        "FG_eggs_04_0000_04.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_eggs_05_0000_02.tsx": {
+            "scaleInDock": 1
+        },
         "FG_platform.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -56,13 +62,28 @@
         "back_mid_wall_no_eyes_temple.tsx": {
             "scaleInDock": 1
         },
+        "bone_bench.tsx": {
+            "scaleInDock": 1
+        },
         "break_floor_0007_b1.tsx": {
             "scaleInDock": 1
         },
         "cd_BG_egg_04.tsx": {
             "scaleInDock": 1
         },
+        "cd_FG_bone_09.tsx": {
+            "scaleInDock": 1
+        },
         "cd_FG_rock_20.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_big_roof_0000_07.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_big_roof_0004_03.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_big_roof_0006_01.tsx": {
             "scaleInDock": 1
         },
         "cd_floor_02.tsx": {
@@ -116,15 +137,15 @@
         },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
-                11,
                 8,
-                12
+                12,
+                11
             ],
-            "scale": 1.5,
-            "selectedLayer": 21,
+            "scale": 0.5,
+            "selectedLayer": 17,
             "viewCenter": {
-                "x": 4201.333333333333,
-                "y": 978.3333333333333
+                "x": 734,
+                "y": 3221
             }
         },
         "fung_bg_rocks_full_01.tsx": {
@@ -205,6 +226,9 @@
             "scaleInDock": 1,
             "scaleInEditor": 0.25
         },
+        "grub_homes_0001_Color-Balance-1-copy-6.tsx": {
+            "scaleInDock": 1
+        },
         "highway_FG_0007_Layer-78.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1
@@ -272,6 +296,9 @@
         "pole_04.tsx": {
             "scaleInDock": 1
         },
+        "rocks_right_left3_BG_03.tsx": {
+            "scaleInDock": 1
+        },
         "ruin_village_thing_0002_a.tsx": {
             "scaleInDock": 1
         },
@@ -279,6 +306,9 @@
             "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 5.5
+        },
+        "shaman_one_way.tsx": {
+            "scaleInDock": 1
         },
         "slug_shrine_bench.tsx": {
             "scaleInDock": 1
@@ -313,6 +343,12 @@
         "vil_BG_04.tsx": {
             "scaleInDock": 1
         },
+        "vil_BG_05.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_BG_06.tsx": {
+            "scaleInDock": 1
+        },
         "vil_fence_02.tsx": {
             "scaleInDock": 3
         },
@@ -328,6 +364,12 @@
         "wall1.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "wd_floor_02.tsx": {
+            "scaleInDock": 1
+        },
+        "well_extension_0000_2.tsx": {
+            "scaleInDock": 1
         },
         "well_extension_0001_1.tsx": {
             "scaleInDock": 0.33,

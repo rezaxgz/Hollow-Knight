@@ -1,6 +1,6 @@
 package com.hollowknight.models.settings;
 
-import com.hollowknight.models.gamedata.Loader;
+import com.hollowknight.models.gamedata.SaveManager;
 import com.hollowknight.models.language.Language;
 
 public class Settings {
@@ -14,7 +14,7 @@ public class Settings {
 
     public static Settings getInstance() {
         if (instance == null) {
-            instance = Loader.loadSettings();
+            instance = SaveManager.loadSettings();
         }
         return instance;
     }

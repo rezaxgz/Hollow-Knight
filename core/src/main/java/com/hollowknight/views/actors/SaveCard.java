@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
@@ -13,9 +14,9 @@ import com.hollowknight.views.screens.GameScreen;
 
 public class SaveCard extends Table {
     @SuppressWarnings("unused")
-    private final GameWorld gameSave;
+    private final GameSave gameSave;
 
-    public SaveCard(GameWorld gameSave) {
+    public SaveCard(GameSave gameSave) {
         Skin skin = GameAssetManager.skin;
         this.gameSave = gameSave;
 
@@ -31,7 +32,7 @@ public class SaveCard extends Table {
         loadBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                UiManager.setScreen(new GameScreen(gameSave));
+                UiManager.setScreen(new GameScreen(new GameWorld(gameSave)));
             }
         });
     }

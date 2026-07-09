@@ -1,5 +1,6 @@
 package com.hollowknight.views.screens;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -11,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.hollowknight.views.actors.SaveCard;
 import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.gamedata.GameSave;
-import com.hollowknight.models.gamedata.Loader;
+import com.hollowknight.models.gamedata.SaveManager;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
@@ -35,8 +36,14 @@ public class StartGameScreen extends AbstractScreen {
 
         saveList.setBackground(skin.getDrawable("window"));
 
-        List<GameWorld> loadedSaves = Loader.loadSaves();
-        for (GameWorld g : loadedSaves) {
+        List<GameSave> loadedSaves = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            loadedSaves.add(SaveManager.loadGame(i));
+        }
+        for (GameSave g : loadedSaves) {
+            if (g == null) {
+                continue;
+            }
             SaveCard saveCard = new SaveCard(g);
             saveList.add(saveCard).growX().row();
         }

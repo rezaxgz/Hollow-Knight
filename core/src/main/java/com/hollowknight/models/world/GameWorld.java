@@ -52,10 +52,17 @@ public class GameWorld {
     private long totalPassedTime = 0;
     public boolean bossJustDefeated = false;
 
+    public GameSave saveLoadedFrom;
+
     public GameWorld(GameSave save) {
+        saveLoadedFrom = save;
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(save.gameLevel.tmxPath);
         player = save.player;
+
+        this.totalPassedTime = save.totalPassedTime;
+        this.numberOfEnemiesKilled = save.numberOfEnemiesKilled;
+        this.numberOfDeaths = save.numberOfDeaths;
 
         MapLayer solids = map.getLayers().get("Solid");
         for (MapObject obj : solids.getObjects()) {
