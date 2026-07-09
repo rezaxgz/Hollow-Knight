@@ -229,19 +229,19 @@ public class GameRenderer {
                     float spriteWidth = frame.getRegionWidth();
                     float spriteHeight = frame.getRegionHeight();
 
-                    // Centers the sprite on the hitbox bounds
-                    float xOffset = (spriteWidth - wave.bounds.width) / 2f;
+                    float x = wave.velocityX < 0f ? wave.bounds.x - 10
+                            : wave.bounds.x + wave.bounds.width - spriteWidth + 10;
 
                     // Assumes you want to flip the sprite based on travel direction.
                     // If your wave stores direction (e.g., 1 for right, -1 for left), replace the
                     // '1' scaleX parameter below with wave.direction
                     batch.draw(frame,
-                            wave.bounds.x - xOffset,
+                            x,
                             wave.bounds.y + spriteHeight / 2 - 15,
                             spriteWidth / 2f, spriteHeight / 2f,
                             spriteWidth, spriteHeight,
-                            wave.getDir() * 2, 2, 0); // Change the first '1' to -1 or wave.direction to flip
-                                                      // horizontally
+                            wave.getDir(), 2, 0); // Change the first '1' to -1 or wave.direction to flip
+                                                  // horizontally
                 }
             }
         }

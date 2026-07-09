@@ -547,6 +547,7 @@ public class FalseKnight extends Enemy {
         public float lifetime = 0f;
 
         public Shockwave(float startX, float startY, int direction) {
+            // Start slightly smaller to match the squat first frame
             bounds = new Rectangle(startX, startY, 40, 40);
             velocityX = 600f * direction;
             this.direction = direction;
@@ -557,14 +558,30 @@ public class FalseKnight extends Enemy {
             lifetime += delta;
             bounds.x += velocityX * delta;
 
-            // Grows larger as it travels
-            float growSpeed = 70f;
-            bounds.width += growSpeed * delta;
-            bounds.height += growSpeed * delta;
+            float widthGrowSpeed;
+            float heightGrowSpeed;
 
-            // Compensate X growth if traveling left so the front continues correctly
+            // Phase 1: The wave rises rapidly (0.0s to ~0.8s)
+            if (lifetime <= 0.8f) {
+                widthGrowSpeed = 100f; // Grows forward moderately
+                heightGrowSpeed = 180f; // Shoots up rapidly to peak height
+            }
+            // Phase 2: The wave dissipates and lowers (0.8s to 2.5s)
+            else {
+                widthGrowSpeed = 20f; // Horizontal growth slows down (stretches out a bit)
+                heightGrowSpeed = -50f; // Height shrinks down as it loses energy
+            }
+
+            bounds.width += widthGrowSpeed * delta;
+            bounds.height += heightGrowSpeed * delta;
+
+            // Clamp height so it doesn't invert or shrink below a minimum size as it fades
+            bounds.height = Math.max(bounds.height, 40f);
+
+            // Compensate X growth if traveling left so the front leading edge remains
+            // smooth
             if (velocityX < 0) {
-                bounds.x -= growSpeed * delta;
+                bounds.x -= widthGrowSpeed * delta;
             }
 
             // Grows stronger
