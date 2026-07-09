@@ -58,6 +58,7 @@ public class FalseKnight extends Enemy {
 
     public boolean triggerHeavyShake = false;
     public boolean triggerNormalShake = false;
+    public boolean triggerAttackShake = false;
 
     // Phase 2 & Stun Variables
     private boolean hasBeenStunned = false;
@@ -172,8 +173,10 @@ public class FalseKnight extends Enemy {
             case ATTACK:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
-                if (stateTimer >= ATTACK_ANIMATION.totalDuration)
+                if (stateTimer >= ATTACK_ANIMATION.totalDuration) {
                     changeState(State.ATTACK_RECOVER);
+                    triggerAttackShake = true;
+                }
                 break;
             case ATTACK_RECOVER:
                 velocity.x = 0;

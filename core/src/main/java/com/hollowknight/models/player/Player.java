@@ -32,6 +32,8 @@ public class Player {
     public float animationTime = 0;
     public boolean triggerSpiritCast = false;
     public boolean triggerScreamDamage = false;
+    public boolean triggerDamageShake = false; // From previous step
+    public boolean triggerSpellShake = false; // --- ADD THIS LINE ---
 
     // States & Vitals
     public PlayerAnimation animation = PlayerAnimation.IDLE;
@@ -50,7 +52,6 @@ public class Player {
 
     // Data
     private boolean isJustDead = false;
-    public boolean triggerDamageShake = false;
 
     // =========================================================================================
     // CONSTRUCTOR
@@ -456,6 +457,7 @@ public class Player {
         }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
+            triggerSpellShake = true;
             vitals.addSouls(-Constants.ABILITY_COST);
 
             lockMovement();
@@ -479,6 +481,7 @@ public class Player {
         }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
+            triggerSpellShake = true;
             vitals.addSouls(-Constants.ABILITY_COST);
 
             lockMovement();

@@ -169,8 +169,13 @@ public class GameWorld {
 
     private void manageCameraShakes() {
         if (player.triggerDamageShake) {
-            triggerShake(4f, 0.2f); // Small shake for player damage
+            triggerShake(3f, 0.2f); // Small shake for player damage
             player.triggerDamageShake = false;
+        }
+        if (player.triggerSpellShake) {
+            triggerShake(3f,
+                    player.combatState == CombatState.SCREAM ? Constants.SOUL_SCREAM_TIME : 0.2f);
+            player.triggerSpellShake = false;
         }
         for (Enemy enemy : enemies) {
             if (enemy instanceof FalseKnight) {
@@ -180,8 +185,12 @@ public class GameWorld {
                     fk.triggerHeavyShake = false;
                 }
                 if (fk.triggerNormalShake) {
-                    triggerShake(4f, 0.2f); // Small shake for normal landing
+                    triggerShake(8f, 0.2f); // Small shake for normal landing
                     fk.triggerNormalShake = false;
+                }
+                if (fk.triggerAttackShake) {
+                    triggerShake(4f, 0.3f); // Normal shake (in between small and heavy)
+                    fk.triggerAttackShake = false;
                 }
             }
         }
