@@ -65,7 +65,7 @@ public class FalseKnight extends Enemy {
     private int damageTakenDuringStun = 0;
     private float currentRunSpeed = 220f; // Default RUN_SPEED
     private float currentIdleThinkTime = 0.4f; // Default IDLE_THINK_TIME
-    private float timeScale = 1.3f; // Used to scale animation and state time globally
+    private float timeScale = 1f; // Used to scale animation and state time globally
     private static final float STUN_DURATION = 9.0f;
 
     // Shockwave Tracker
@@ -80,7 +80,7 @@ public class FalseKnight extends Enemy {
     private static final float RUN_MAX_DURATION = 4f;
 
     private static final float JUMP_ATTACK_SPEED_X = 260f;
-    private static final float JUMP_ATTACK_SPEED_Y = 800f;
+    public static final float JUMP_ATTACK_SPEED_Y = 800f;
 
     private static final float DEFENSIVE_JUMP_SPEED_X = 300f;
     private static final float DEFENSIVE_JUMP_SPEED_Y = 750f;
