@@ -2,6 +2,7 @@ package com.hollowknight.views.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.hollowknight.models.settings.Settings;
 import com.hollowknight.views.GameAssetManager;
 
 public abstract class AbstractScreen implements Screen {
@@ -51,8 +53,39 @@ public abstract class AbstractScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        // 1. Act and draw the stage normally first
         stage.act(delta);
         stage.draw();
+
+        // 2. Fetch the current brightness value (0 to 100)
+        int brightness = Settings.getInstance().getBrightness();
+
+        // 3. If brightness is less than 100, draw the darkening overlay
+        if (brightness < 100) {
+            // Set the absolute darkest the screen is allowed to get (e.g., 60% opacity)
+            float maxDarkness = 0.6f;
+
+            // Calculate alpha: scales between 0.0 (at 100 brightness) and maxDarkness (at 0
+            // brightness)
+            float alpha = (1.0f - (brightness / 100f)) * maxDarkness;
+
+            stage.getBatch().begin();
+            // Set the batch color to black with the calculated alpha transparency
+            stage.getBatch().setColor(0, 0, 0, alpha);
+
+            // Draw the single pixel texture stretched across the entire viewport
+            stage.getBatch().draw(
+                    GameAssetManager.pixelTexture,
+                    0,
+                    0,
+                    stage.getViewport().getWorldWidth(),
+                    stage.getViewport().getWorldHeight());
+
+            // Always reset the batch color back to white when done to avoid tinting other
+            // elements!
+            stage.getBatch().setColor(Color.WHITE);
+            stage.getBatch().end();
+        }
     }
 
     @Override

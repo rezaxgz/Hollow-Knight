@@ -3,6 +3,18 @@ package com.hollowknight.models.settings;
 import com.badlogic.gdx.Input;
 
 public class Controls {
+    public static final int DEFAULT_LEFT = Input.Keys.LEFT;
+    public static final int DEFAULT_RIGHT = Input.Keys.RIGHT;
+    public static final int DEFAULT_UP = Input.Keys.UP;
+    public static final int DEFAULT_DOWN = Input.Keys.DOWN;
+    public static final int DEFAULT_JUMP = Input.Keys.SPACE;
+    public static final int DEFAULT_ATTACK = Input.Keys.X;
+    public static final int DEFAULT_DASH = Input.Keys.C;
+    public static final int DEFAULT_FOCUS = Input.Keys.A;
+    public static final int DEFAULT_SCREAM = Input.Keys.S;
+    public static final int DEFAULT_CAST = Input.Keys.D;
+    public static final int DEFAULT_INTERACT = Input.Keys.E;
+
     public int left = Input.Keys.LEFT;
     public int right = Input.Keys.RIGHT;
     public int up = Input.Keys.UP;
@@ -14,6 +26,20 @@ public class Controls {
     public int scream = Input.Keys.S;
     public int cast = Input.Keys.D;
     public int interact = Input.Keys.E;
+
+    public void resetToDefaults() {
+        left = DEFAULT_LEFT;
+        right = DEFAULT_RIGHT;
+        up = DEFAULT_UP;
+        down = DEFAULT_DOWN;
+        jump = DEFAULT_JUMP;
+        attack = DEFAULT_ATTACK;
+        dash = DEFAULT_DASH;
+        focus = DEFAULT_FOCUS;
+        scream = DEFAULT_SCREAM;
+        cast = DEFAULT_CAST;
+        interact = DEFAULT_INTERACT;
+    }
 
     public void setControl(GameActionType actionType, int key) {
         switch (actionType) {
