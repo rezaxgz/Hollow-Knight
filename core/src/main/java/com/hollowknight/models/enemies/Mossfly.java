@@ -28,7 +28,7 @@ public class Mossfly extends Enemy {
         super(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
         changeState(State.SHAKE);
-        this.hp = Constants.MOSSFLY_HP; // Make sure to add MOSSFLY_HP to your Constants
+        this.hp = Constants.MOSSFLY_HP;
     }
 
     public static Mossfly newEnemy(Vector2 pos) {

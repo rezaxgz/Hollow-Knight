@@ -9,11 +9,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.hollowknight.controller.GameController;
+import com.hollowknight.models.achievements.Achievement;
+import com.hollowknight.models.achievements.AchievementManager;
+import com.hollowknight.models.achievements.AchievementObserver;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.GameRenderer;
+import com.hollowknight.views.actors.modals.AchievementPopup;
 
-public class GameScreen extends AbstractScreen {
+public class GameScreen extends AbstractScreen implements AchievementObserver {
     GameWorld world;
     private GameController controller;
     private GameRenderer renderer;
@@ -33,6 +37,8 @@ public class GameScreen extends AbstractScreen {
         super.show(); // Sets input to AbstractScreen's stage
         renderer.show(); // Overwrites input with GameRenderer's multiplexer
         GameAssetManager.menuBgm.stop();
+
+        AchievementManager.getInstance().setObserver(this);
 
         InputProcessor currentProcessor = Gdx.input.getInputProcessor();
         if (currentProcessor instanceof InputMultiplexer) {
@@ -117,5 +123,18 @@ public class GameScreen extends AbstractScreen {
         if (blurFbo != null)
             blurFbo.dispose();
         fboBatch.dispose();
+    }
+
+    @Override
+    public void onAchievementUnlocked(Achievement achievement) {
+        // Renders the popup on the AbstractScreen's stage
+        AchievementPopup.show(this.stage, achievement);
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+        // Prevent memory leaks when switching screens
+        AchievementManager.getInstance().setObserver(null);
     }
 }

@@ -4,21 +4,28 @@ import com.badlogic.gdx.math.Vector2;
 
 public class EnemyFactory {
     public static Enemy newEnemy(Vector2 point, EnemyType enemyType) {
+        Enemy enemy = null;
         switch (enemyType) {
             case CRAWLID:
-                return GroundEnemy.newEnemy(GroundEnemyType.CRAWLID, point);
+                enemy = GroundEnemy.newEnemy(GroundEnemyType.CRAWLID, point);
+                break;
             case HUSK_HORNHEAD:
-                return HuskHornHead.newEnemy(point);
+                enemy = HuskHornHead.newEnemy(point);
+                break;
             case MOSSCREEP:
-                return GroundEnemy.newEnemy(GroundEnemyType.MOSSCREEP, point);
+                enemy = GroundEnemy.newEnemy(GroundEnemyType.MOSSCREEP, point);
+                break;
             case MOSSFLY:
-                return Mossfly.newEnemy(point);
+                enemy = Mossfly.newEnemy(point);
+                break;
             case CRYSTAL_GAURDIAN:
-                return CrystalGuardian.newEnemy(point);
+                enemy = CrystalGuardian.newEnemy(point);
+                break;
             case FALSE_KNIGHT:
-                return FalseKnight.newEnemy(point);
-            default:
-                return null;
+                enemy = FalseKnight.newEnemy(point);
+                break;
         }
+        enemy.type = enemyType;
+        return enemy;
     }
 }

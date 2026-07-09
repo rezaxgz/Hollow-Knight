@@ -1,0 +1,18 @@
+{
+"gameLevel": "FORGOTTEN_CROSSROADS",
+"playerX": 2733.1006,
+"playerY": 3125.885,
+"respawnX": 279.333,
+"respawnY": 258,
+"health": 5,
+"souls": 47,
+"charmNotches": [
+	null,
+	null,
+	null
+],
+"totalPassedTime": 0,
+"numberOfEnemiesKilled": 7,
+"numberOfDeaths": 0,
+"worldName": "new world"
+}

@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
+import com.hollowknight.models.achievements.AchievementManager;
 import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyFactory;
@@ -203,9 +204,9 @@ public class GameWorld {
             if (cameraShakeTimer <= 0)
                 cameraShakeIntensity = 0f;
         }
-        if (passedTimeBuffer >= 100) {
-            passedTimeBuffer -= 100;
-            totalPassedTime += 100;
+        if (passedTimeBuffer >= 60) {
+            passedTimeBuffer -= 60;
+            totalPassedTime += 60;
         }
     }
 
@@ -214,6 +215,7 @@ public class GameWorld {
             if (e.hasUnregisteredDeath()) {
                 e.registerDeath();
                 numberOfEnemiesKilled++;
+                AchievementManager.getInstance().notifyEnemyDeath(e);
             }
         }
         if (player.hasUnregisteredDeath()) {
@@ -255,6 +257,9 @@ public class GameWorld {
                 bossFightActivated = false;
                 bossFightCompleted = true;
                 bossJustDefeated = true;
+
+                float totalTimeInSeconds = totalPassedTime + passedTimeBuffer;
+                AchievementManager.getInstance().onBossDefeated(totalTimeInSeconds);
 
                 // Open the room by clearing out the door solid fields
                 solidBlocks.remove(bossDoor);

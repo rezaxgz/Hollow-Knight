@@ -26,6 +26,8 @@ public abstract class Enemy {
 
     private boolean isJustDead = false;
 
+    public EnemyType type;
+
     public Enemy(Vector2 pos) {
         this.position = new Vector2(pos);
         this.respawnPosition = new Vector2(pos);
