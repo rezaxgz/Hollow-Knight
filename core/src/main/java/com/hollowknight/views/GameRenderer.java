@@ -145,6 +145,12 @@ public class GameRenderer {
             camera.position.x += (targetX - camera.position.x) * lerpSpeed * Gdx.graphics.getDeltaTime();
             camera.position.y += (targetY - camera.position.y) * lerpSpeed * Gdx.graphics.getDeltaTime();
         }
+
+        if (world.cameraShakeTimer > 0) {
+            // Apply randomized offset based on current intensity
+            camera.position.x += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
+            camera.position.y += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
+        }
     }
 
     public void renderWorld() {

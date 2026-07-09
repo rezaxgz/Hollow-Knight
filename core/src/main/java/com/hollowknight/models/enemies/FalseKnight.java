@@ -56,6 +56,9 @@ public class FalseKnight extends Enemy {
     private boolean isPhaseTwo = false;
     private ActionType pendingJumpType = null;
 
+    public boolean triggerHeavyShake = false;
+    public boolean triggerNormalShake = false;
+
     // Phase 2 & Stun Variables
     private boolean hasBeenStunned = false;
     private int damageTakenDuringStun = 0;
@@ -209,6 +212,7 @@ public class FalseKnight extends Enemy {
                 moveX(velocity.x * delta, solidBlocks);
                 if (isOnGround) {
                     triggerShockwave = true;
+                    triggerHeavyShake = true;
                     // Spawn floor shockwave at edge of hitbox
                     float spawnX = facingDirection == Constants.RIGHT_DIRECTION
                             ? position.x + FALSE_KNIGHT_HITBOX_WIDTH
@@ -219,13 +223,17 @@ public class FalseKnight extends Enemy {
                 break;
             case NORMAL_JUMP:
                 moveX(velocity.x * delta, solidBlocks);
-                if (isOnGround)
+                if (isOnGround) {
+                    triggerNormalShake = true;
                     changeState(State.LAND);
+                }
                 break;
             case JUMP_BACK:
                 moveX(velocity.x * delta, solidBlocks);
-                if (isOnGround)
+                if (isOnGround) {
+                    triggerNormalShake = true;
                     changeState(State.LAND);
+                }
                 break;
             case LAND:
                 velocity.x = 0;

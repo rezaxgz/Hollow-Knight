@@ -52,6 +52,9 @@ public class GameWorld {
     private long totalPassedTime = 0;
     public boolean bossJustDefeated = false;
 
+    public float cameraShakeTimer = 0f;
+    public float cameraShakeIntensity = 0f;
+
     public GameSave saveLoadedFrom;
 
     public GameWorld(GameSave save) {
@@ -146,6 +149,7 @@ public class GameWorld {
         if (Constants.flag)
             return;
         updateTimers(delta);
+        manageCameraShakes();
         updateBossFight(delta);
         player.update(delta, solidBlocks);
         checkHazards();
@@ -163,8 +167,33 @@ public class GameWorld {
         registerDeaths();
     }
 
+    private void manageCameraShakes() {
+        if (player.triggerDamageShake) {
+            triggerShake(4f, 0.2f); // Small shake for player damage
+            player.triggerDamageShake = false;
+        }
+        for (Enemy enemy : enemies) {
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+                if (fk.triggerHeavyShake) {
+                    triggerShake(12f, 0.4f); // Bigger shake for heavy landing
+                    fk.triggerHeavyShake = false;
+                }
+                if (fk.triggerNormalShake) {
+                    triggerShake(4f, 0.2f); // Small shake for normal landing
+                    fk.triggerNormalShake = false;
+                }
+            }
+        }
+    }
+
     private void updateTimers(float delta) {
         passedTimeBuffer += delta;
+        if (cameraShakeTimer > 0) {
+            cameraShakeTimer -= delta;
+            if (cameraShakeTimer <= 0)
+                cameraShakeIntensity = 0f;
+        }
         if (passedTimeBuffer >= 100) {
             passedTimeBuffer -= 100;
             totalPassedTime += 100;
@@ -413,6 +442,11 @@ public class GameWorld {
 
     public boolean isBossFightActivated() {
         return bossFightActivated && !bossFightCompleted;
+    }
+
+    public void triggerShake(float intensity, float duration) {
+        this.cameraShakeIntensity = Math.max(this.cameraShakeIntensity, intensity);
+        this.cameraShakeTimer = Math.max(this.cameraShakeTimer, duration);
     }
 
     public void applyCheat(GameCheat cheat) {

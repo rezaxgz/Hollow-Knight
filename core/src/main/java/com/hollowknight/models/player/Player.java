@@ -50,6 +50,7 @@ public class Player {
 
     // Data
     private boolean isJustDead = false;
+    public boolean triggerDamageShake = false;
 
     // =========================================================================================
     // CONSTRUCTOR
@@ -499,6 +500,7 @@ public class Player {
         if (status.isInvincible())
             return false;
 
+        triggerDamageShake = true;
         vitals.takeDamage(amount);
         AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
