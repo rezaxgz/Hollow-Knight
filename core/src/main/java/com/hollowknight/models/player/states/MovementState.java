@@ -6,5 +6,7 @@ public enum MovementState {
     JUMP,
     DOUBLE_JUMP,
     FALL,
-    DASH
+    DASH,
+    WALL_SLIDE,
+    WALL_JUMP
 }

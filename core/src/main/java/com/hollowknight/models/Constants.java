@@ -21,7 +21,10 @@ public class Constants {
     public static final int PLAYER_HITBOX_WIDTH = 65;
     public static final int PLAYER_HITBOX_HEIGHT = 130;
     public static final float PLAYER_DEATH_ANIMATION_TIME = 1.44f;
-    public static final float PLAYER_DEATH_TIME = 3;
+    public static final float PLAYER_DEATH_TIME = 3f;
+    public static final float WALL_JUMP_SPEED_X = 120f;
+    public static final float WALL_JUMP_SPEED_Y = JUMP_SPEED * 0.9f;
+    public static final float WALL_JUMP_DURATION = WALL_JUMP_SPEED_Y / (-GRAVITY);
 
     // Player Combat
     public static final float SLASH_TIME = 0.5f;

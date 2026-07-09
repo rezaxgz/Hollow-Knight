@@ -89,6 +89,8 @@ public class Player {
             return;
         if (handleCastState(delta, solidBlocks))
             return;
+        if (handleWallJumpState(delta, solidBlocks))
+            return;
 
         // Normal movement & gravity
         applyNormalPhysics(delta);
@@ -267,9 +269,70 @@ public class Player {
         return true;
     }
 
-    private void applyNormalPhysics(float delta) {
-        velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
+    private boolean handleWallJumpState(float delta, List<Rectangle> solidBlocks) {
+        if (movementState != MovementState.WALL_JUMP)
+            return false;
+
+        // Cancel arc if player stops holding the key OR actively pulls away from the
+        // wall
+        boolean pullingAway = (status.getWallDirection() == Constants.RIGHT_DIRECTION && status.isHoldingLeft()) ||
+                (status.getWallDirection() == Constants.LEFT_DIRECTION && status.isHoldingRight());
+
+        if (!status.isMovingHorizontally() || pullingAway) {
+            movementState = velocity.y > 0 ? MovementState.JUMP : MovementState.FALL;
+            // Restore facing direction to the actively held key
+            if (status.isHoldingRight())
+                status.setFacingDirection(Constants.RIGHT_DIRECTION);
+            if (status.isHoldingLeft())
+                status.setFacingDirection(Constants.LEFT_DIRECTION);
+            return false;
+        }
+
+        // Apply normal gravity vertically
         velocity.y += Constants.GRAVITY * delta;
+
+        // Calculate dynamic horizontal acceleration
+        float initialVelX = Constants.WALL_JUMP_SPEED_X;
+        float accelerationX = (2 * initialVelX) / Constants.WALL_JUMP_DURATION;
+        float timePassed = Constants.WALL_JUMP_DURATION - status.getWallJumpTimer();
+
+        float currentSpeedX = -initialVelX + (accelerationX * timePassed);
+        velocity.x = currentSpeedX * status.getWallDirection();
+
+        updatePosition(delta, solidBlocks);
+
+        // Check end conditions
+        if (status.getWallJumpTimer() <= 0 || status.isOnGround() || status.isTouchingWall()) {
+            if (status.isTouchingWall() && status.isMovingHorizontally()) {
+                movementState = MovementState.WALL_SLIDE;
+                // CRITICAL FIX: Snap facing direction back to the wall so physics push you
+                // inward
+                status.setFacingDirection(status.getWallDirection());
+            } else if (status.isOnGround()) {
+                setStateAfterLanding();
+            } else {
+                movementState = velocity.y > 0 ? MovementState.JUMP : MovementState.FALL;
+                // Restore facing direction to the actively held key
+                if (status.isHoldingRight())
+                    status.setFacingDirection(Constants.RIGHT_DIRECTION);
+                if (status.isHoldingLeft())
+                    status.setFacingDirection(Constants.LEFT_DIRECTION);
+            }
+        }
+
+        updateAnimation();
+        return true;
+    }
+
+    private void applyNormalPhysics(float delta) {
+        if (movementState == MovementState.WALL_SLIDE) {
+            // Apply 15% of normal gravity to simulate wall friction
+            velocity.y += (Constants.GRAVITY * 0.15f) * delta;
+            velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
+        } else {
+            velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
+            velocity.y += Constants.GRAVITY * delta;
+        }
     }
 
     private void resolveMovementStates() {
@@ -279,11 +342,10 @@ public class Player {
         }
 
         if (status.isOnGround()) {
-            status.resetDash();
-            status.resetJumps();
+            status.resetAirAbilities(); // Also resets dash/jumps
             velocity.y = 0;
 
-            if (movementState == MovementState.FALL) {
+            if (movementState == MovementState.FALL || movementState == MovementState.WALL_SLIDE) {
                 setStateAfterLanding();
             }
 
@@ -293,7 +355,18 @@ public class Player {
                 movementState = MovementState.RUN;
             }
         } else {
-            if (velocity.y < 0 && movementState != MovementState.FALL) {
+            // --- WALL SLIDE LOGIC ---
+            if (status.isTouchingWall() && status.isMovingHorizontally()
+                    && status.getFacingDirection() == status.getWallDirection()) {
+                if (velocity.y < 0) { // Only slide when falling downwards
+                    movementState = MovementState.WALL_SLIDE;
+                    status.resetAirAbilities(); // Allow dashing/jumping off the wall
+                }
+            } else if (movementState == MovementState.WALL_SLIDE) {
+                // Player let go of the movement key or slid off the bottom of the wall
+                movementState = MovementState.FALL;
+            } else if (velocity.y < 0 && movementState != MovementState.FALL
+                    && movementState != MovementState.WALL_JUMP) {
                 movementState = MovementState.FALL;
             }
         }
@@ -325,6 +398,7 @@ public class Player {
     }
 
     public void moveRight() {
+        status.setHoldingRight(true);
         if (status.isMovementLocked())
             return;
         move();
@@ -332,6 +406,7 @@ public class Player {
     }
 
     public void moveLeft() {
+        status.setHoldingLeft(true);
         if (status.isMovementLocked())
             return;
         move();
@@ -339,17 +414,43 @@ public class Player {
     }
 
     public void stopMoving(int dir) {
+        if (dir == Constants.RIGHT_DIRECTION)
+            status.setHoldingRight(false);
+        if (dir == Constants.LEFT_DIRECTION)
+            status.setHoldingLeft(false);
+
         if (dir != status.getFacingDirection() || status.isMovementLocked())
             return;
 
-        status.setMovingHorizontally(false);
-        if (status.isOnGround())
-            movementState = MovementState.IDLE;
+        if (status.isHoldingRight() && !status.isHoldingLeft()) {
+            status.setFacingDirection(Constants.RIGHT_DIRECTION);
+            status.setMovingHorizontally(true);
+        } else if (status.isHoldingLeft() && !status.isHoldingRight()) {
+            status.setFacingDirection(Constants.LEFT_DIRECTION);
+            status.setMovingHorizontally(true);
+        } else if (!status.isHoldingRight() && !status.isHoldingLeft()) {
+            status.setMovingHorizontally(false);
+            if (status.isOnGround()) {
+                movementState = MovementState.IDLE;
+            }
+        }
     }
 
     public void jump() {
         if (status.isMovementLocked())
             return;
+        if (movementState == MovementState.WALL_SLIDE) {
+            movementState = MovementState.WALL_JUMP;
+            status.setWallJumpTimer(Constants.WALL_JUMP_DURATION);
+
+            velocity.y = Constants.WALL_JUMP_SPEED_Y;
+            // Launch horizontally away from the wall
+            velocity.x = Constants.WALL_JUMP_SPEED_X * -status.getWallDirection();
+            status.setFacingDirection(-status.getWallDirection());
+
+            AudioController.getInstance().playSfx(GameAssetManager.jumpSfx);
+            return;
+        }
         if (status.canJump() && movementState != MovementState.DASH) {
             velocity.y = Constants.JUMP_SPEED;
             status.useJump();
@@ -614,6 +715,7 @@ public class Player {
 
     private void updatePosition(float delta, List<Rectangle> solids) {
         status.setOnGround(false);
+        status.setTouchingWall(false);
         moveX(velocity.x * delta, solids);
         moveY(velocity.y * delta, solids);
     }
@@ -626,6 +728,9 @@ public class Player {
             if (player.overlaps(solid)) {
                 position.x = (amount > 0) ? solid.x - player.width : solid.x + solid.width;
                 velocity.x = 0;
+                // Mark that we hit a wall and register the direction
+                status.setTouchingWall(true);
+                status.setWallDirection((amount > 0) ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION);
                 break;
             }
         }
@@ -700,6 +805,8 @@ public class Player {
                 case FALL -> targetAnimation = PlayerAnimation.FALL;
                 case RUN -> targetAnimation = PlayerAnimation.RUN;
                 case IDLE -> targetAnimation = PlayerAnimation.IDLE;
+                case WALL_SLIDE -> targetAnimation = PlayerAnimation.WALL_SLIDE;
+                case WALL_JUMP -> targetAnimation = PlayerAnimation.WALL_JUMP;
             }
         }
 

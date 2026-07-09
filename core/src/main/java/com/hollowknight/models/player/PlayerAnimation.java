@@ -7,7 +7,7 @@ public enum PlayerAnimation {
     IDLE("animation/Idle.png", 9, AnimationType.LOOP_PINGPONG, 0.08f),
     RUN("animation/Run.png", 13, AnimationType.LOOP_PINGPONG, 0.05f),
     DASH("animation/Dash.png", 12, Constants.DASH_DURATION, AnimationType.ONESHOT),
-    SHARP_SHADOW_DASH("animation/Shadow Dash.png", 11, Constants.DASH_DURATION , AnimationType.ONESHOT),
+    SHARP_SHADOW_DASH("animation/Shadow Dash.png", 11, Constants.DASH_DURATION, AnimationType.ONESHOT),
     JUMP("animation/Airborne.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
     DEAD("animation/Death.png", 18, Constants.PLAYER_DEATH_ANIMATION_TIME, AnimationType.ONESHOT),
     IDLE_HURT("animation/Idle Hurt.png", 12, AnimationType.LOOP_PINGPONG, 0.08f),
@@ -20,7 +20,9 @@ public enum PlayerAnimation {
     UP_SLASH("animation/UpSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
     DOWN_SLASH("animation/DownSlash.png", 5, Constants.SLASH_TIME, AnimationType.ONESHOT),
     SCREAM("animation/Scream.png", 7, Constants.SOUL_SCREAM_TIME, AnimationType.ONESHOT),
-    CAST("animation/Fireball Cast.png", 9, Constants.SPIRIT_CAST_TIME, AnimationType.ONESHOT);
+    CAST("animation/Fireball Cast.png", 9, Constants.SPIRIT_CAST_TIME, AnimationType.ONESHOT),
+    WALL_SLIDE("animation/Wall Slide.png", 4, AnimationType.LOOP_PINGPONG, 0.1f),
+    WALL_JUMP("animation/Walljump.png", 9, Constants.WALL_JUMP_DURATION, AnimationType.ONESHOT);
 
     public final String path;
     public int frameCount;

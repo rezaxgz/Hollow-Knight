@@ -13,6 +13,8 @@ public class PlayerStatus {
     // Directional Holding state
     private boolean holdingUp = false;
     private boolean holdingDown = false;
+    private boolean holdingLeft = false;
+    private boolean holdingRight = false;
 
     // Abilities
     private boolean canDash = true;
@@ -38,6 +40,11 @@ public class PlayerStatus {
     private boolean movingVertically = false;
     private int verticalDir = 0;
 
+    // Wall Slide and Wall Jump
+    private boolean touchingWall = false;
+    private int wallDirection = 0;
+    private float wallJumpTimer = 0.0f;
+
     // -------------------------------------------------
     // Core Update
     // -------------------------------------------------
@@ -53,6 +60,8 @@ public class PlayerStatus {
         }
 
         // Update generic ability/combat timers
+        if (wallJumpTimer > 0)
+            wallJumpTimer -= delta;
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= delta;
         if (dashTimer > 0)
@@ -132,6 +141,22 @@ public class PlayerStatus {
 
     public void setHoldingDown(boolean holdingDown) {
         this.holdingDown = holdingDown;
+    }
+
+    public boolean isHoldingLeft() {
+        return holdingLeft;
+    }
+
+    public void setHoldingLeft(boolean holdingLeft) {
+        this.holdingLeft = holdingLeft;
+    }
+
+    public boolean isHoldingRight() {
+        return holdingRight;
+    }
+
+    public void setHoldingRight(boolean holdingRight) {
+        this.holdingRight = holdingRight;
     }
 
     // -------------------------------------------------
@@ -309,5 +334,33 @@ public class PlayerStatus {
     public void stopVerticalMovement() {
         verticalDir = 0;
         movingVertically = false;
+    }
+
+    // -------------------------------------------------
+    // wall utils
+    // -------------------------------------------------
+
+    public boolean isTouchingWall() {
+        return touchingWall;
+    }
+
+    public void setTouchingWall(boolean touchingWall) {
+        this.touchingWall = touchingWall;
+    }
+
+    public int getWallDirection() {
+        return wallDirection;
+    }
+
+    public void setWallDirection(int wallDirection) {
+        this.wallDirection = wallDirection;
+    }
+
+    public float getWallJumpTimer() {
+        return wallJumpTimer;
+    }
+
+    public void setWallJumpTimer(float wallJumpTimer) {
+        this.wallJumpTimer = wallJumpTimer;
     }
 }
