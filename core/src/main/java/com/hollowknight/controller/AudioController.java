@@ -41,6 +41,22 @@ public class AudioController {
         }
     }
 
+    public void playSfxLoop(Sound sound) {
+        if (sound != null) {
+            audioManager.sfx().playLoop(sound);
+        }
+    }
+
+    public void playRandomSfx(Sound[] sounds) {
+        int randomIndex = (int) (Math.random() * sounds.length);
+        for (int i = 0; i < sounds.length; i++) {
+            if (sounds[randomIndex + i] != null) {
+                playSfx(sounds[randomIndex]);
+                return;
+            }
+        }
+    }
+
     public void playSfx(com.badlogic.gdx.audio.Music music) {
         if (music != null) {
             float savedSfxVolume = Settings.getInstance().getSfxLoudness();

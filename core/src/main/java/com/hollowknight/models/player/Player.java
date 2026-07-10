@@ -305,6 +305,7 @@ public class Player {
         if (status.getWallJumpTimer() <= 0 || status.isOnGround() || status.isTouchingWall()) {
             if (status.isTouchingWall() && status.isMovingHorizontally()) {
                 movementState = MovementState.WALL_SLIDE;
+                AudioController.getInstance().playSfx(GameAssetManager.wallSlideSfx);
                 // CRITICAL FIX: Snap facing direction back to the wall so physics push you
                 // inward
                 status.setFacingDirection(status.getWallDirection());
@@ -340,6 +341,13 @@ public class Player {
         if (movementState == MovementState.FALL && status.getJumpsRemaining() == 2) {
             status.setRemainingJumps(1);
         }
+        if (movementState != MovementState.WALL_SLIDE) {
+            GameAssetManager.wallSlideSfx.stop();
+        }
+
+        if (movementState != MovementState.RUN) {
+            GameAssetManager.walkSfx.stop();
+        }
 
         if (status.isOnGround()) {
             status.resetAirAbilities(); // Also resets dash/jumps
@@ -360,6 +368,7 @@ public class Player {
                     && status.getFacingDirection() == status.getWallDirection()) {
                 if (velocity.y < 0) { // Only slide when falling downwards
                     movementState = MovementState.WALL_SLIDE;
+                    AudioController.getInstance().playSfx(GameAssetManager.wallSlideSfx);
                     status.resetAirAbilities(); // Allow dashing/jumping off the wall
                 }
             } else if (movementState == MovementState.WALL_SLIDE) {
@@ -392,8 +401,11 @@ public class Player {
     }
 
     private void move() {
-        if (status.isOnGround())
+        if (status.isOnGround() && movementState != MovementState.RUN) {
             movementState = MovementState.RUN;
+            AudioController.getInstance().playSfxLoop(GameAssetManager.walkSfx);
+        }
+
         status.setMovingHorizontally(true);
     }
 
@@ -448,7 +460,7 @@ public class Player {
             velocity.x = Constants.WALL_JUMP_SPEED_X * -status.getWallDirection();
             status.setFacingDirection(-status.getWallDirection());
 
-            AudioController.getInstance().playSfx(GameAssetManager.jumpSfx);
+            AudioController.getInstance().playSfx(GameAssetManager.wallJumpSfx);
             return;
         }
         if (status.canJump() && movementState != MovementState.DASH) {
@@ -535,6 +547,8 @@ public class Player {
         float slashTime = hasCharm(CharmType.QUICK_SLASH) ? Constants.SLASH_TIME * 0.6f : Constants.SLASH_TIME;
         status.setAttackTimer(slashTime);
 
+        AudioController.getInstance().playRandomSfx(GameAssetManager.slashSfxs);
+
         if (status.isHoldingUp()) {
             currentAttackAnimation = PlayerAnimation.UP_SLASH;
             addEffect(PlayerEffectAnimation.UP_SLASH);
@@ -606,7 +620,7 @@ public class Player {
 
         triggerDamageShake = true;
         vitals.takeDamage(amount);
-        AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
+        AudioController.getInstance().playSfx(GameAssetManager.knightHurtSfx);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
 
         // Break out of locks cleanly

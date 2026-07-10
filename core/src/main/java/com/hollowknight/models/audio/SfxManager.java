@@ -10,6 +10,10 @@ public class SfxManager {
         sound.play(volume);
     }
 
+    public void playLoop(Sound sound) {
+        sound.loop(volume);
+    }
+
     public void setVolume(float volume) {
         this.volume = volume;
     }

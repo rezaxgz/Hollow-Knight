@@ -2,6 +2,7 @@ package com.hollowknight.views;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -49,23 +50,26 @@ public class GameAssetManager {
     public static final Texture eButton = new Texture("E_button.png");
 
     // Music
-    public static com.badlogic.gdx.audio.Music menuBgm;
-    public static com.badlogic.gdx.audio.Music map1Bgm;
-    public static com.badlogic.gdx.audio.Music map2Bgm;
+    public static Music menuBgm;
+    public static Music map1Bgm;
+    public static Music map2Bgm;
 
     // sfx
-    public static com.badlogic.gdx.audio.Sound jumpSfx;
-    public static com.badlogic.gdx.audio.Sound dashSfx;
-    public static com.badlogic.gdx.audio.Sound knightHurtSfx;
-    public static com.badlogic.gdx.audio.Sound evadeSfx;
-    public static com.badlogic.gdx.audio.Sound fallingSfx;
-    public static com.badlogic.gdx.audio.Sound walkSfx;
-    public static com.badlogic.gdx.audio.Sound deathSfx;
-    public static com.badlogic.gdx.audio.Sound focusChargingSfx;
-    public static com.badlogic.gdx.audio.Sound focusHealSfx;
-    public static com.badlogic.gdx.audio.Sound focusReadySfx;
-    public static com.badlogic.gdx.audio.Sound enemyHurtSfx;
-    public static com.badlogic.gdx.audio.Music wallSlideSfx;
+    public static Sound jumpSfx;
+    public static Sound dashSfx;
+    public static Sound knightHurtSfx;
+    public static Sound evadeSfx;
+    public static Sound fallingSfx;
+    public static Sound walkSfx;
+    public static Sound deathSfx;
+    public static Sound focusChargingSfx;
+    public static Sound focusHealSfx;
+    public static Sound focusReadySfx;
+    public static Sound enemyHurtSfx;
+    public static Music wallSlideSfx;
+    public static Sound wallJumpSfx;
+
+    public static Sound[] slashSfxs = new Sound[5];
 
     public static Sound[] zoteVoices = new Sound[6];
 
@@ -303,6 +307,11 @@ public class GameAssetManager {
         focusReadySfx = Gdx.audio.newSound(Gdx.files.internal("audio/focus_ready.wav"));
         enemyHurtSfx = Gdx.audio.newSound(Gdx.files.internal("audio/enemy_damage.wav"));
         wallSlideSfx = Gdx.audio.newMusic(Gdx.files.internal("audio/hero_wall_slide.wav"));
+        wallJumpSfx = Gdx.audio.newSound(Gdx.files.internal("audio/hero_wall_jump.wav"));
+
+        for (int i = 1; i <= 5; i++) {
+            slashSfxs[i - 1] = Gdx.audio.newSound(Gdx.files.internal("audio/sword_" + i + ".wav"));
+        }
     }
 
     private static void loadMusic() {
