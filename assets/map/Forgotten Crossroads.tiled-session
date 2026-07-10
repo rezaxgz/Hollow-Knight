@@ -21,12 +21,13 @@
             "scaleInEditor": 1
         },
         "FK_break__0000_wall_default.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "FK_break__0006_wall_metal.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "Forgotten Crossroads.tmx": {
             "scale": 3,
@@ -141,11 +142,11 @@
                 8,
                 11
             ],
-            "scale": 1.5,
-            "selectedLayer": 25,
+            "scale": 0.33,
+            "selectedLayer": 23,
             "viewCenter": {
-                "x": 4379.333333333333,
-                "y": 3938.333333333333
+                "x": 2134.848484848485,
+                "y": 1959.090909090909
             }
         },
         "fung_bg_rocks_full_01.tsx": {
@@ -227,6 +228,7 @@
             "scaleInEditor": 0.25
         },
         "grub_homes_0001_Color-Balance-1-copy-6.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "highway_FG_0007_Layer-78.tsx": {
@@ -242,6 +244,7 @@
             "scaleInEditor": 0.25
         },
         "nailmaster_benches_0002_2.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "nailmaster_fung_hut_02.tsx": {
@@ -252,7 +255,7 @@
             "scaleInDock": 1
         },
         "nailmaster_hut_01_0001_floor.tsx": {
-            "scaleInDock": 0.0625
+            "scaleInDock": 1
         },
         "nailmaster_hut_01_0002_a.tsx": {
             "scaleInDock": 1
@@ -384,11 +387,13 @@
     "map.tileWidth": 8,
     "map.width": 300,
     "openFiles": [
-        "forgotten_crossroads.tmx"
+        "forgotten_crossroads.tmx",
+        "FK_break__0006_wall_metal.tsx"
     ],
     "project": "Forgotten Crossroads.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "FK_break__0006_wall_metal.tsx",
         "forgotten_crossroads.tmx",
         "light animation.tsx",
         "nailsmith_light.tsx",
@@ -399,8 +404,7 @@
         "fung_new_0127_02.tsx",
         "wall1.tsx",
         "fung_new_0131_Layer-238.tsx",
-        "pillar_cell.tsx",
-        "FG_platform.tsx"
+        "pillar_cell.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
