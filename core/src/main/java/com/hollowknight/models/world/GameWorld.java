@@ -198,7 +198,7 @@ public class GameWorld {
     private void updateCurrentRegion() {
         Rectangle playerBounds = player.getBounds();
         for (Map.Entry<String, Rectangle> entry : regionBounds.entrySet()) {
-            if (playerBounds.overlaps(entry.getValue())) {
+            if (entry.getValue().contains(playerBounds)) {
                 GameRegion newRegion = GameRegion.fromId(entry.getKey());
                 if (this.currentRegion != newRegion) {
                     this.currentRegion = newRegion;

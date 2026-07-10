@@ -40,6 +40,11 @@ public final class MenuThemeSkin implements Disposable {
     private final SpriteBatch backgroundBatch;
     private final Array<Texture> ownedTextures;
 
+    private final Texture slotBossRoomTex;
+    private final Texture slotEmptyTex;
+    private final Texture slotCrossroadsTex;
+    private final Texture slotGreenpathTex;
+
     private final Texture backgroundTexture;
     private final Texture saveBackgroundTexture;
     private final Texture titleLogoTexture;
@@ -70,6 +75,11 @@ public final class MenuThemeSkin implements Disposable {
         this.backgroundBatch = new SpriteBatch();
 
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        slotBossRoomTex = load(BASE_PATH + "slots/Black Egg.png");
+        slotEmptyTex = load(BASE_PATH + "slots/Dirtmouth.png");
+        slotCrossroadsTex = load(BASE_PATH + "slots/ForgottenCrossroads.png");
+        slotGreenpathTex = load(BASE_PATH + "slots/GreenPath.png");
 
         backgroundTexture = load(BASE_PATH + "backgrounds/voidheart_menu_bg.png");
         saveBackgroundTexture = load(BASE_PATH + "backgrounds/save_background.png");
@@ -225,6 +235,30 @@ public final class MenuThemeSkin implements Disposable {
 
     public BitmapFont getBodyFont() {
         return skin.getFont("font");
+    }
+
+    public Image createSlotImage(String regionId) {
+        Texture tex;
+        if (regionId == null) {
+            tex = slotEmptyTex;
+        } else {
+            switch (regionId) {
+                case "BossRoom":
+                    tex = slotBossRoomTex;
+                    break;
+                case "Greenpath":
+                    tex = slotGreenpathTex;
+                    break;
+                case "ForgottenCrossroads":
+                default:
+                    tex = slotCrossroadsTex;
+                    break;
+            }
+        }
+
+        Image image = new Image(drawable(tex));
+        image.setScaling(com.badlogic.gdx.utils.Scaling.fit);
+        return image;
     }
 
     // --------------------------------

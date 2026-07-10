@@ -97,6 +97,7 @@ public class FalseKnight extends Enemy {
         changeState(State.IDLE);
         this.hp = FALSE_KNIGHT_HP;
         this.facingDirection = Constants.LEFT_DIRECTION;
+        this.type = EnemyType.FALSE_KNIGHT;
     }
 
     public static FalseKnight newEnemy(Vector2 pos) {
