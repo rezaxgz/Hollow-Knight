@@ -4,14 +4,14 @@ public class Achievement {
     public final String id;
     public final String title;
     public final String description;
-    // Removed iconPath for simplicity, but you can add it back if you have the
-    // textures
+    public final String iconPath;
     private boolean unlocked;
 
-    public Achievement(String id, String title, String description) {
+    public Achievement(String id, String title, String description, String iconPath) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.iconPath = iconPath;
         this.unlocked = false;
     }
 

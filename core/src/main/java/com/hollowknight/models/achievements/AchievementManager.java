@@ -3,6 +3,7 @@ package com.hollowknight.models.achievements;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyType;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -22,17 +23,25 @@ public class AchievementManager {
 
     private AchievementManager() {
         achievements.put("COMPLETION",
-                new Achievement("COMPLETION", "PURE COMPLETION", "Finish the game by defeating the False Knight."));
+                new Achievement("COMPLETION", "PURE COMPLETION", "Finish the game by defeating the False Knight.",
+                        "achievements/completion.png"));
         achievements.put("SPEEDRUN",
-                new Achievement("SPEEDRUN", "SPEEDRUNNER", "Complete the game in under 30 minutes."));
+                new Achievement("SPEEDRUN", "SPEEDRUNNER", "Complete the game in under 30 minutes.",
+                        "achievements/speedrun.png"));
         achievements.put("TRUE_HUNTER",
-                new Achievement("TRUE_HUNTER", "TRUE HUNTER", "Defeat every unique type of enemy."));
+                new Achievement("TRUE_HUNTER", "TRUE HUNTER", "Defeat every unique type of enemy.",
+                        "achievements/hunter.png"));
         achievements.put("FALSE_KNIGHT",
-                new Achievement("FALSE_KNIGHT", "DEFEAT FALSE KNIGHT", "Vanquish the False Knight boss."));
+                new Achievement("FALSE_KNIGHT", "DEFEAT FALSE KNIGHT", "Vanquish the False Knight boss.",
+                        "achievements/false knight.png"));
     }
 
     public void setObserver(AchievementObserver observer) {
         this.observer = observer;
+    }
+
+    public Collection<Achievement> getAchievements() {
+        return achievements.values();
     }
 
     public void unlock(String id) {
