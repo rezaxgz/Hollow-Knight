@@ -1,8 +1,5 @@
 package com.hollowknight.views.screens;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
@@ -13,7 +10,6 @@ import com.hollowknight.views.actors.SaveCard;
 import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.gamedata.SaveManager;
-import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.GameAssetManager;
 import com.hollowknight.views.UiManager;
 
@@ -26,7 +22,7 @@ public class StartGameScreen extends AbstractScreen {
 
         Table backBtnWrapper = new Table();
         backBtnWrapper.top().left().pad(10);
-        TextButton backBtn = new TextButton("back", skin);
+        TextButton backBtn = new TextButton("Back", skin);
         backBtnWrapper.add(backBtn);
 
         Table saveListWrapper = new Table();
@@ -34,33 +30,17 @@ public class StartGameScreen extends AbstractScreen {
         saveList.top().pad(10);
         saveList.defaults().space(10);
 
-        saveList.setBackground(skin.getDrawable("window"));
-
-        List<GameSave> loadedSaves = new ArrayList<>();
+        // Explicitly load slots 0 through 3
         for (int i = 0; i < 4; i++) {
-            loadedSaves.add(SaveManager.loadGame(i));
-        }
-        for (GameSave g : loadedSaves) {
-            if (g == null) {
-                continue;
-            }
-            SaveCard saveCard = new SaveCard(g);
+            GameSave g = SaveManager.loadGame(i);
+            SaveCard saveCard = new SaveCard(i, g);
             saveList.add(saveCard).growX().row();
         }
 
         saveList.setBackground(skin.getDrawable("window"));
 
-        TextButton newGameBtn = new TextButton("New Game", skin);
-
         ScrollPane scrollPane = new ScrollPane(saveList);
-
-        saveListWrapper.add(newGameBtn)
-                .width(300)
-                .padBottom(10)
-                .row();
-
-        saveListWrapper.add(scrollPane)
-                .size(300, 200);
+        saveListWrapper.add(scrollPane).size(450, 300);
 
         stack.add(backBtnWrapper);
         stack.add(saveListWrapper);
@@ -71,12 +51,6 @@ public class StartGameScreen extends AbstractScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 UiManager.setScreen(new MainMenuScreen());
-            }
-        });
-        newGameBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                UiManager.setScreen(new GameScreen(new GameWorld(GameSave.gameStart())));
             }
         });
 

@@ -3,9 +3,12 @@ package com.hollowknight.models.achievements;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyType;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class AchievementManager {
     private static AchievementManager instance;
@@ -51,6 +54,25 @@ public class AchievementManager {
             System.out.println("[ACHIEVEMENT UNLOCKED]: " + ach.title);
             if (observer != null) {
                 observer.onAchievementUnlocked(ach);
+            }
+        }
+    }
+
+    public List<String> getUnlockedIds() {
+        List<String> list = new ArrayList<>();
+        for (Map.Entry<String, Achievement> entry : achievements.entrySet()) {
+            if (entry.getValue().isUnlocked()) {
+                list.add(entry.getKey());
+            }
+        }
+        return list;
+    }
+
+    public void loadUnlockedAchievements(List<String> unlockedIds) {
+        for (String id : unlockedIds) {
+            Achievement ach = achievements.get(id);
+            if (ach != null) {
+                ach.setUnlocked(true);
             }
         }
     }

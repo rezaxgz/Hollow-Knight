@@ -1,0 +1,19 @@
+{
+"musicLoudness": 46,
+"sfxLoudness": 100,
+"brightness": 100,
+"language": "ENGLISH",
+"controls": {
+	"left": 21,
+	"right": 22,
+	"up": 19,
+	"down": 20,
+	"jump": 62,
+	"attack": 52,
+	"dash": 31,
+	"focus": 29,
+	"scream": 47,
+	"cast": 32,
+	"interact": 33
+}
+}

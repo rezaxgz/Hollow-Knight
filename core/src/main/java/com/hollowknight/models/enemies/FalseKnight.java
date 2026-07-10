@@ -400,7 +400,7 @@ public class FalseKnight extends Enemy {
         changeState(State.JUMP_BACK);
     }
 
-    private void changeState(State newState) {
+    public void changeState(State newState) {
         currentState = newState;
         stateTimer = 0f;
         switch (newState) {

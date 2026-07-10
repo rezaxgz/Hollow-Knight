@@ -12,12 +12,19 @@ public class GameSave implements Json.Serializable {
     public Player player;
     public String name;
 
-    public int slot = 1;
+    public int slot;
 
     // Progress Tracking Stats
     public long totalPassedTime = 0;
     public int numberOfEnemiesKilled = 0;
     public int numberOfDeaths = 0;
+
+    public boolean bossFightActivated = false;
+    public boolean bossFightCompleted = false;
+    public int bossHp = 400;
+    public String bossState = "IDLE";
+    public float bossX = 0f;
+    public float bossY = 0f;
 
     public GameSave() {
         // Required empty constructor for libGDX JSON deserialization
@@ -30,9 +37,9 @@ public class GameSave implements Json.Serializable {
         this.slot = slot;
     }
 
-    public static GameSave gameStart() {
+    public static GameSave gameStart(int slot) {
         return new GameSave(GameLevel.FORGOTTEN_CROSSROADS, new Player(GameLevel.FORGOTTEN_CROSSROADS.getSpawnPoint()),
-                "new world", SaveManager.getFirstEmptySlot());
+                "new world", slot);
     }
 
     @Override
@@ -44,6 +51,13 @@ public class GameSave implements Json.Serializable {
         json.writeValue("playerY", player.position.y);
         json.writeValue("respawnX", player.respawnPosition.x);
         json.writeValue("respawnY", player.respawnPosition.y);
+
+        json.writeValue("bossFightActivated", bossFightActivated);
+        json.writeValue("bossFightCompleted", bossFightCompleted);
+        json.writeValue("bossHp", bossHp);
+        json.writeValue("bossState", bossState);
+        json.writeValue("bossX", bossX);
+        json.writeValue("bossY", bossY);
 
         // 2. Save Vitals
         json.writeValue("health", player.getVitals().getHealth());
@@ -93,6 +107,13 @@ public class GameSave implements Json.Serializable {
                 }
             }
         }
+
+        this.bossFightActivated = jsonData.getBoolean("bossFightActivated", false);
+        this.bossFightCompleted = jsonData.getBoolean("bossFightCompleted", false);
+        this.bossHp = jsonData.getInt("bossHp", 400);
+        this.bossState = jsonData.getString("bossState", "IDLE");
+        this.bossX = jsonData.getFloat("bossX", 0f);
+        this.bossY = jsonData.getFloat("bossY", 0f);
 
         // 4. Load World Stats
         this.totalPassedTime = jsonData.getLong("totalPassedTime", 0);

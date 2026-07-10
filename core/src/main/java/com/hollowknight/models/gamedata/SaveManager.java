@@ -21,23 +21,35 @@ public class SaveManager {
         json.setUsePrototypes(false);
     }
 
-    /**
-     * Pulls active stats from the world, populates the GameSave, and writes it to
-     * disk.
-     */
     public static void saveGame(GameWorld world) {
         int slot = world.saveLoadedFrom.slot;
         GameSave currentSave = world.saveLoadedFrom;
-        if (slot < 1 || slot > MAX_SLOTS) {
+        if (slot < 0 || slot >= MAX_SLOTS) {
             Gdx.app.error("SaveManager", "Invalid save slot: " + slot + ".");
             return;
         }
 
-        // Sync dynamic world data into the save object before serializing
         currentSave.totalPassedTime = world.getTotalPassedTime();
         currentSave.numberOfEnemiesKilled = world.getNumberOfEnemiesKilled();
         currentSave.numberOfDeaths = world.getNumberOfDeaths();
         currentSave.player = world.player;
+
+        // Save Boss specific state
+        currentSave.bossFightActivated = world.bossFightActivated;
+        currentSave.bossFightCompleted = world.bossFightCompleted;
+
+        if (world.bossFightActivated && !world.bossFightCompleted) {
+            for (com.hollowknight.models.enemies.Enemy enemy : world.enemies) {
+                if (enemy instanceof com.hollowknight.models.enemies.FalseKnight) {
+                    com.hollowknight.models.enemies.FalseKnight fk = (com.hollowknight.models.enemies.FalseKnight) enemy;
+                    currentSave.bossHp = fk.getHp();
+                    currentSave.bossState = fk.currentState.name();
+                    currentSave.bossX = fk.position.x;
+                    currentSave.bossY = fk.position.y;
+                    break;
+                }
+            }
+        }
 
         FileHandle saveFile = Gdx.files.local(SAVE_PREFIX + slot + SAVE_EXTENSION);
 
@@ -54,7 +66,7 @@ public class SaveManager {
      * Reads a slot from disk and reconstructs a playable GameSave instance.
      */
     public static GameSave loadGame(int slot) {
-        if (slot < 1 || slot > MAX_SLOTS) {
+        if (slot < 0 || slot >= MAX_SLOTS) {
             Gdx.app.error("SaveManager", "Invalid save slot: " + slot + ".");
             return null;
         }
@@ -93,10 +105,43 @@ public class SaveManager {
     }
 
     public static Settings loadSettings() {
+        // 1. Load Global Achievements
+        FileHandle achFile = Gdx.files.local("achievements.json");
+        if (achFile.exists()) {
+            try {
+                String[] unlocked = json.fromJson(String[].class, achFile);
+                if (unlocked != null) {
+                    com.hollowknight.models.achievements.AchievementManager.getInstance()
+                            .loadUnlockedAchievements(java.util.Arrays.asList(unlocked));
+                }
+            } catch (Exception e) {
+                Gdx.app.error("SaveManager", "Failed to load achievements", e);
+            }
+        }
+
+        // 2. Load Global Settings
+        FileHandle file = Gdx.files.local("settings.json");
+        if (file.exists()) {
+            try {
+                return json.fromJson(Settings.class, file);
+            } catch (Exception e) {
+                Gdx.app.error("SaveManager", "Failed to load settings", e);
+            }
+        }
         return new Settings();
     }
 
     public static void saveSettings(Settings s) {
+        // 1. Save Global Settings
+        FileHandle file = Gdx.files.local("settings.json");
+        file.writeString(json.prettyPrint(s), false);
+
+        // 2. Save Global Achievements
+        java.util.List<String> unlockedList = com.hollowknight.models.achievements.AchievementManager.getInstance()
+                .getUnlockedIds();
+        String[] unlockedArray = unlockedList.toArray(new String[0]);
+        FileHandle achFile = Gdx.files.local("achievements.json");
+        achFile.writeString(json.prettyPrint(unlockedArray), false);
     }
 
     public static int getFirstEmptySlot() {

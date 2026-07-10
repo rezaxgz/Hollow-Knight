@@ -42,8 +42,8 @@ public class GameWorld {
     private Rectangle activationZone;
     public Rectangle bossDoor;
     private Vector2 falseKnightSpawnPoint;
-    private boolean bossFightActivated = false;
-    private boolean bossFightCompleted = false;
+    public boolean bossFightActivated = false;
+    public boolean bossFightCompleted = false;
     public float gateDropProgress = 0.0f;
     private Vector2 playerTPPoint = new Vector2();
 
@@ -67,6 +67,8 @@ public class GameWorld {
         this.totalPassedTime = save.totalPassedTime;
         this.numberOfEnemiesKilled = save.numberOfEnemiesKilled;
         this.numberOfDeaths = save.numberOfDeaths;
+        this.bossFightActivated = save.bossFightActivated;
+        this.bossFightCompleted = save.bossFightCompleted;
 
         MapLayer solids = map.getLayers().get("Solid");
         for (MapObject obj : solids.getObjects()) {
@@ -143,6 +145,21 @@ public class GameWorld {
                     }
                 }
             }
+        }
+
+        if (this.bossFightActivated && !this.bossFightCompleted && this.bossDoor != null) {
+            // Lock the player in
+            this.solidBlocks.add(this.bossDoor);
+
+            // Restore the False Knight
+            FalseKnight fk = new FalseKnight(new Vector2(save.bossX, save.bossY));
+            fk.setHp(save.bossHp);
+            try {
+                fk.changeState(FalseKnight.State.valueOf(save.bossState));
+            } catch (Exception e) {
+                fk.changeState(FalseKnight.State.IDLE);
+            }
+            this.enemies.add(fk);
         }
     }
 
