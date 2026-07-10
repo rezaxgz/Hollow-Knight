@@ -193,6 +193,42 @@ public final class MenuThemeSkin implements Disposable {
         return button;
     }
 
+    // --- RESTORED FACTORY METHODS ---
+    public Drawable panelDrawable(float alpha) {
+        return solidDrawable(0.02f, 0.025f, 0.035f, alpha);
+    }
+
+    public Drawable lineDrawable() {
+        Color color = highlightColor();
+        return solidDrawable(color.r, color.g, color.b, 0.80f);
+    }
+
+    public Label createTitleLabel(String text) {
+        Label label = new Label(text, skin);
+        label.setColor(titleColor());
+        label.setFontScale(1.55f);
+        return label;
+    }
+
+    public Label createSectionLabel(String text) {
+        Label label = new Label(text, skin);
+        label.setColor(highlightColor());
+        label.setFontScale(1.15f);
+        return label;
+    }
+
+    public Label createBodyLabel(String text) {
+        Label label = new Label(text, skin);
+        label.setColor(bodyColor());
+        return label;
+    }
+
+    public BitmapFont getBodyFont() {
+        return skin.getFont("font");
+    }
+
+    // --------------------------------
+
     private static void applyCustomCursor() {
         if (cursorLoaded) {
             if (sharedCursor != null)
