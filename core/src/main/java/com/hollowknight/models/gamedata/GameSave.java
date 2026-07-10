@@ -3,12 +3,12 @@ package com.hollowknight.models.gamedata;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.hollowknight.models.enums.GameLevel;
+import com.hollowknight.models.enums.GameRegion;
 import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.player.Player;
 
 public class GameSave implements Json.Serializable {
-    public GameLevel gameLevel;
+    public GameRegion currentRegion;
     public Player player;
     public String name;
 
@@ -30,22 +30,22 @@ public class GameSave implements Json.Serializable {
         // Required empty constructor for libGDX JSON deserialization
     }
 
-    private GameSave(GameLevel gameLevel, Player player, String name, int slot) {
-        this.gameLevel = gameLevel;
+    private GameSave(GameRegion currentRegion, Player player, String name, int slot) {
+        this.currentRegion = currentRegion;
         this.player = player;
         this.name = name;
         this.slot = slot;
     }
 
     public static GameSave gameStart(int slot) {
-        return new GameSave(GameLevel.FORGOTTEN_CROSSROADS, new Player(GameLevel.FORGOTTEN_CROSSROADS.getSpawnPoint()),
+        return new GameSave(GameRegion.FORGOTTEN_CROSSROADS,
+                new Player(GameRegion.getSpawnPoint()),
                 "new world", slot);
     }
 
     @Override
     public void write(Json json) {
-        json.writeValue("gameLevel", gameLevel.name());
-
+        json.writeValue("currentRegion", currentRegion.name());
         // 1. Save Player Coordinates Manually
         json.writeValue("playerX", player.position.x);
         json.writeValue("playerY", player.position.y);
@@ -80,8 +80,7 @@ public class GameSave implements Json.Serializable {
 
     @Override
     public void read(Json json, JsonValue jsonData) {
-        this.gameLevel = GameLevel.valueOf(jsonData.getString("gameLevel"));
-
+        this.currentRegion = GameRegion.valueOf(jsonData.getString("currentRegion", "FORGOTTEN_CROSSROADS"));
         // 1. Reconstruct the Player object and positions
         Vector2 respawn = new Vector2(jsonData.getFloat("respawnX"), jsonData.getFloat("respawnY"));
         this.player = new Player(respawn);

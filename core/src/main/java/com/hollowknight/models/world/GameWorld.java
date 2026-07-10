@@ -1,8 +1,10 @@
 package com.hollowknight.models.world;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.badlogic.gdx.maps.MapLayer;
@@ -20,6 +22,7 @@ import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyFactory;
 import com.hollowknight.models.enemies.EnemyType;
 import com.hollowknight.models.enemies.FalseKnight;
+import com.hollowknight.models.enums.GameRegion;
 import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.npc.Zote;
 import com.hollowknight.models.player.Player;
@@ -35,7 +38,8 @@ public class GameWorld {
     public List<Enemy> enemies = new ArrayList<>();
     private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
     public List<PlayerProjectile> projectiles = new ArrayList<>();
-    public List<Rectangle> regions = new ArrayList<>();
+    public Map<String, Rectangle> regionBounds = new HashMap<>();
+    public GameRegion currentRegion = GameRegion.FORGOTTEN_CROSSROADS;
     public Zote zote;
     public Rectangle bossRoomBounds;
 
@@ -61,8 +65,9 @@ public class GameWorld {
     public GameWorld(GameSave save) {
         saveLoadedFrom = save;
         TmxMapLoader loader = new TmxMapLoader();
-        map = loader.load(save.gameLevel.tmxPath);
+        map = loader.load(GameRegion.MAP_PATH);
         player = save.player;
+        this.currentRegion = save.currentRegion;
 
         this.totalPassedTime = save.totalPassedTime;
         this.numberOfEnemiesKilled = save.numberOfEnemiesKilled;
@@ -119,7 +124,11 @@ public class GameWorld {
             for (MapObject obj : regionsLayer.getObjects()) {
                 if (obj instanceof RectangleMapObject) {
                     Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-                    regions.add(rect); // Store every region
+                    String regionName = obj.getName();
+
+                    if (regionName != null) {
+                        regionBounds.put(regionName, rect); // Store by Name
+                    }
 
                     if ("BossRoom".equals(obj.getName())) {
                         bossRoomBounds = rect;
@@ -168,6 +177,7 @@ public class GameWorld {
             return;
         updateTimers(delta);
         manageCameraShakes();
+        updateCurrentRegion();
         updateBossFight(delta);
         player.update(delta, solidBlocks);
         checkHazards();
@@ -183,6 +193,19 @@ public class GameWorld {
             zote.update(delta, player);
 
         registerDeaths();
+    }
+
+    private void updateCurrentRegion() {
+        Rectangle playerBounds = player.getBounds();
+        for (Map.Entry<String, Rectangle> entry : regionBounds.entrySet()) {
+            if (playerBounds.overlaps(entry.getValue())) {
+                GameRegion newRegion = GameRegion.fromId(entry.getKey());
+                if (this.currentRegion != newRegion) {
+                    this.currentRegion = newRegion;
+                }
+                break;
+            }
+        }
     }
 
     private void manageCameraShakes() {

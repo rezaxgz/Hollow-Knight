@@ -100,7 +100,7 @@ public class GameRenderer {
         float playerCenterY = playerBounds.y + playerBounds.height / 2f;
 
         // Find which region the player is currently in
-        for (Rectangle region : world.regions) {
+        for (Rectangle region : world.regionBounds.values()) {
             if (region.contains(playerCenterX, playerCenterY)) {
                 currentRegion = region;
                 break;

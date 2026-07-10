@@ -34,6 +34,7 @@ public class SaveManager {
         currentSave.numberOfEnemiesKilled = world.getNumberOfEnemiesKilled();
         currentSave.numberOfDeaths = world.getNumberOfDeaths();
         currentSave.player = world.player;
+        currentSave.currentRegion = world.currentRegion;
 
         // Save Boss specific state
         currentSave.bossFightActivated = world.bossFightActivated;
