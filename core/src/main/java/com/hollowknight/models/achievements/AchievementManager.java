@@ -2,6 +2,7 @@ package com.hollowknight.models.achievements;
 
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyType;
+import com.hollowknight.models.enums.GameRegion;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +18,7 @@ public class AchievementManager {
 
     // Set to track unique enemy classes killed
     private final HashSet<EnemyType> killedEnemyTypes = new HashSet<>();
+    private final HashSet<GameRegion> regionsExplored = new HashSet<>();
 
     public static AchievementManager getInstance() {
         if (instance == null)
@@ -37,6 +39,10 @@ public class AchievementManager {
         achievements.put("FALSE_KNIGHT",
                 new Achievement("FALSE_KNIGHT", "DEFEAT FALSE KNIGHT", "Vanquish the False Knight boss.",
                         "achievements/false knight.png"));
+        achievements.put("HOT_DESTINATION_TOURIST",
+                new Achievement("HOT_DESTINATION_TOURIST", "HOT DESTINATION TOURIST",
+                        "Explore all regions of the map",
+                        "achievements/hot destination tourist.png"));
     }
 
     public void setObserver(AchievementObserver observer) {
@@ -92,6 +98,8 @@ public class AchievementManager {
     public void notifyEnemyDeath(Enemy enemy) {
         // Automatically grabs the class name (e.g., "Crawlid", "CrystalGuardian")
         EnemyType enemyType = enemy.type;
+        if (enemyType == EnemyType.FALSE_KNIGHT)
+            return;
         boolean isNew = killedEnemyTypes.add(enemyType);
         if (isNew) {
             System.out.println("registered " + enemyType.toString());
@@ -100,6 +108,17 @@ public class AchievementManager {
         // -1 for false knight
         if (killedEnemyTypes.size() >= EnemyType.values().length - 1) {
             unlock("TRUE_HUNTER");
+        }
+    }
+
+    public void onRegionChange(GameRegion newRegion) {
+        boolean isNew = regionsExplored.add(newRegion);
+        if (isNew) {
+            System.out.println("registered " + newRegion.toString());
+        }
+
+        if (regionsExplored.size() >= GameRegion.values().length) {
+            unlock("HOT_DESTINATION_TOURIST");
         }
     }
 }

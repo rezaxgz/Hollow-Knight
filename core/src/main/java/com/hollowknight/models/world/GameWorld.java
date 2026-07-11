@@ -68,6 +68,7 @@ public class GameWorld {
         map = loader.load(GameRegion.MAP_PATH);
         player = save.player;
         this.currentRegion = save.currentRegion;
+        AchievementManager.getInstance().onRegionChange(save.currentRegion);
 
         this.totalPassedTime = save.totalPassedTime;
         this.numberOfEnemiesKilled = save.numberOfEnemiesKilled;
@@ -202,6 +203,7 @@ public class GameWorld {
                 GameRegion newRegion = GameRegion.fromId(entry.getKey());
                 if (this.currentRegion != newRegion) {
                     this.currentRegion = newRegion;
+                    AchievementManager.getInstance().onRegionChange(newRegion);
                 }
                 break;
             }
