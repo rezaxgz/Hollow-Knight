@@ -3,7 +3,9 @@ package com.hollowknight.models.player;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.Constants;
+import com.hollowknight.views.GameAssetManager;
 
 public class PlayerVitals {
     private List<HealthMask> health;
@@ -49,6 +51,8 @@ public class PlayerVitals {
         int target = Math.clamp(souls + amount, 0, 99);
         soulsAnimation = new SoulsAnimation(getSoulsInAnimation(), target, Constants.SOULS_CHANGE_TIMER);
         souls = target;
+        if (target > souls)
+            AudioController.getInstance().playRandomSfx(GameAssetManager.soulSfxs);
     }
 
     public void update(float delta) {

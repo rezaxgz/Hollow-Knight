@@ -73,6 +73,7 @@ public class GameAssetManager {
     public static Sound wallJumpSfx;
 
     public static Sound[] slashSfxs = new Sound[5];
+    public static Sound[] soulSfxs = new Sound[7];
 
     public static Sound[] zoteVoices = new Sound[6];
 
@@ -320,6 +321,10 @@ public class GameAssetManager {
 
         for (int i = 1; i <= 5; i++) {
             slashSfxs[i - 1] = Gdx.audio.newSound(Gdx.files.internal("audio/sword_" + i + ".wav"));
+        }
+
+        for (int i = 1; i <= 7; i++) {
+            soulSfxs[i - 1] = Gdx.audio.newSound(Gdx.files.internal("audio/soul_pickup_" + i + ".wav"));
         }
     }
 
