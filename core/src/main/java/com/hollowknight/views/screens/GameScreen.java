@@ -25,6 +25,8 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
     private FrameBuffer blurFbo;
     private SpriteBatch fboBatch;
 
+    private boolean wasPaused = false;
+
     public GameScreen(GameWorld world) {
         this.world = world;
         controller = GameController.init(world);
@@ -48,6 +50,9 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
             multiplexer.addProcessor(0, this.stage);
         }
 
+        Gdx.graphics.setCursor(GameAssetManager.blankCursor);
+        Gdx.input.setCursorCatched(true);
+
     }
 
     @Override
@@ -60,10 +65,17 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
 
         boolean isPaused = GameController.getInstance().isPaused;
 
-        if (isPaused) {
-            Gdx.graphics.setCursor(GameAssetManager.customCursor);
-        } else {
-            Gdx.graphics.setCursor(GameAssetManager.blankCursor);
+        // ONLY change the cursor if the pause state has changed
+        if (isPaused != wasPaused) {
+            if (isPaused) {
+                Gdx.graphics.setCursor(GameAssetManager.customCursor);
+                Gdx.input.setCursorCatched(false);
+            } else {
+                Gdx.graphics.setCursor(GameAssetManager.blankCursor);
+                Gdx.input.setCursorCatched(true);
+            }
+            // Update the tracker so this block doesn't run again until the state changes
+            wasPaused = isPaused;
         }
 
         if (isPaused) {

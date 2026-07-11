@@ -3,6 +3,7 @@ package com.hollowknight.views;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -110,6 +111,12 @@ public class GameAssetManager {
         cursorPixmap.dispose();
 
         Pixmap blankPixmap = new Pixmap(16, 16, Pixmap.Format.RGBA8888);
+        blankPixmap.setBlending(Pixmap.Blending.None);
+
+        // Explicitly set the color to fully transparent and fill the pixmap
+        blankPixmap.setColor(Color.CLEAR);
+        blankPixmap.fill();
+
         blankCursor = Gdx.graphics.newCursor(blankPixmap, 0, 0);
         blankPixmap.dispose();
     }
