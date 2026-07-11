@@ -29,6 +29,7 @@ import com.hollowknight.models.npc.Zote;
 import com.hollowknight.models.player.Player;
 import com.hollowknight.models.player.states.CombatState;
 import com.hollowknight.models.settings.GameCheat;
+import com.hollowknight.views.GameAssetManager;
 
 public class GameWorld {
     private String worldName = "new world";
@@ -310,6 +311,7 @@ public class GameWorld {
                 // bossJustDefeated = true;
 
                 AchievementManager.getInstance().onBossDefeated();
+                AudioController.getInstance().playBgm(GameAssetManager.gameEndMusic);
 
                 // Open the room by clearing out the door solid fields
                 solidBlocks.remove(bossDoor);

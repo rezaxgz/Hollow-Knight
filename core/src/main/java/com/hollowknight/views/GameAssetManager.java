@@ -55,6 +55,7 @@ public class GameAssetManager {
     public static Music greenPathMusic;
     public static Music crossRoadsMusic;
     public static Music falseKnightMusic;
+    public static Music gameEndMusic;
 
     // sfx
     public static Sound jumpSfx;
@@ -327,6 +328,7 @@ public class GameAssetManager {
         crossRoadsMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/crossroads.wav"));
         greenPathMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/Greenpath.mp3"));
         falseKnightMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/False Knight.mp3"));
+        gameEndMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/Game End.mp3"));
     }
 
     private static void loadZoteVoices() {
