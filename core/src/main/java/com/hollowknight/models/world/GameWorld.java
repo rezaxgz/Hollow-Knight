@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.achievements.AchievementManager;
 import com.hollowknight.models.enemies.CrystalGuardian;
@@ -171,6 +172,8 @@ public class GameWorld {
             }
             this.enemies.add(fk);
         }
+
+        AudioController.getInstance().playBgm(currentRegion.music);
     }
 
     public void update(float delta) {
@@ -202,6 +205,8 @@ public class GameWorld {
             if (entry.getValue().contains(playerBounds)) {
                 GameRegion newRegion = GameRegion.fromId(entry.getKey());
                 if (this.currentRegion != newRegion) {
+                    currentRegion.music.stop();
+                    AudioController.getInstance().playBgm(newRegion.music);
                     this.currentRegion = newRegion;
                     AchievementManager.getInstance().onRegionChange(newRegion);
                 }

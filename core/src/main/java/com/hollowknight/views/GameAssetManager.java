@@ -51,8 +51,9 @@ public class GameAssetManager {
 
     // Music
     public static Music menuBgm;
-    public static Music map1Bgm;
-    public static Music map2Bgm;
+    public static Music greenPathMusic;
+    public static Music crossRoadsMusic;
+    public static Music falseKnightMusic;
 
     // sfx
     public static Sound jumpSfx;
@@ -316,8 +317,9 @@ public class GameAssetManager {
 
     private static void loadMusic() {
         menuBgm = Gdx.audio.newMusic(Gdx.files.internal("audio/mainMenuSong.wav"));
-        map2Bgm = Gdx.audio.newMusic(Gdx.files.internal("audio/crossroads.wav"));
-        map1Bgm = Gdx.audio.newMusic(Gdx.files.internal("audio/S26 Crystal MAIN.wav"));
+        crossRoadsMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/crossroads.wav"));
+        greenPathMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/Greenpath.mp3"));
+        falseKnightMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/False Knight.mp3"));
     }
 
     private static void loadZoteVoices() {
