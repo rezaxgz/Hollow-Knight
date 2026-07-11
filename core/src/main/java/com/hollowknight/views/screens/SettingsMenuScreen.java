@@ -54,6 +54,18 @@ public class SettingsMenuScreen extends AbstractScreen {
     private GameActionType waitingForRebind = null;
     private Label rebindStatusLabel;
 
+    private AbstractScreen previousScreen;
+
+    // Default constructor for when you navigate from the MainMenuScreen
+    public SettingsMenuScreen() {
+        this.previousScreen = null;
+    }
+
+    // Overloaded constructor for when you navigate from the GameScreen
+    public SettingsMenuScreen(AbstractScreen previousScreen) {
+        this.previousScreen = previousScreen;
+    }
+
     @Override
     public void show() {
         super.show();
@@ -313,7 +325,13 @@ public class SettingsMenuScreen extends AbstractScreen {
         backBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                UiManager.setScreen(new MainMenuScreen());
+                if (previousScreen != null) {
+                    // Returns to the exact GameScreen instance
+                    UiManager.setScreen(previousScreen);
+                } else {
+                    // Fallback to MainMenuScreen if no previous screen was passed
+                    UiManager.setScreen(new MainMenuScreen());
+                }
             }
         });
 

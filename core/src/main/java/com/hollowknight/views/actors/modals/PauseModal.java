@@ -1,6 +1,9 @@
 package com.hollowknight.views.actors.modals;
 
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -12,7 +15,9 @@ import com.hollowknight.controller.GameController;
 import com.hollowknight.controller.GeneralController;
 import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.views.UiManager;
+import com.hollowknight.views.screens.AbstractScreen;
 import com.hollowknight.views.screens.MainMenuScreen;
+import com.hollowknight.views.screens.SettingsMenuScreen;
 
 public class PauseModal extends Modal {
     private InputListener stageListener;
@@ -64,7 +69,16 @@ public class PauseModal extends Modal {
         settingsBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("Settings Clicked");
+                // 1. Fetch the currently active screen (GameScreen) directly from LibGDX
+                Screen currentScreen = ((Game) Gdx.app.getApplicationListener()).getScreen();
+
+                // 2. Pass it into the SettingsMenuScreen
+                if (currentScreen instanceof AbstractScreen) {
+                    UiManager.setScreen(new SettingsMenuScreen((AbstractScreen) currentScreen));
+                } else {
+                    // Fallback just in case
+                    UiManager.setScreen(new SettingsMenuScreen());
+                }
             }
         });
 

@@ -53,6 +53,7 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
         Gdx.graphics.setCursor(GameAssetManager.blankCursor);
         Gdx.input.setCursorCatched(true);
 
+        GameController.getInstance().isPaused = false; // Ensure the game is unpaused when entering the screen
     }
 
     @Override
