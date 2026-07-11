@@ -138,15 +138,15 @@
         },
         "forgotten_crossroads.tmx": {
             "expandedGroupLayers": [
-                11,
                 12,
+                11,
                 8
             ],
-            "scale": 0.33,
+            "scale": 1,
             "selectedLayer": 27,
             "viewCenter": {
-                "x": 3010.6060606060605,
-                "y": 3001.515151515151
+                "x": 5984.5,
+                "y": 1019.5
             }
         },
         "fung_bg_rocks_full_01.tsx": {

@@ -256,9 +256,9 @@ public class GameWorld {
             if (cameraShakeTimer <= 0)
                 cameraShakeIntensity = 0f;
         }
-        if (passedTimeBuffer >= 60) {
-            passedTimeBuffer -= 60;
-            totalPassedTime += 60;
+        if (passedTimeBuffer >= 1f) {
+            passedTimeBuffer -= 1f;
+            totalPassedTime += 1;
         }
     }
 
