@@ -87,7 +87,7 @@ public class HuskHornHead extends Enemy {
                 walkTimer += delta;
 
                 // 1. Check for player sight
-                if (canSeePlayer(player)) {
+                if (canSeePlayer(player, solidBlocks)) {
                     changeState(State.ATTACK_START);
                     break;
                 }
@@ -218,9 +218,10 @@ public class HuskHornHead extends Enemy {
         return true; // No ground found, it's an edge
     }
 
-    private boolean canSeePlayer(Player player) {
+    private boolean canSeePlayer(Player player, List<Rectangle> solidBlocks) {
         if (player.isDead())
             return false;
+
         // Check if player is roughly on the same vertical level
         boolean sameHeight = Math.abs(player.position.y - this.position.y) < SIGHT_HEIGHT_TOLERANCE;
         if (!sameHeight)
@@ -229,12 +230,37 @@ public class HuskHornHead extends Enemy {
         // Check horizontal distance and direction
         float distance = player.position.x - this.position.x;
 
+        boolean inRangeAndFacing = false;
         if (facingDirection == Constants.RIGHT_DIRECTION && distance > 0 && distance < SIGHT_RANGE) {
-            return true;
+            inRangeAndFacing = true;
         } else if (facingDirection == Constants.LEFT_DIRECTION && distance < 0 && distance > -SIGHT_RANGE) {
-            return true;
+            inRangeAndFacing = true;
         }
-        return false;
+
+        // If not facing the right way or out of range, fail early
+        if (!inRangeAndFacing) {
+            return false;
+        }
+
+        // --- LINE OF SIGHT CHECK ---
+        float startX = Math.min(this.position.x, player.position.x);
+        float endX = Math.max(this.position.x, player.position.x);
+
+        // Cast the sight line from roughly the center/eye-level of the enemy to avoid
+        // floor clipping
+        float sightY = this.position.y + (Constants.HORNHEAD_HITBOX_HEIGHT / 2f);
+
+        for (Rectangle solid : solidBlocks) {
+            // Check if the solid block is horizontally between the enemy and the player
+            if (solid.x + solid.width > startX && solid.x < endX) {
+                // Check if the solid block intersects the sight line vertically
+                if (sightY >= solid.y && sightY <= solid.y + solid.height) {
+                    return false; // Vision is blocked by a wall
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override
