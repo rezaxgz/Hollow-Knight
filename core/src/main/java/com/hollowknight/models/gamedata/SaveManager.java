@@ -114,6 +114,7 @@ public class SaveManager {
         if (achFile.exists()) {
             try {
                 String[] unlocked = json.fromJson(String[].class, achFile);
+                System.out.println(unlocked);
                 if (unlocked != null) {
                     com.hollowknight.models.achievements.AchievementManager.getInstance()
                             .loadUnlockedAchievements(java.util.Arrays.asList(unlocked));

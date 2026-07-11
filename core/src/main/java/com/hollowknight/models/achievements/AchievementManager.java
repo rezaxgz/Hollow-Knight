@@ -79,6 +79,7 @@ public class AchievementManager {
             Achievement ach = achievements.get(id);
             if (ach != null) {
                 ach.setUnlocked(true);
+                System.out.println("loaded " + ach);
             }
         }
     }

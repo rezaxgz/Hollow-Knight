@@ -11,5 +11,10 @@ public class GeneralController {
         if (gc != null && gc.world != null) {
             SaveManager.saveGame(gc.world);
         }
+
+    }
+
+    public static void loadData() {
+        SaveManager.loadSettings();
     }
 }
