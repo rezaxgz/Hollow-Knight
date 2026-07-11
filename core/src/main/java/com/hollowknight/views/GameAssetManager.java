@@ -76,6 +76,7 @@ public class GameAssetManager {
     public static Sound[] soulSfxs = new Sound[7];
 
     public static Sound[] zoteVoices = new Sound[6];
+    public static Sound zoteAngry;
 
     public static void init() {
         loadSkins();
@@ -341,5 +342,7 @@ public class GameAssetManager {
             zoteVoices[i] = Gdx.audio.newSound(Gdx.files.internal("audio/Zote/Zote_0" + (i + 1) + ".wav"));
         }
         zoteVoices[5] = Gdx.audio.newSound(Gdx.files.internal("audio/Zote/Zote_03 #030084.wav"));
+
+        zoteAngry = Gdx.audio.newSound(Gdx.files.internal("audio/Zote/zote_angry.wav"));
     }
 }

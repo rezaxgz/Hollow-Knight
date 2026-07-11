@@ -1,9 +1,12 @@
 package com.hollowknight.models.npc;
 
+import java.util.List;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.controller.AudioController;
 import com.hollowknight.models.player.Player;
+import com.hollowknight.views.GameAssetManager;
 
 public class Zote {
     public Vector2 position;
@@ -13,6 +16,15 @@ public class Zote {
     // Interaction states
     public boolean playerIsClose = false;
     public boolean isTalking = false;
+
+    // Anger state properties
+    public boolean isAngry = false;
+    public float angryTimer = 0;
+    public final float ANGRY_DURATION = 3.5f * 2f; // Constant time Zote stays angry
+    public final float MOVE_SPEED = 150f;
+    public final float WIDTH = 64f; // Adjust to match your Zote sprite's width
+    public final float HEIGHT = 64f; // Adjust to match your Zote sprite's height
+    public boolean isFacingRight = false; // Tracks Zote's facing direction
 
     // Dialogue properties
     public int dialogueIndex = 0;
@@ -56,23 +68,87 @@ public class Zote {
         this.position = position;
     }
 
-    public void update(float delta, Player player) {
+    public void update(float delta, Player player, List<Rectangle> solidBlocks) {
         animationTime += delta;
 
         // Calculate distance to player (adjust 100f to fit your game's scale)
         float distance = position.dst(player.position);
         playerIsClose = distance < 200f;
 
-        // Automatically cancel talking if the player walks away
-        if (!playerIsClose && isTalking) {
-            isTalking = false;
-            animation = ZoteAnimation.IDLE;
-            dialogueIndex = 0;
+        if (isAngry) {
+            angryTimer -= delta;
+
+            // Manually loop the ONESHOT attack animation
+            if (animationTime >= ZoteAnimation.ATTACK.totalDuration) {
+                animationTime -= ZoteAnimation.ATTACK.totalDuration;
+            }
+
+            if (angryTimer <= 0) {
+                // Anger duration is complete, return to idle
+                isAngry = false;
+                animation = ZoteAnimation.IDLE;
+
+                // Stop the angry SFX
+                GameAssetManager.zoteAngry.stop();
+            } else {
+                // Follow the player
+                float dir = Math.signum(player.position.x - position.x);
+                if (dir != 0) {
+                    // Update facing direction when moving towards the player
+                    isFacingRight = (dir > 0);
+
+                    float nextX = position.x + dir * MOVE_SPEED * delta;
+
+                    boolean hasFloor = false;
+                    boolean hitsWall = false;
+
+                    // Check slightly ahead and below for a floor to avoid falling off
+                    float checkX = dir > 0 ? nextX + WIDTH : nextX;
+                    Rectangle floorCheck = new Rectangle(checkX, position.y - 5f, 1f, 5f);
+                    Rectangle wallCheck = new Rectangle(nextX, position.y, WIDTH, HEIGHT);
+
+                    for (Rectangle block : solidBlocks) {
+                        if (block.overlaps(floorCheck)) {
+                            hasFloor = true;
+                        }
+                        if (block.overlaps(wallCheck)) {
+                            hitsWall = true;
+                        }
+                    }
+
+                    // Only move forward if there is a floor and no wall blocking him
+                    if (hasFloor && !hitsWall) {
+                        position.x = nextX;
+                    }
+                }
+            }
+        } else {
+            // Automatically cancel talking if the player walks away
+            if (!playerIsClose && isTalking) {
+                isTalking = false;
+                animation = ZoteAnimation.IDLE;
+                dialogueIndex = 0;
+            }
+            if (isTalking && animation == ZoteAnimation.IDLE) {
+                animation = ZoteAnimation.TALK;
+                animationTime = 0;
+            }
         }
-        if (isTalking && animation == ZoteAnimation.IDLE) {
-            animation = ZoteAnimation.TALK;
-            animationTime = 0;
+    }
+
+    public void triggerAnger() {
+        if (!isAngry) {
+            AudioController.getInstance().playSfxLoop(GameAssetManager.zoteAngry);
         }
+        isAngry = true;
+        angryTimer = ANGRY_DURATION;
+        animation = ZoteAnimation.ATTACK;
+        animationTime = 0;
+        isTalking = false; // Cancel dialogue if he was talking
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(position.x, position.y, WIDTH, HEIGHT);
     }
 
     public void interact() {

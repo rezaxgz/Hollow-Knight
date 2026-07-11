@@ -426,9 +426,17 @@ public class GameRenderer {
     private void renderZote(SpriteBatch batch) {
         if (world.zote == null)
             return;
+
         Animation<TextureRegion> animation = GameAssetManager.zoteAnimationMap.get(world.zote.animation);
         TextureRegion frame = animation.getKeyFrame(world.zote.animationTime);
-        batch.draw(frame, world.zote.position.x - frame.getRegionWidth() / 2, world.zote.position.y);
+
+        boolean shouldFaceLeft = world.zote.isFacingRight;
+
+        if (frame.isFlipX() != shouldFaceLeft) {
+            frame.flip(true, false);
+        }
+
+        batch.draw(frame, world.zote.position.x - frame.getRegionWidth() / 2f, world.zote.position.y);
     }
 
     private void renderZoteDialouges(SpriteBatch batch) {

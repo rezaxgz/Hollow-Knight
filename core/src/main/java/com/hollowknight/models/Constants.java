@@ -98,7 +98,7 @@ public class Constants {
     public static final int GUARDIAN_HITBOX_WIDTH = 100;
 
     // Zote
-    public static final float ZOTE_ATTACK_TIME = 0.8f;
+    public static final float ZOTE_ATTACK_TIME = 0.4f;
 
     // False Knight
     public static final int FALSE_KNIGHT_HITBOX_WIDTH = 260;

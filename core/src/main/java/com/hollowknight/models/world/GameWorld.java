@@ -200,7 +200,7 @@ public class GameWorld {
         updateProjectiles(delta);
 
         if (zote != null)
-            zote.update(delta, player);
+            zote.update(delta, player, solidBlocks);
 
         registerDeaths();
     }
@@ -494,6 +494,13 @@ public class GameWorld {
                     if (isDownSlashing)
                         player.pogo();
                 }
+            }
+        }
+
+        if (zote != null && attackBounds.overlaps(zote.getBounds())) {
+            zote.triggerAnger();
+            if (isDownSlashing) {
+                player.pogo();
             }
         }
     }

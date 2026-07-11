@@ -4,7 +4,7 @@ import com.hollowknight.models.Constants;
 import com.hollowknight.models.enums.AnimationType;
 
 public enum ZoteAnimation {
-    ATTACK("animation/Zote/Attack.png", 4, Constants.ZOTE_ATTACK_TIME, AnimationType.ONESHOT),
+    ATTACK("animation/Zote/Attack.png", 4, Constants.ZOTE_ATTACK_TIME, AnimationType.LOOP_PINGPONG),
     IDLE("animation/Zote/Idle.png", 5, 1.5f, AnimationType.LOOP_PINGPONG),
     TALK("animation/Zote/Talk.png", 5, 1.5f, AnimationType.LOOP_PINGPONG);
 
