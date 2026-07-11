@@ -63,6 +63,8 @@ public class GameWorld {
 
     public GameSave saveLoadedFrom;
 
+    public Rectangle gameEndZone;
+
     public GameWorld(GameSave save) {
         saveLoadedFrom = save;
         TmxMapLoader loader = new TmxMapLoader();
@@ -148,6 +150,8 @@ public class GameWorld {
                         activationZone = rect;
                     } else if ("BossDoor".equals(obj.getName())) {
                         bossDoor = rect;
+                    } else if ("GameEndZone".equals(obj.getName())) {
+                        gameEndZone = rect;
                     }
                 } else if (obj instanceof PointMapObject) {
                     Vector2 point = ((PointMapObject) obj).getPoint();
@@ -303,13 +307,25 @@ public class GameWorld {
             if (bossIsDead) {
                 bossFightActivated = false;
                 bossFightCompleted = true;
-                bossJustDefeated = true;
+                // bossJustDefeated = true;
 
-                float totalTimeInSeconds = totalPassedTime + passedTimeBuffer;
-                AchievementManager.getInstance().onBossDefeated(totalTimeInSeconds);
+                AchievementManager.getInstance().onBossDefeated();
 
                 // Open the room by clearing out the door solid fields
                 solidBlocks.remove(bossDoor);
+            }
+        }
+
+        // 3. Check for GameEndZone Entry (ADD THIS ENTIRE BLOCK)
+        if (bossFightCompleted && !bossJustDefeated && gameEndZone != null) {
+            if (player.getBounds().overlaps(gameEndZone)) {
+
+                // Setting this flag triggers your BossDefeatModal in the UI
+                bossJustDefeated = true;
+
+                // Unlock the completion and speedrun achievements
+                float totalTimeInSeconds = totalPassedTime + passedTimeBuffer;
+                AchievementManager.getInstance().onGameCompleted(totalTimeInSeconds);
             }
         }
 

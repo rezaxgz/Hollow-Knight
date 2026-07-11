@@ -85,8 +85,11 @@ public class AchievementManager {
     }
 
     // Called when the False Knight is killed
-    public void onBossDefeated(float totalPlayTimeSeconds) {
+    public void onBossDefeated() {
         unlock("FALSE_KNIGHT");
+    }
+
+    public void onGameCompleted(float totalPlayTimeSeconds) {
         unlock("COMPLETION");
 
         // 30 minutes = 1800 seconds
