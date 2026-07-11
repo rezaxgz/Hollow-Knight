@@ -60,8 +60,14 @@ public class StartGameScreen extends AbstractScreen {
                 UiManager.setScreen(new MainMenuScreen());
             }
         });
+        // Create an overlay table to strictly anchor the back button to the top-left
+        Table cornerTable = new Table();
+        cornerTable.setFillParent(true);
+        cornerTable.top().left(); // Anchor to top-left
+        cornerTable.add(backBtn).pad(20); // Add padding so it isn't flush with the window edge
 
-        rootTable.add(backBtn).center();
+        // Add the new table directly to the stage so it floats over the rootTable
+        stage.addActor(cornerTable);
 
         AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
