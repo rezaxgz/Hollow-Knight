@@ -18,6 +18,10 @@ public class AudioManager {
         return sfxManager;
     }
 
+    public void update(float delta) {
+        this.musicManager.update(delta);
+    }
+
     public void setMasterVolume(float volume) {
         this.masterVolume = volume;
         // Dynamically update music volume relative to master volume level

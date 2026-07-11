@@ -179,6 +179,7 @@ public class GameWorld {
     public void update(float delta) {
         if (Constants.flag)
             return;
+        AudioController.getInstance().update(delta);
         updateTimers(delta);
         manageCameraShakes();
         updateCurrentRegion();
@@ -205,8 +206,7 @@ public class GameWorld {
             if (entry.getValue().contains(playerBounds)) {
                 GameRegion newRegion = GameRegion.fromId(entry.getKey());
                 if (this.currentRegion != newRegion) {
-                    currentRegion.music.stop();
-                    AudioController.getInstance().playBgm(newRegion.music);
+                    AudioController.getInstance().transitionBgm(newRegion.music, 1.5f);
                     this.currentRegion = newRegion;
                     AchievementManager.getInstance().onRegionChange(newRegion);
                 }

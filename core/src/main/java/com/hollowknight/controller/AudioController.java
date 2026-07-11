@@ -77,4 +77,14 @@ public class AudioController {
     public void setSfxVolume(float volume) {
         audioManager.sfx().setVolume(volume);
     }
+
+    public void transitionBgm(Music music, float duration) {
+        if (music != null) {
+            audioManager.music().transitionTo(music, duration);
+        }
+    }
+
+    public void update(float delta) {
+        audioManager.update(delta);
+    }
 }
