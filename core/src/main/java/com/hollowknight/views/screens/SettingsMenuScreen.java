@@ -30,9 +30,16 @@ import java.util.Map;
 
 public class SettingsMenuScreen extends AbstractScreen {
 
+    // --- Core Properties & State ---
     private final Settings settings = Settings.getInstance();
-    private MenuThemeSkin menuTheme; // Handles background, fonts, colors
+    private MenuThemeSkin menuTheme;
+    private AbstractScreen previousScreen;
 
+    private final int[] lastMusicVol = { 100 };
+    private final int[] lastSfxVol = { 100 };
+    private GameActionType waitingForRebind = null;
+
+    // --- UI Components ---
     private Slider musicSlider;
     private Slider sfxSlider;
     private Slider brightnessSlider;
@@ -40,41 +47,28 @@ public class SettingsMenuScreen extends AbstractScreen {
     private Label musicValueLabel;
     private Label sfxValueLabel;
     private Label brightnessValueLabel;
+    private Label rebindStatusLabel;
 
     private TextButton musicMuteBtn;
     private TextButton sfxMuteBtn;
-
-    // Arrays used to bypass "effectively final" limitation in listeners
-    private final int[] lastMusicVol = { 100 };
-    private final int[] lastSfxVol = { 100 };
-
     private SelectBox<Language> languageSelect;
-
     private final Map<GameActionType, TextButton> controlButtons = new EnumMap<>(GameActionType.class);
-    private GameActionType waitingForRebind = null;
-    private Label rebindStatusLabel;
 
-    private AbstractScreen previousScreen;
-
-    // Default constructor for when you navigate from the MainMenuScreen
+    // --- Constructors ---
     public SettingsMenuScreen() {
         this.previousScreen = null;
     }
 
-    // Overloaded constructor for when you navigate from the GameScreen
     public SettingsMenuScreen(AbstractScreen previousScreen) {
         this.previousScreen = previousScreen;
     }
 
+    // --- Initialization & Layout ---
     @Override
     public void show() {
         super.show();
 
-        // 1. Initialize the Theme Engine for backgrounds and text
         menuTheme = MenuThemeSkin.fromSettings();
-
-        // 2. Retain original skin strictly for interactive widgets (Sliders,
-        // ScrollBars)
         Skin customSkin = GameAssetManager.hollowSkin;
 
         rootTable.clearChildren();
@@ -117,18 +111,15 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.defaults().pad(8).left();
 
         Label title = menuTheme.createTitleLabel("Settings");
-
         contentTable.add(title).colspan(4).center().padBottom(15);
         contentTable.row();
 
-        // --- MUSIC ---
         lastMusicVol[0] = settings.getMusicLoudness() > 0 ? settings.getMusicLoudness() : 100;
-
-        musicSlider = new Slider(0, 100, 1, false, customSkin); // Using customSkin!
+        musicSlider = new Slider(0, 100, 1, false, customSkin);
         musicSlider.setValue(settings.getMusicLoudness());
         musicValueLabel = menuTheme.createBodyLabel(String.valueOf(settings.getMusicLoudness()));
         musicMuteBtn = menuTheme.createMenuButton(settings.getMusicLoudness() > 0 ? "Mute" : "Unmute");
-        musicMuteBtn.getLabel().setFontScale(0.85f); // Scaled slightly to fit grid
+        musicMuteBtn.getLabel().setFontScale(0.85f);
 
         musicSlider.addListener(new ChangeListener() {
             @Override
@@ -159,10 +150,8 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add(musicMuteBtn).width(100).padLeft(10);
         contentTable.row();
 
-        // --- SFX ---
         lastSfxVol[0] = settings.getSfxLoudness() > 0 ? settings.getSfxLoudness() : 100;
-
-        sfxSlider = new Slider(0, 100, 1, false, customSkin); // Using customSkin!
+        sfxSlider = new Slider(0, 100, 1, false, customSkin);
         sfxSlider.setValue(settings.getSfxLoudness());
         sfxValueLabel = menuTheme.createBodyLabel(String.valueOf(settings.getSfxLoudness()));
         sfxMuteBtn = menuTheme.createMenuButton(settings.getSfxLoudness() > 0 ? "Mute" : "Unmute");
@@ -197,7 +186,6 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add(sfxMuteBtn).width(100).padLeft(10);
         contentTable.row();
 
-        // --- SOUND RESET ---
         TextButton resetSoundBtn = menuTheme.createMenuButton("Reset Sound Settings");
         resetSoundBtn.getLabel().setFontScale(0.9f);
         resetSoundBtn.addListener(new ClickListener() {
@@ -211,8 +199,7 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add(resetSoundBtn).colspan(4).left().padTop(15).padBottom(15);
         contentTable.row();
 
-        // --- BRIGHTNESS ---
-        brightnessSlider = new Slider(0, 100, 1, false, customSkin); // Using customSkin!
+        brightnessSlider = new Slider(0, 100, 1, false, customSkin);
         brightnessSlider.setValue(settings.getBrightness());
         brightnessValueLabel = menuTheme.createBodyLabel(String.valueOf(settings.getBrightness()));
 
@@ -231,9 +218,6 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add().width(100).padLeft(10);
         contentTable.row();
 
-        // --- LANGUAGE ---
-        // Create a custom composite style for the SelectBox to blend old visuals with
-        // new fonts
         SelectBox.SelectBoxStyle baseSelectStyle = customSkin.get(SelectBox.SelectBoxStyle.class);
         SelectBox.SelectBoxStyle selectStyle = new SelectBox.SelectBoxStyle(baseSelectStyle);
         selectStyle.font = menuTheme.getBodyFont();
@@ -262,7 +246,6 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add().colspan(2);
         contentTable.row();
 
-        // --- CONTROLS HEADER & RESET ---
         Label controlsTitle = menuTheme.createSectionLabel("Controls");
 
         TextButton resetControlsBtn = menuTheme.createMenuButton("Reset Controls");
@@ -299,7 +282,6 @@ public class SettingsMenuScreen extends AbstractScreen {
         contentTable.add(rebindStatusLabel).colspan(4).center().padBottom(8).fillX();
         contentTable.row();
 
-        // --- CONTROLS BINDINGS ---
         addControlRow(contentTable, GameActionType.MOVE_LEFT, settings.getControls().left);
         addControlRow(contentTable, GameActionType.MOVE_RIGHT, settings.getControls().right);
         addControlRow(contentTable, GameActionType.UP, settings.getControls().up);
@@ -311,8 +293,6 @@ public class SettingsMenuScreen extends AbstractScreen {
         addControlRow(contentTable, GameActionType.SCREAM, settings.getControls().scream);
         addControlRow(contentTable, GameActionType.SPRITE_CAST, settings.getControls().cast);
 
-        // Wrap the content table in a ScrollPane using the old customSkin to retain
-        // scrollbar graphics
         ScrollPane scrollPane = new ScrollPane(contentTable, customSkin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false);
@@ -320,29 +300,26 @@ public class SettingsMenuScreen extends AbstractScreen {
 
         rootTable.add(scrollPane).grow().pad(20).row();
 
-        // Pin the Back button to the bottom
         TextButton backBtn = menuTheme.createMenuButton("Back");
         backBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (previousScreen != null) {
-                    // Returns to the exact GameScreen instance
                     UiManager.setScreen(previousScreen);
                 } else {
-                    // Fallback to MainMenuScreen if no previous screen was passed
                     UiManager.setScreen(new MainMenuScreen());
                 }
             }
         });
 
         rootTable.add(backBtn).padBottom(20).center();
-
         AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
 
+    // --- UI Construction Helpers ---
     private void addControlRow(Table main, GameActionType actionType, int keyCode) {
         TextButton button = menuTheme.createMenuButton(Input.Keys.toString(keyCode));
-        button.getLabel().setFontScale(0.85f); // Ensures buttons fit nicely in the 4-column design
+        button.getLabel().setFontScale(0.85f);
         controlButtons.put(actionType, button);
 
         button.addListener(new ClickListener() {
@@ -360,18 +337,16 @@ public class SettingsMenuScreen extends AbstractScreen {
         main.row();
     }
 
+    // --- Render Loop & Cleanup ---
     @Override
     public void render(float delta) {
-        // Clear standard buffers
         Gdx.gl.glClearColor(0.01f, 0.01f, 0.015f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw the dynamic animated background
         if (menuTheme != null) {
             menuTheme.drawBackground(delta, false);
         }
 
-        // Draw standard AbstractScreen stage
         if (stage != null) {
             stage.act(Math.min(delta, 1f / 30f));
             stage.draw();
@@ -382,7 +357,7 @@ public class SettingsMenuScreen extends AbstractScreen {
     public void dispose() {
         super.dispose();
         if (menuTheme != null) {
-            menuTheme.dispose(); // Avoid memory leaks on the batch and textures
+            menuTheme.dispose();
         }
     }
 }

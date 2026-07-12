@@ -24,16 +24,15 @@ import java.util.Collection;
 
 public class AchievementsMenuScreen extends AbstractScreen {
 
-    private MenuThemeSkin menuTheme; // Handles background, fonts, and base styling
+    // --- Core Theme ---
+    private MenuThemeSkin menuTheme;
 
+    // --- Initialization & Layout ---
     @Override
     public void show() {
         super.show();
 
-        // 1. Initialize the Theme Engine
         menuTheme = MenuThemeSkin.fromSettings();
-
-        // 2. Retain original skin strictly for interactive widgets (ScrollBars)
         Skin customSkin = GameAssetManager.hollowSkin;
 
         rootTable.clearChildren();
@@ -42,7 +41,6 @@ public class AchievementsMenuScreen extends AbstractScreen {
         Label titleLabel = menuTheme.createTitleLabel("Achievements");
         rootTable.add(titleLabel).padBottom(20).row();
 
-        // Content Table for the ScrollPane (Does not need skin for layout)
         Table listTable = new Table();
         listTable.defaults().pad(15).left();
 
@@ -52,21 +50,16 @@ public class AchievementsMenuScreen extends AbstractScreen {
             Table rowTable = new Table();
             rowTable.align(Align.left);
 
-            // 1. Setup the Icon
             Image icon = new Image(new Texture(Gdx.files.internal(ach.iconPath)));
 
             if (!ach.isUnlocked()) {
-                // Darken and apply transparency if locked
                 icon.setColor(0.2f, 0.2f, 0.2f, 0.4f);
             } else {
-                // Restore to full color and opacity if unlocked
                 icon.setColor(Color.WHITE);
             }
 
-            // Add icon to the left side of the row table
             rowTable.add(icon).size(64, 64).padRight(20);
 
-            // 2. Create a nested table for the text content
             Table textContainer = new Table();
             textContainer.align(Align.left);
 
@@ -74,7 +67,6 @@ public class AchievementsMenuScreen extends AbstractScreen {
             Color descColor = ach.isUnlocked() ? Color.WHITE : Color.DARK_GRAY;
             String statusIndicator = ach.isUnlocked() ? "" : " [LOCKED]";
 
-            // Generate labels using theme for the correct font, then apply custom colors
             Label nameLabel = menuTheme.createBodyLabel(ach.title + statusIndicator);
             nameLabel.setColor(titleColor);
             nameLabel.setFontScale(1.1f);
@@ -85,14 +77,10 @@ public class AchievementsMenuScreen extends AbstractScreen {
             descLabel.setWrap(true);
             textContainer.add(descLabel).width(450).align(Align.left).padTop(5);
 
-            // Add the text container next to the icon
             rowTable.add(textContainer).align(Align.left);
-
-            // Add the completed row to the master list table
             listTable.add(rowTable).padBottom(10).row();
         }
 
-        // Using customSkin here preserves your custom scrollbar aesthetics
         ScrollPane scrollPane = new ScrollPane(listTable, customSkin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false);
@@ -113,29 +101,28 @@ public class AchievementsMenuScreen extends AbstractScreen {
         AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
 
+    // --- Core Render Loop ---
     @Override
     public void render(float delta) {
-        // Clear standard buffers
         Gdx.gl.glClearColor(0.01f, 0.01f, 0.015f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw the dynamic animated background
         if (menuTheme != null) {
             menuTheme.drawBackground(delta, false);
         }
 
-        // Draw standard AbstractScreen stage
         if (stage != null) {
             stage.act(Math.min(delta, 1f / 30f));
             stage.draw();
         }
     }
 
+    // --- Cleanup ---
     @Override
     public void dispose() {
         super.dispose();
         if (menuTheme != null) {
-            menuTheme.dispose(); // Avoid memory leaks on the batch and textures
+            menuTheme.dispose();
         }
     }
 }

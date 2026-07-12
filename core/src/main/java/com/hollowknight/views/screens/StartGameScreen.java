@@ -18,13 +18,14 @@ import com.hollowknight.views.theme.MenuThemeSkin;
 
 public class StartGameScreen extends AbstractScreen {
 
+    // --- Core Theme ---
     private MenuThemeSkin menuTheme;
 
+    // --- Initialization & Layout ---
     @Override
     public void show() {
         super.show();
 
-        // Initialize the Theme Engine[cite: 8]
         menuTheme = MenuThemeSkin.fromSettings();
 
         rootTable.clearChildren();
@@ -35,24 +36,21 @@ public class StartGameScreen extends AbstractScreen {
 
         Table saveList = new Table();
         saveList.top().pad(10);
-        saveList.defaults().space(20); // Give cards more breathing room
+        saveList.defaults().space(20);
 
-        // Explicitly load slots 0 through 3[cite: 5]
         for (int i = 0; i < 4; i++) {
             GameSave g = SaveManager.loadGame(i);
-            // Pass the menuTheme so SaveCard can style itself
             SaveCard saveCard = new SaveCard(i, g, menuTheme);
             saveList.add(saveCard).growX().row();
         }
 
-        // Retain the standard skin for the ScrollPane to keep scrollbar graphics[cite:
-        // 8]
         ScrollPane scrollPane = new ScrollPane(saveList, GameAssetManager.hollowSkin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false);
 
         rootTable.add(scrollPane).size(700, 450).padBottom(30).row();
 
+        // Overlay table for back button anchoring
         TextButton backBtn = menuTheme.createMenuButton("Back");
         backBtn.addListener(new ClickListener() {
             @Override
@@ -60,26 +58,23 @@ public class StartGameScreen extends AbstractScreen {
                 UiManager.setScreen(new MainMenuScreen());
             }
         });
-        // Create an overlay table to strictly anchor the back button to the top-left
+
         Table cornerTable = new Table();
         cornerTable.setFillParent(true);
-        cornerTable.top().left(); // Anchor to top-left
-        cornerTable.add(backBtn).pad(20); // Add padding so it isn't flush with the window edge
+        cornerTable.top().left();
+        cornerTable.add(backBtn).pad(20);
 
-        // Add the new table directly to the stage so it floats over the rootTable
         stage.addActor(cornerTable);
-
         AudioController.getInstance().playBgm(GameAssetManager.menuBgm);
     }
 
+    // --- Core Render Loop ---
     @Override
     public void render(float delta) {
-        // Clear standard buffers[cite: 8]
         Gdx.gl.glClearColor(0.01f, 0.01f, 0.015f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (menuTheme != null) {
-            // true flag triggers the saveBackgroundTexture
             menuTheme.drawBackground(delta, true);
         }
 
@@ -89,11 +84,12 @@ public class StartGameScreen extends AbstractScreen {
         }
     }
 
+    // --- Cleanup ---
     @Override
     public void dispose() {
         super.dispose();
         if (menuTheme != null) {
-            menuTheme.dispose(); // Prevent memory leaks[cite: 8]
+            menuTheme.dispose();
         }
     }
 }

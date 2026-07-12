@@ -18,15 +18,18 @@ import com.hollowknight.views.GameRenderer;
 import com.hollowknight.views.actors.modals.AchievementPopup;
 
 public class GameScreen extends AbstractScreen implements AchievementObserver {
+
+    // --- Game Systems ---
     GameWorld world;
     private GameController controller;
     private GameRenderer renderer;
 
+    // --- Rendering Resources ---
     private FrameBuffer blurFbo;
     private SpriteBatch fboBatch;
-
     private boolean wasPaused = false;
 
+    // --- Initialization & Lifecycle ---
     public GameScreen(GameWorld world) {
         this.world = world;
         controller = GameController.init(world);
@@ -36,8 +39,8 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
 
     @Override
     public void show() {
-        super.show(); // Sets input to AbstractScreen's stage
-        renderer.show(); // Overwrites input with GameRenderer's multiplexer
+        super.show();
+        renderer.show();
         GameAssetManager.menuBgm.stop();
 
         AchievementManager.getInstance().setObserver(this);
@@ -45,77 +48,18 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
         InputProcessor currentProcessor = Gdx.input.getInputProcessor();
         if (currentProcessor instanceof InputMultiplexer) {
             InputMultiplexer multiplexer = (InputMultiplexer) currentProcessor;
-            // Add at index 0 so the pause menu UI intercepts clicks before the game world
-            // does
             multiplexer.addProcessor(0, this.stage);
         }
 
         Gdx.graphics.setCursor(GameAssetManager.blankCursor);
         Gdx.input.setCursorCatched(true);
-
-        GameController.getInstance().isPaused = false; // Ensure the game is unpaused when entering the screen
+        GameController.getInstance().isPaused = false;
     }
 
     @Override
-    public void render(float delta) {
-        float cappedDelta = Math.min(delta, 1 / 30f);
-        controller.update(cappedDelta);
-
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        boolean isPaused = GameController.getInstance().isPaused;
-
-        // ONLY change the cursor if the pause state has changed
-        if (isPaused != wasPaused) {
-            if (isPaused) {
-                Gdx.graphics.setCursor(GameAssetManager.customCursor);
-                Gdx.input.setCursorCatched(false);
-            } else {
-                Gdx.graphics.setCursor(GameAssetManager.blankCursor);
-                Gdx.input.setCursorCatched(true);
-            }
-            // Update the tracker so this block doesn't run again until the state changes
-            wasPaused = isPaused;
-        }
-
-        if (isPaused) {
-            // 1. Initialize FBO at 1/4 resolution for the blur effect
-            if (blurFbo == null) {
-                blurFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth() / 4,
-                        Gdx.graphics.getHeight() / 4, false);
-                blurFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            }
-
-            // 2. Render the crisp world into the tiny FBO
-            blurFbo.begin();
-            Gdx.gl.glClearColor(0, 0, 0, 1);
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-            renderer.renderWorld(0f);
-            blurFbo.end();
-
-            // 3. Draw the tiny FBO upscaled to the full screen (Creates the blur)
-            fboBatch.begin();
-            // Y is inverted during FBO extraction
-            fboBatch.draw(blurFbo.getColorBufferTexture(), 0, Gdx.graphics.getHeight(), Gdx.graphics.getWidth(),
-                    -Gdx.graphics.getHeight());
-
-            // Optional: Draw a dark semi-transparent tint over the blur for better UI
-            // readability
-            fboBatch.setColor(0, 0, 0, 0.4f);
-            fboBatch.draw(GameAssetManager.pixelTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            fboBatch.setColor(1, 1, 1, 1);
-            fboBatch.end();
-
-        } else {
-            // Normal unpaused rendering
-            renderer.renderWorld(cappedDelta);
-        }
-
-        // UI is always rendered at full resolution on top
-        renderer.renderUI(cappedDelta);
-        // Render global UI components (This is what draws the PauseModal!)
-        super.render(cappedDelta);
+    public void hide() {
+        super.hide();
+        AchievementManager.getInstance().setObserver(null);
     }
 
     @Override
@@ -123,7 +67,6 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
         super.resize(width, height);
         renderer.resize(width, height);
 
-        // Trash the old buffer so it scales correctly if window is resized
         if (blurFbo != null) {
             blurFbo.dispose();
             blurFbo = null;
@@ -139,16 +82,61 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
         renderer.dispose();
     }
 
+    // --- Core Render Loop ---
     @Override
-    public void onAchievementUnlocked(Achievement achievement) {
-        // Renders the popup on the AbstractScreen's stage
-        AchievementPopup.show(this.stage, achievement);
+    public void render(float delta) {
+        float cappedDelta = Math.min(delta, 1 / 30f);
+        controller.update(cappedDelta);
+
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        boolean isPaused = GameController.getInstance().isPaused;
+
+        if (isPaused != wasPaused) {
+            if (isPaused) {
+                Gdx.graphics.setCursor(GameAssetManager.customCursor);
+                Gdx.input.setCursorCatched(false);
+            } else {
+                Gdx.graphics.setCursor(GameAssetManager.blankCursor);
+                Gdx.input.setCursorCatched(true);
+            }
+            wasPaused = isPaused;
+        }
+
+        if (isPaused) {
+            if (blurFbo == null) {
+                blurFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth() / 4,
+                        Gdx.graphics.getHeight() / 4, false);
+                blurFbo.getColorBufferTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            }
+
+            blurFbo.begin();
+            Gdx.gl.glClearColor(0, 0, 0, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            renderer.renderWorld(0f);
+            blurFbo.end();
+
+            fboBatch.begin();
+            fboBatch.draw(blurFbo.getColorBufferTexture(), 0, Gdx.graphics.getHeight(), Gdx.graphics.getWidth(),
+                    -Gdx.graphics.getHeight());
+
+            fboBatch.setColor(0, 0, 0, 0.4f);
+            fboBatch.draw(GameAssetManager.pixelTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            fboBatch.setColor(1, 1, 1, 1);
+            fboBatch.end();
+
+        } else {
+            renderer.renderWorld(cappedDelta);
+        }
+
+        renderer.renderUI(cappedDelta);
+        super.render(cappedDelta);
     }
 
+    // --- Interfaces & Callbacks ---
     @Override
-    public void hide() {
-        super.hide();
-        // Prevent memory leaks when switching screens
-        AchievementManager.getInstance().setObserver(null);
+    public void onAchievementUnlocked(Achievement achievement) {
+        AchievementPopup.show(this.stage, achievement);
     }
 }

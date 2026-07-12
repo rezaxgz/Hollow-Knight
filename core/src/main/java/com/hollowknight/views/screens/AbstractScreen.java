@@ -18,15 +18,17 @@ import com.hollowknight.models.settings.Settings;
 import com.hollowknight.views.GameAssetManager;
 
 public abstract class AbstractScreen implements Screen {
+
+    // --- Core UI Components ---
     protected Stage stage;
+    protected Table rootTable;
+    protected Skin skin;
 
     private Stack mainStack;
-    protected Table rootTable;
     private Stack modalStack;
     private Stack toastStack;
 
-    protected Skin skin;
-
+    // --- Lifecycle Methods ---
     @Override
     public void show() {
         ScreenViewport viewport = new ScreenViewport();
@@ -52,67 +54,53 @@ public abstract class AbstractScreen implements Screen {
     }
 
     @Override
-    public void render(float delta) {
-        // 1. Act and draw the stage normally first
-        stage.act(delta);
-        stage.draw();
-
-        // 2. Fetch the current brightness value (0 to 100)
-        int brightness = Settings.getInstance().getBrightness();
-
-        // 3. If brightness is less than 100, draw the darkening overlay
-        if (brightness < 100) {
-            // Set the absolute darkest the screen is allowed to get (e.g., 60% opacity)
-            float maxDarkness = 0.6f;
-
-            // Calculate alpha: scales between 0.0 (at 100 brightness) and maxDarkness (at 0
-            // brightness)
-            float alpha = (1.0f - (brightness / 100f)) * maxDarkness;
-
-            stage.getBatch().begin();
-            // Set the batch color to black with the calculated alpha transparency
-            stage.getBatch().setColor(0, 0, 0, alpha);
-
-            // Draw the single pixel texture stretched across the entire viewport
-            stage.getBatch().draw(
-                    GameAssetManager.pixelTexture,
-                    0,
-                    0,
-                    stage.getViewport().getWorldWidth(),
-                    stage.getViewport().getWorldHeight());
-
-            // Always reset the batch color back to white when done to avoid tinting other
-            // elements!
-            stage.getBatch().setColor(Color.WHITE);
-            stage.getBatch().end();
-        }
-    }
-
-    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
     @Override
     public void pause() {
-
     }
 
     @Override
     public void resume() {
-
     }
 
     @Override
     public void hide() {
-
     }
 
     @Override
     public void dispose() {
-
     }
 
+    // --- Core Render Loop ---
+    @Override
+    public void render(float delta) {
+        stage.act(delta);
+        stage.draw();
+
+        int brightness = Settings.getInstance().getBrightness();
+
+        if (brightness < 100) {
+            float maxDarkness = 0.6f;
+            float alpha = (1.0f - (brightness / 100f)) * maxDarkness;
+
+            stage.getBatch().begin();
+            stage.getBatch().setColor(0, 0, 0, alpha);
+
+            stage.getBatch().draw(
+                    GameAssetManager.pixelTexture,
+                    0, 0,
+                    stage.getViewport().getWorldWidth(),
+                    stage.getViewport().getWorldHeight());
+
+            stage.getBatch().setColor(Color.WHITE);
+            stage.getBatch().end();
+        }
+    }
+
+    // --- Component Accessors & UI Utilities ---
     public Stack getModalStack() {
         return modalStack;
     }
@@ -126,7 +114,6 @@ public abstract class AbstractScreen implements Screen {
         toast.setBackground(skin.getDrawable("window"));
 
         Label messageLabel = new Label(message, skin);
-
         toast.add(messageLabel).growX();
 
         wrapper.add(toast).minWidth(150);
