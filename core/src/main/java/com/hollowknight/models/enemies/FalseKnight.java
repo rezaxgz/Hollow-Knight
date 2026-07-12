@@ -14,7 +14,7 @@ import com.hollowknight.models.player.Player;
 
 public class FalseKnight extends Enemy {
 
-    // --- NEW CONSTANTS ---
+    // --- Constants & Enums ---
     public static final int FALSE_KNIGHT_HITBOX_WIDTH = 260;
     public static final int FALSE_KNIGHT_HITBOX_HEIGHT = 350;
     public static final int FALSE_KNIGHT_HP = 1000;
@@ -32,7 +32,6 @@ public class FalseKnight extends Enemy {
     public final static EnemyAnimations LAND_ANIMATION = EnemyAnimations.FALSE_KNIGHT_LAND;
     public final static EnemyAnimations DEATH_ANIMATION = EnemyAnimations.FALSE_KNIGHT_DEATH;
 
-    // --- ENEMY STATES ---
     public enum State {
         IDLE, ATTACK_ANTICIPATE, ATTACK, ATTACK_RECOVER,
         RUN_ANTICIPATE, RUN,
@@ -44,45 +43,6 @@ public class FalseKnight extends Enemy {
         ATTACK, RUN, NORMAL_JUMP, POWER_JUMP, DEFENSIVE_JUMP
     }
 
-    public State currentState = State.IDLE;
-
-    // Timers & Variables
-    private float stateTimer = 0f;
-    private final Random random = new Random();
-    private final Deque<ActionType> recentActions = new ArrayDeque<>();
-    private ActionType lastAction = null;
-    private int consecutiveActionCount = 0;
-    private int recentDamageTaken = 0;
-    private float recentDamageTimer = 0f;
-    private float defensiveJumpCooldown = 0f;
-    private float defensiveJumpReactionTimer = -1f;
-    private float idleDecisionDelay = IDLE_THINK_TIME;
-    private float runStartX = 0f;
-    private int runDirection = Constants.LEFT_DIRECTION;
-
-    private boolean hasArenaLimits = false;
-    private float arenaMinX = 0f;
-    private float arenaMaxX = 0f;
-
-    public boolean triggerShockwave = false;
-    private boolean isPhaseTwo = false;
-    private ActionType pendingJumpType = null;
-
-    public boolean triggerHeavyShake = false;
-    public boolean triggerNormalShake = false;
-    public boolean triggerAttackShake = false;
-
-    // Phase 2 & Stun Variables
-    private boolean hasBeenStunned = false;
-    private int damageTakenDuringStun = 0;
-    private float currentRunSpeed = RUN_SPEED; // Default RUN_SPEED
-    private float currentIdleThinkTime = IDLE_THINK_TIME; // Default IDLE_THINK_TIME
-    private float timeScale = 1f; // Used to scale animation and state time globally
-
-    // Shockwave Tracker
-    public List<Shockwave> shockwaves = new ArrayList<>();
-
-    // Tunables
     private static final float STUN_DURATION = 9.0f;
     private static final float POWER_JUMP_SPEED_Y = 900f;
     private static final float IDLE_THINK_TIME = 0.4f;
@@ -115,13 +75,51 @@ public class FalseKnight extends Enemy {
     private static final float FALSE_KNIGHT_KNOCKBACK_MULTIPLIER = 0.25f;
     private static final float FALSE_KNIGHT_KNOCKBACK_DURATION_SCALE = 0.5f;
 
+    // --- State Properties & Trackers ---
+    public State currentState = State.IDLE;
+    private float stateTimer = 0f;
+    private final Random random = new Random();
+    private final Deque<ActionType> recentActions = new ArrayDeque<>();
+    private ActionType lastAction = null;
+
+    private int consecutiveActionCount = 0;
+    private int recentDamageTaken = 0;
+    private float recentDamageTimer = 0f;
+    private float defensiveJumpCooldown = 0f;
+    private float defensiveJumpReactionTimer = -1f;
+    private float idleDecisionDelay = IDLE_THINK_TIME;
+
+    private float runStartX = 0f;
+    private int runDirection = Constants.LEFT_DIRECTION;
+
+    private boolean hasArenaLimits = false;
+    private float arenaMinX = 0f;
+    private float arenaMaxX = 0f;
+
+    public boolean triggerShockwave = false;
+    private boolean isPhaseTwo = false;
+    private ActionType pendingJumpType = null;
+
+    public boolean triggerHeavyShake = false;
+    public boolean triggerNormalShake = false;
+    public boolean triggerAttackShake = false;
+
+    private boolean hasBeenStunned = false;
+    private int damageTakenDuringStun = 0;
+    private float currentRunSpeed = RUN_SPEED;
+    private float currentIdleThinkTime = IDLE_THINK_TIME;
+    private float timeScale = 1f;
+
+    public List<Shockwave> shockwaves = new ArrayList<>();
+
+    // --- Initialization & Lifecycle ---
     public FalseKnight(Vector2 pos) {
         super(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
-        changeState(State.IDLE);
         this.hp = FALSE_KNIGHT_HP;
         this.facingDirection = Constants.LEFT_DIRECTION;
         this.type = EnemyType.FALSE_KNIGHT;
+        changeState(State.IDLE);
     }
 
     public static FalseKnight newEnemy(Vector2 pos) {
@@ -129,8 +127,8 @@ public class FalseKnight extends Enemy {
     }
 
     /**
-     * Supplies the two horizontal arena walls so charge runs can stop before the
-     * False Knight traps the player against either corner.
+     * Establishes the horizontal arena boundaries to prevent the False Knight
+     * from corner-trapping the player during charge sequences.
      */
     public void setArenaWalls(Rectangle firstWall, Rectangle secondWall) {
         if (firstWall == null || secondWall == null)
@@ -156,23 +154,32 @@ public class FalseKnight extends Enemy {
     }
 
     @Override
+    public void kill() {
+        super.kill();
+        isDead = true;
+        velocity.set(0, 0);
+        changeState(State.DEAD);
+    }
+
+    // --- Core Update Loop ---
+    @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
-        // Apply scaled time for animations and state checks
         float scaledDelta = delta * timeScale;
         animationTime += scaledDelta;
 
-        // Update active shockwaves
+        // Process active shockwaves
         Iterator<Shockwave> iter = shockwaves.iterator();
         while (iter.hasNext()) {
             Shockwave wave = iter.next();
-            wave.update(delta); // Unscaled delta for physics entities
+            wave.update(delta);
             if (wave.lifetime > wave.maxLifetime) {
                 iter.remove();
             }
         }
 
+        // Manage timers
         if (recentDamageTimer > 0) {
-            recentDamageTimer -= delta; // Real time tracking
+            recentDamageTimer -= delta;
             if (recentDamageTimer <= 0) {
                 recentDamageTimer = 0;
                 recentDamageTaken = 0;
@@ -186,6 +193,7 @@ public class FalseKnight extends Enemy {
         if (defensiveJumpReactionTimer > 0f)
             defensiveJumpReactionTimer = Math.max(0f, defensiveJumpReactionTimer - delta);
 
+        // Resolve external physics forces prior to state logic
         if (knockbackTimer > 0) {
             knockbackTimer -= delta;
             velocity.y += Constants.GRAVITY * delta;
@@ -204,12 +212,14 @@ public class FalseKnight extends Enemy {
             return;
         }
 
+        // Interrupt for defensive maneuvers if applicable
         if (canTriggerDefensiveJump()) {
-            launchDefensiveJump(player); // Instantly jump back without anticipation
+            launchDefensiveJump(player);
         }
 
         velocity.y += Constants.GRAVITY * delta;
 
+        // Execute state machine
         switch (currentState) {
             case IDLE:
                 velocity.x = 0;
@@ -217,12 +227,14 @@ public class FalseKnight extends Enemy {
                 if (stateTimer >= idleDecisionDelay)
                     decideNextAction(player);
                 break;
+
             case ATTACK_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
                 if (stateTimer >= ATTACK_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.ATTACK);
                 break;
+
             case ATTACK:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
@@ -231,18 +243,21 @@ public class FalseKnight extends Enemy {
                     triggerAttackShake = true;
                 }
                 break;
+
             case ATTACK_RECOVER:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
                 if (stateTimer >= ATTACK_RECOVER_ANIMATION.totalDuration)
                     changeState(State.IDLE);
                 break;
+
             case RUN_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
                 if (stateTimer >= RUN_ANTICIPATE_ANIMATION.totalDuration)
                     changeState(State.RUN);
                 break;
+
             case RUN:
                 stateTimer += scaledDelta;
                 facingDirection = runDirection;
@@ -266,6 +281,7 @@ public class FalseKnight extends Enemy {
                     changeState(State.IDLE);
                 }
                 break;
+
             case JUMP_ANTICIPATE:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
@@ -277,12 +293,13 @@ public class FalseKnight extends Enemy {
                     }
                 }
                 break;
+
             case POWER_JUMP_ATTACK:
                 moveX(velocity.x * delta, solidBlocks);
                 if (isOnGround) {
                     triggerShockwave = true;
                     triggerHeavyShake = true;
-                    // Spawn floor shockwave at edge of hitbox
+
                     float spawnX = facingDirection == Constants.RIGHT_DIRECTION
                             ? position.x + FALSE_KNIGHT_HITBOX_WIDTH
                             : position.x - 40;
@@ -290,6 +307,7 @@ public class FalseKnight extends Enemy {
                     changeState(State.LAND);
                 }
                 break;
+
             case NORMAL_JUMP:
                 moveX(velocity.x * delta, solidBlocks);
                 if (isOnGround) {
@@ -297,6 +315,7 @@ public class FalseKnight extends Enemy {
                     changeState(State.LAND);
                 }
                 break;
+
             case JUMP_BACK:
                 moveX(velocity.x * delta, solidBlocks);
                 if (isOnGround) {
@@ -304,12 +323,14 @@ public class FalseKnight extends Enemy {
                     changeState(State.LAND);
                 }
                 break;
+
             case LAND:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
                 if (stateTimer >= LAND_ANIMATION.totalDuration)
                     changeState(State.IDLE);
                 break;
+
             case STUNNED:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
@@ -317,6 +338,7 @@ public class FalseKnight extends Enemy {
                     changeState(State.STUN_RECOVER);
                 }
                 break;
+
             case STUN_RECOVER:
                 velocity.x = 0;
                 stateTimer += scaledDelta;
@@ -325,6 +347,7 @@ public class FalseKnight extends Enemy {
                     changeState(State.IDLE);
                 }
                 break;
+
             case DEAD:
                 velocity.x = 0;
                 break;
@@ -333,6 +356,7 @@ public class FalseKnight extends Enemy {
         moveY(velocity.y * delta, solidBlocks);
     }
 
+    // --- AI Decision Making ---
     private void decideNextAction(Player player) {
         float distance = Math.abs(player.position.x - position.x);
         ActionType action = chooseNextAction(distance, player);
@@ -357,6 +381,7 @@ public class FalseKnight extends Enemy {
     private ActionType chooseNextAction(float distance, Player player) {
         float attackWeight, runWeight, jumpWeight, powerJumpWeight = 0f;
 
+        // Base weighting based on distance
         if (distance <= CLOSE_RANGE) {
             attackWeight = 70f;
             runWeight = 10f;
@@ -373,32 +398,31 @@ public class FalseKnight extends Enemy {
             powerJumpWeight = 20f;
         }
 
-        // Restrict power jumps completely if not in Phase Two
+        // Constrain specific abilities
         if (!isPhaseTwo) {
             powerJumpWeight = 0f;
         }
 
-        // Do not select a charge when it would immediately pin the player at a wall.
         int runTowardPlayer = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
         if (isPlayerCorneredAhead(player, runTowardPlayer) || isNearArenaRunLimit(runTowardPlayer))
             runWeight *= 0.08f;
 
-        // Add fresh random variation every decision so distance bands never become a
-        // predictable sequence.
+        // Apply variance to ensure dynamic sequences
         attackWeight *= randomRange(0.75f, 1.25f);
         runWeight *= randomRange(0.75f, 1.25f);
         jumpWeight *= randomRange(0.75f, 1.25f);
         powerJumpWeight *= randomRange(0.75f, 1.25f);
 
+        // Apply action history modifiers
         attackWeight *= getHistoryMultiplier(ActionType.ATTACK);
         runWeight *= getHistoryMultiplier(ActionType.RUN);
         jumpWeight *= getHistoryMultiplier(ActionType.NORMAL_JUMP);
         powerJumpWeight *= getHistoryMultiplier(ActionType.POWER_JUMP);
 
         float total = attackWeight + runWeight + jumpWeight + powerJumpWeight;
+
+        // Fallback resolution if weights resolve below threshold
         if (total <= 0f) {
-            // Random fallback still respects phase availability and avoids the immediately
-            // previous action.
             List<ActionType> fallbackActions = new ArrayList<>();
             addFallbackAction(fallbackActions, ActionType.ATTACK);
             addFallbackAction(fallbackActions, ActionType.NORMAL_JUMP);
@@ -412,6 +436,7 @@ public class FalseKnight extends Enemy {
             return fallbackActions.get(random.nextInt(fallbackActions.size()));
         }
 
+        // Determine final action via weighted lottery
         float roll = random.nextFloat() * total;
         if (roll < attackWeight)
             return ActionType.ATTACK;
@@ -453,7 +478,7 @@ public class FalseKnight extends Enemy {
         for (ActionType recentAction : recentActions) {
             if (recentAction == action) {
                 if (historyIndex == 1)
-                    return 0.45f; // Strongly discourage A-B-A loops.
+                    return 0.45f;
                 return 0.7f;
             }
             historyIndex++;
@@ -465,18 +490,21 @@ public class FalseKnight extends Enemy {
         return min + random.nextFloat() * (max - min);
     }
 
+    // --- Action & Movement Mechanics ---
     private boolean canTriggerDefensiveJump() {
         if (recentDamageTaken < DAMAGE_BURST_THRESHOLD || defensiveJumpCooldown > 0f)
             return false;
+
         if (defensiveJumpReactionTimer < 0f) {
-            defensiveJumpReactionTimer = randomRange(DEFENSIVE_REACTION_MIN_DELAY,
-                    DEFENSIVE_REACTION_MAX_DELAY);
+            defensiveJumpReactionTimer = randomRange(DEFENSIVE_REACTION_MIN_DELAY, DEFENSIVE_REACTION_MAX_DELAY);
             return false;
         }
+
         if (defensiveJumpReactionTimer > 0f)
             return false;
         if (lastAction == ActionType.DEFENSIVE_JUMP)
             return false;
+
         return currentState != State.JUMP_ANTICIPATE
                 && currentState != State.NORMAL_JUMP
                 && currentState != State.POWER_JUMP_ATTACK
@@ -490,10 +518,7 @@ public class FalseKnight extends Enemy {
     private void launchPowerJump(Player player) {
         facingDirection = player.position.x > position.x ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION;
         velocity.y = POWER_JUMP_SPEED_Y;
-
-        // No X movement: knight jumps straight up in place
         velocity.x = 0;
-
         isOnGround = false;
         changeState(State.POWER_JUMP_ATTACK);
     }
@@ -501,8 +526,7 @@ public class FalseKnight extends Enemy {
     private void launchNormalJump(Player player) {
         velocity.y = JUMP_ATTACK_SPEED_Y;
 
-        // Keep the jump aimed at the player, but vary the landing target so repeated
-        // jumps never trace the same perfectly predictable arc.
+        // Apply a variable offset so the jump trajectory isn't perfectly predictable
         float targetX = player.position.x + randomRange(-JUMP_TARGET_RANDOM_OFFSET, JUMP_TARGET_RANDOM_OFFSET);
         float dx = targetX - position.x;
         float timeInAir = Math.abs(2 * JUMP_ATTACK_SPEED_Y / Constants.GRAVITY);
@@ -525,7 +549,6 @@ public class FalseKnight extends Enemy {
         defensiveJumpCooldown = DEFENSIVE_JUMP_COOLDOWN;
         recordAction(ActionType.DEFENSIVE_JUMP);
 
-        // Explicitly forces jump in opposite X direction of player
         int awayDirection = player.position.x > position.x ? Constants.LEFT_DIRECTION : Constants.RIGHT_DIRECTION;
         facingDirection = -awayDirection;
         velocity.x = DEFENSIVE_JUMP_SPEED_X * awayDirection;
@@ -534,6 +557,7 @@ public class FalseKnight extends Enemy {
         changeState(State.JUMP_BACK);
     }
 
+    // --- Spatial Awareness ---
     private boolean wouldCrossArenaRunLimit(float amount) {
         if (!hasArenaLimits)
             return false;
@@ -575,9 +599,11 @@ public class FalseKnight extends Enemy {
         return player.position.x > position.x + FALSE_KNIGHT_HITBOX_WIDTH;
     }
 
+    // --- State & Animation Control ---
     public void changeState(State newState) {
         currentState = newState;
         stateTimer = 0f;
+
         switch (newState) {
             case IDLE -> {
                 idleDecisionDelay = currentIdleThinkTime * randomRange(0.75f, 1.35f);
@@ -599,7 +625,7 @@ public class FalseKnight extends Enemy {
             case DEAD -> setAnimation(DEATH_ANIMATION);
             case POWER_JUMP_ATTACK -> setAnimation(JUMP_ATTACK_ANIMATION);
             case STUNNED -> {
-                knockbackTimer = 0; // Clear residual knockback momentum
+                knockbackTimer = 0;
                 setAnimation(DEATH_ANIMATION);
             }
             case STUN_RECOVER -> setAnimation(EnemyAnimations.FALSE_KNIGHT_STUN_RECOVER);
@@ -614,10 +640,7 @@ public class FalseKnight extends Enemy {
     }
 
     /**
-     * Changes all animation frame durations and total durations by a constant
-     * factor.
-     * Since Enum fields are final in Java, we achieve this by scaling
-     * the time increment (delta) for animations and state timers.
+     * Scales animation frames and state timers by adjusting the delta modifier.
      */
     private void applyAnimationSpeedFactor(float factor) {
         this.timeScale = 1.0f / factor;
@@ -625,20 +648,12 @@ public class FalseKnight extends Enemy {
 
     private void triggerPhaseTwo() {
         isPhaseTwo = true;
-        // Speeds up animations logic by *0.8
         applyAnimationSpeedFactor(0.8f);
-        currentRunSpeed = RUN_SPEED * 1.25f; // Faster running
-        currentIdleThinkTime = IDLE_THINK_TIME * 0.8f; // Faster decision making
+        currentRunSpeed = RUN_SPEED * 1.25f;
+        currentIdleThinkTime = IDLE_THINK_TIME * 0.8f;
     }
 
-    @Override
-    public void kill() {
-        super.kill();
-        isDead = true;
-        velocity.set(0, 0);
-        changeState(State.DEAD);
-    }
-
+    // --- Combat, Damage & Collisions ---
     @Override
     public void takeDamage(int damage, float sourceX, boolean knockback, float knockbackMultiplier) {
         if (isDead)
@@ -647,11 +662,10 @@ public class FalseKnight extends Enemy {
         if (currentState == State.STUNNED) {
             int maxAllowedDamage = (FALSE_KNIGHT_HP / 4) - damageTakenDuringStun;
             if (maxAllowedDamage <= 0)
-                return; // Prevent any more damage past the 1/4 cap
+                return;
 
             int actualDamage = Math.min(damage, maxAllowedDamage);
 
-            // Stun mode grants immunity to death
             if (this.hp - actualDamage <= 0) {
                 actualDamage = this.hp - 1;
             }
@@ -662,7 +676,6 @@ public class FalseKnight extends Enemy {
             super.takeDamage(actualDamage, sourceX, false, knockbackMultiplier);
             damageTakenDuringStun += actualDamage;
 
-            // Switch animation and ALWAYS reset animation timer as requested
             animation = EnemyAnimations.FALSE_KNIGHT_DEATH_HIT;
             animationTime = 0;
             return;
@@ -670,8 +683,10 @@ public class FalseKnight extends Enemy {
 
         float reducedKnockbackMultiplier = knockbackMultiplier * FALSE_KNIGHT_KNOCKBACK_MULTIPLIER;
         super.takeDamage(damage, sourceX, knockback, reducedKnockbackMultiplier);
-        if (knockback)
+
+        if (knockback) {
             knockbackTimer *= FALSE_KNIGHT_KNOCKBACK_DURATION_SCALE;
+        }
 
         if (!hasBeenStunned && this.hp <= FALSE_KNIGHT_HP / 2) {
             hasBeenStunned = true;
@@ -717,12 +732,11 @@ public class FalseKnight extends Enemy {
             diffx = 82;
             diffy = -140;
         }
-        Rectangle res = new Rectangle(position.x, position.y,
+        return new Rectangle(position.x, position.y,
                 FALSE_KNIGHT_HITBOX_WIDTH + diffx, FALSE_KNIGHT_HITBOX_HEIGHT + diffy);
-        return res;
     }
 
-    // --- NESTED SHOCKWAVE CLASS ---
+    // --- Shockwave Nested Class ---
     public static class Shockwave {
         public Rectangle bounds;
         public float velocityX;
@@ -732,7 +746,6 @@ public class FalseKnight extends Enemy {
         public float lifetime = 0f;
 
         public Shockwave(float startX, float startY, int direction) {
-            // Start slightly smaller to match the squat first frame
             bounds = new Rectangle(startX, startY, 40, 40);
             velocityX = 600f * direction;
             this.direction = direction;
@@ -746,30 +759,22 @@ public class FalseKnight extends Enemy {
             float widthGrowSpeed;
             float heightGrowSpeed;
 
-            // Phase 1: The wave rises rapidly (0.0s to ~0.8s)
             if (lifetime <= 0.8f) {
-                widthGrowSpeed = 100f; // Grows forward moderately
-                heightGrowSpeed = 180f; // Shoots up rapidly to peak height
-            }
-            // Phase 2: The wave dissipates and lowers (0.8s to 2.5s)
-            else {
-                widthGrowSpeed = 20f; // Horizontal growth slows down (stretches out a bit)
-                heightGrowSpeed = -50f; // Height shrinks down as it loses energy
+                widthGrowSpeed = 100f;
+                heightGrowSpeed = 180f;
+            } else {
+                widthGrowSpeed = 20f;
+                heightGrowSpeed = -50f;
             }
 
             bounds.width += widthGrowSpeed * delta;
             bounds.height += heightGrowSpeed * delta;
-
-            // Clamp height so it doesn't invert or shrink below a minimum size as it fades
             bounds.height = Math.max(bounds.height, 40f);
 
-            // Compensate X growth if traveling left so the front leading edge remains
-            // smooth
             if (velocityX < 0) {
                 bounds.x -= widthGrowSpeed * delta;
             }
 
-            // Grows stronger
             if (lifetime > 1.5f) {
                 damage = FALSE_KNIGHT_ATTACK_DAMAGE + 1;
             } else if (lifetime > 0.75f) {

@@ -9,6 +9,8 @@ import com.hollowknight.models.world.GameWorld;
 
 public class SaveManager {
 
+    // --- Configuration & Constants ---
+
     private static final int MAX_SLOTS = 4;
     private static final String SAVE_DIRECTORY = "gamedata/";
     private static final String SAVE_PREFIX = "hk_save_slot_";
@@ -17,14 +19,16 @@ public class SaveManager {
     private static final Json json = new Json();
 
     static {
-        // Formats JSON to be readable and disables prototypes to prevent bloat
         json.setOutputType(JsonWriter.OutputType.json);
         json.setUsePrototypes(false);
     }
 
+    // --- Game Save & Slot Management ---
+
     public static void saveGame(GameWorld world) {
         int slot = world.saveLoadedFrom.slot;
         GameSave currentSave = world.saveLoadedFrom;
+
         if (slot < 0 || slot >= MAX_SLOTS) {
             Gdx.app.error("SaveManager", "Invalid save slot: " + slot + ".");
             return;
@@ -36,7 +40,6 @@ public class SaveManager {
         currentSave.player = world.player;
         currentSave.currentRegion = world.currentRegion;
 
-        // Save Boss specific state
         currentSave.bossFightActivated = world.bossFightActivated;
         currentSave.bossFightCompleted = world.bossFightCompleted;
 
@@ -57,8 +60,6 @@ public class SaveManager {
 
         try {
             String jsonStr = json.prettyPrint(currentSave);
-            // LibGDX automatically creates parent directories if they don't exist when
-            // writing
             saveFile.writeString(jsonStr, false);
             Gdx.app.log("SaveManager", "Game successfully saved to slot " + slot);
         } catch (Exception e) {
@@ -66,9 +67,6 @@ public class SaveManager {
         }
     }
 
-    /**
-     * Reads a slot from disk and reconstructs a playable GameSave instance.
-     */
     public static GameSave loadGame(int slot) {
         if (slot < 0 || slot >= MAX_SLOTS) {
             Gdx.app.error("SaveManager", "Invalid save slot: " + slot + ".");
@@ -78,7 +76,7 @@ public class SaveManager {
         FileHandle saveFile = Gdx.files.local(SAVE_DIRECTORY + SAVE_PREFIX + slot + SAVE_EXTENSION);
 
         if (!saveFile.exists()) {
-            return null; // Useful for UI logic
+            return null;
         }
 
         try {
@@ -89,17 +87,6 @@ public class SaveManager {
         }
     }
 
-    /**
-     * Quick check if a slot is empty (use this to enable/disable "Load Game"
-     * buttons in UI)
-     */
-    public static boolean isSlotEmpty(int slot) {
-        return !Gdx.files.local(SAVE_DIRECTORY + SAVE_PREFIX + slot + SAVE_EXTENSION).exists();
-    }
-
-    /**
-     * Wipes a saved file
-     */
     public static void deleteSave(int slot) {
         FileHandle saveFile = Gdx.files.local(SAVE_DIRECTORY + SAVE_PREFIX + slot + SAVE_EXTENSION);
         if (saveFile.exists()) {
@@ -108,8 +95,22 @@ public class SaveManager {
         }
     }
 
+    public static boolean isSlotEmpty(int slot) {
+        return !Gdx.files.local(SAVE_DIRECTORY + SAVE_PREFIX + slot + SAVE_EXTENSION).exists();
+    }
+
+    public static int getFirstEmptySlot() {
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            if (isSlotEmpty(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // --- Global Settings & Achievements ---
+
     public static Settings loadSettings() {
-        // 1. Load Global Achievements
         FileHandle achFile = Gdx.files.local(SAVE_DIRECTORY + "achievements.json");
         if (achFile.exists()) {
             try {
@@ -123,7 +124,6 @@ public class SaveManager {
             }
         }
 
-        // 2. Load Global Settings
         FileHandle file = Gdx.files.local(SAVE_DIRECTORY + "settings.json");
         if (file.exists()) {
             try {
@@ -132,29 +132,19 @@ public class SaveManager {
                 Gdx.app.error("SaveManager", "Failed to load settings", e);
             }
         }
+
         return new Settings();
     }
 
     public static void saveSettings(Settings s) {
-        // 1. Save Global Settings
         FileHandle file = Gdx.files.local(SAVE_DIRECTORY + "settings.json");
         file.writeString(json.prettyPrint(s), false);
 
-        // 2. Save Global Achievements
         java.util.List<String> unlockedList = com.hollowknight.models.achievements.AchievementManager.getInstance()
                 .getUnlockedIds();
         String[] unlockedArray = unlockedList.toArray(new String[0]);
+
         FileHandle achFile = Gdx.files.local(SAVE_DIRECTORY + "achievements.json");
         achFile.writeString(json.prettyPrint(unlockedArray), false);
-    }
-
-    public static int getFirstEmptySlot() {
-        // Fixed: Loop through valid index range (0 to MAX_SLOTS - 1)
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            if (isSlotEmpty(i)) {
-                return i;
-            }
-        }
-        return -1; // Return -1 or another fallback if all slots are full
     }
 }

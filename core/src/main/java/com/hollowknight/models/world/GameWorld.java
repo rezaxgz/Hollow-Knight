@@ -32,43 +32,50 @@ import com.hollowknight.models.settings.GameCheat;
 import com.hollowknight.views.GameAssetManager;
 
 public class GameWorld {
+
+    // --- Environment & State Properties ---
     private String worldName = "new world";
     public TiledMap map;
-    public Player player;
+    public GameRegion currentRegion = GameRegion.FORGOTTEN_CROSSROADS;
+    public Map<String, Rectangle> regionBounds = new HashMap<>();
     public List<Rectangle> solidBlocks = new ArrayList<>();
     private List<Hazard> hazards = new ArrayList<>();
-    public List<Enemy> enemies = new ArrayList<>();
-    private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
-    public List<PlayerProjectile> projectiles = new ArrayList<>();
-    public Map<String, Rectangle> regionBounds = new HashMap<>();
-    public GameRegion currentRegion = GameRegion.FORGOTTEN_CROSSROADS;
-    public Zote zote;
-    public Rectangle bossRoomBounds;
+    public GameSave saveLoadedFrom;
 
+    // --- Entity Properties ---
+    public Player player;
+    public List<Enemy> enemies = new ArrayList<>();
+    public List<PlayerProjectile> projectiles = new ArrayList<>();
+    private Set<Enemy> enemiesHitThisAttack = new HashSet<>();
+    public Zote zote;
+
+    // --- Boss & Objective Properties ---
+    public Rectangle bossRoomBounds;
     private Rectangle activationZone;
     public Rectangle bossDoor;
     private Rectangle bossRoomRightWall;
     private Vector2 falseKnightSpawnPoint;
+    public Rectangle gameEndZone;
+
     public boolean bossFightActivated = false;
     public boolean bossFightCompleted = false;
+    public boolean bossJustDefeated = false;
     public float gateDropProgress = 0.0f;
     private Vector2 playerTPPoint = new Vector2();
 
+    // --- System & Tracker Properties ---
     private int numberOfEnemiesKilled = 0;
     private int numberOfDeaths = 0;
     private float passedTimeBuffer = 0;
     private long totalPassedTime = 0;
-    public boolean bossJustDefeated = false;
-
     public float cameraShakeTimer = 0f;
     public float cameraShakeIntensity = 0f;
 
-    public GameSave saveLoadedFrom;
-
-    public Rectangle gameEndZone;
-
+    // --- Initialization ---
     public GameWorld(GameSave save) {
         saveLoadedFrom = save;
+
+        // 1. Load Data
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load(GameRegion.MAP_PATH);
         player = save.player;
@@ -81,6 +88,7 @@ public class GameWorld {
         this.bossFightActivated = save.bossFightActivated;
         this.bossFightCompleted = save.bossFightCompleted;
 
+        // 2. Parse Environment Architecture
         MapLayer solids = map.getLayers().get("Solid");
         for (MapObject obj : solids.getObjects()) {
             if (!(obj instanceof RectangleMapObject))
@@ -104,6 +112,26 @@ public class GameWorld {
             hazards.add(new Hazard(rect, isInstantDeath));
         }
 
+        // 3. Parse Regions
+        MapLayer regionsLayer = map.getLayers().get("Regions");
+        if (regionsLayer != null) {
+            for (MapObject obj : regionsLayer.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                    String regionName = obj.getName();
+
+                    if (regionName != null) {
+                        regionBounds.put(regionName, rect);
+                    }
+
+                    if ("BossRoom".equals(obj.getName())) {
+                        bossRoomBounds = rect;
+                    }
+                }
+            }
+        }
+
+        // 4. Parse Entities (Enemies, NPCs, Boss Zones)
         MapLayer groundEnemySpawnPoints = map.getLayers().get("EnemySpawnPoints");
         for (MapObject obj : groundEnemySpawnPoints.getObjects()) {
             if (!(obj instanceof PointMapObject))
@@ -112,6 +140,7 @@ public class GameWorld {
             Object typeObj = obj.getProperties().get("type");
             int type = typeObj != null ? (int) typeObj : 0;
             EnemyType enemyType = EnemyType.fromInt(type);
+
             if (enemyType == EnemyType.FALSE_KNIGHT) {
                 falseKnightSpawnPoint = point;
             } else {
@@ -126,24 +155,6 @@ public class GameWorld {
                     Vector2 point = ((PointMapObject) obj).getPoint();
                     zote = new Zote(point);
                     break;
-                }
-            }
-        }
-
-        MapLayer regionsLayer = map.getLayers().get("Regions");
-        if (regionsLayer != null) {
-            for (MapObject obj : regionsLayer.getObjects()) {
-                if (obj instanceof RectangleMapObject) {
-                    Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-                    String regionName = obj.getName();
-
-                    if (regionName != null) {
-                        regionBounds.put(regionName, rect); // Store by Name
-                    }
-
-                    if ("BossRoom".equals(obj.getName())) {
-                        bossRoomBounds = rect;
-                    }
                 }
             }
         }
@@ -169,11 +180,10 @@ public class GameWorld {
             }
         }
 
+        // 5. Restore Boss State if Active
         if (this.bossFightActivated && !this.bossFightCompleted && this.bossDoor != null) {
-            // Lock the player in
             this.solidBlocks.add(this.bossDoor);
 
-            // Restore the False Knight
             FalseKnight fk = new FalseKnight(new Vector2(save.bossX, save.bossY));
             fk.setHp(save.bossHp);
             configureFalseKnightArena(fk);
@@ -188,13 +198,16 @@ public class GameWorld {
         AudioController.getInstance().playBgm(currentRegion.music);
     }
 
+    // --- Core Update Sequence ---
     public void update(float delta) {
         AudioController.getInstance().update(delta);
         updateTimers(delta);
         manageCameraShakes();
         updateCurrentRegion();
         updateBossFight(delta);
+
         player.update(delta, solidBlocks);
+
         checkHazards();
         updateEnemies(delta);
         checkLaserCollisions();
@@ -208,6 +221,20 @@ public class GameWorld {
             zote.update(delta, player, solidBlocks);
 
         registerDeaths();
+    }
+
+    // --- Environment & System Management ---
+    private void updateTimers(float delta) {
+        passedTimeBuffer += delta;
+        if (cameraShakeTimer > 0) {
+            cameraShakeTimer -= delta;
+            if (cameraShakeTimer <= 0)
+                cameraShakeIntensity = 0f;
+        }
+        if (passedTimeBuffer >= 1f) {
+            passedTimeBuffer -= 1f;
+            totalPassedTime += 1;
+        }
     }
 
     private void updateCurrentRegion() {
@@ -227,7 +254,7 @@ public class GameWorld {
 
     private void manageCameraShakes() {
         if (player.triggerDamageShake) {
-            triggerShake(3f, 0.2f); // Small shake for player damage
+            triggerShake(3f, 0.2f);
             player.triggerDamageShake = false;
         }
         if (player.triggerSpellShake) {
@@ -239,34 +266,22 @@ public class GameWorld {
             if (enemy instanceof FalseKnight) {
                 FalseKnight fk = (FalseKnight) enemy;
                 if (fk.triggerHeavyShake) {
-                    triggerShake(12f, 0.4f); // Bigger shake for heavy landing
+                    triggerShake(12f, 0.4f);
                     fk.triggerHeavyShake = false;
                 }
                 if (fk.triggerNormalShake) {
-                    triggerShake(8f, 0.2f); // Small shake for normal landing
+                    triggerShake(8f, 0.2f);
                     fk.triggerNormalShake = false;
                 }
                 if (fk.triggerAttackShake) {
-                    triggerShake(4f, 0.3f); // Normal shake (in between small and heavy)
+                    triggerShake(4f, 0.3f);
                     fk.triggerAttackShake = false;
                 }
             }
         }
     }
 
-    private void updateTimers(float delta) {
-        passedTimeBuffer += delta;
-        if (cameraShakeTimer > 0) {
-            cameraShakeTimer -= delta;
-            if (cameraShakeTimer <= 0)
-                cameraShakeIntensity = 0f;
-        }
-        if (passedTimeBuffer >= 1f) {
-            passedTimeBuffer -= 1f;
-            totalPassedTime += 1;
-        }
-    }
-
+    // --- Entity & Game State Management ---
     private void registerDeaths() {
         for (Enemy e : enemies) {
             if (e.hasUnregisteredDeath()) {
@@ -278,119 +293,6 @@ public class GameWorld {
         if (player.hasUnregisteredDeath()) {
             player.registerDeath();
             numberOfDeaths++;
-        }
-    }
-
-    private void updateBossFight(float delta) {
-        // 1. Check for Activation Trigger
-        if (activationZone != null && !bossFightActivated && !bossFightCompleted) {
-            if (player.getBounds().overlaps(activationZone)) {
-                bossFightActivated = true;
-
-                // Spawn the False Knight boss dynamically
-                if (falseKnightSpawnPoint != null) {
-                    Enemy boss = EnemyFactory.newEnemy(falseKnightSpawnPoint, EnemyType.FALSE_KNIGHT);
-                    if (boss instanceof FalseKnight) {
-                        configureFalseKnightArena((FalseKnight) boss);
-                    }
-                    enemies.add(boss);
-                }
-
-                // Close the doors by turning them into hard collision blocks
-                solidBlocks.add(bossDoor);
-            }
-        }
-
-        // 2. Check for Boss Defeat
-        if (bossFightActivated && !bossFightCompleted) {
-            boolean bossIsDead = true;
-            for (Enemy enemy : enemies) {
-                if (enemy instanceof FalseKnight) {
-                    if (!enemy.isDead) {
-                        bossIsDead = false;
-                        break;
-                    }
-                }
-            }
-
-            // If the boss was spawned and is now dead, lift doors
-            if (bossIsDead) {
-                bossFightActivated = false;
-                bossFightCompleted = true;
-                // bossJustDefeated = true;
-
-                AchievementManager.getInstance().onBossDefeated();
-                AudioController.getInstance().transitionBgm(GameAssetManager.gameEndMusic, 5f);
-
-                // Open the room by clearing out the door solid fields
-                solidBlocks.remove(bossDoor);
-            }
-        }
-
-        // 3. Check for GameEndZone Entry (ADD THIS ENTIRE BLOCK)
-        if (bossFightCompleted && !bossJustDefeated && gameEndZone != null) {
-            if (player.getBounds().overlaps(gameEndZone)) {
-
-                // Setting this flag triggers your BossDefeatModal in the UI
-                bossJustDefeated = true;
-
-                // Unlock the completion and speedrun achievements
-                float totalTimeInSeconds = totalPassedTime + passedTimeBuffer;
-                AchievementManager.getInstance().onGameCompleted(totalTimeInSeconds);
-            }
-        }
-
-        if (bossFightActivated) {
-            // Slam down quickly (multiplied by 4f means it takes 0.25 seconds to fall
-            // completely)
-            gateDropProgress += delta * 4f;
-            if (gateDropProgress > 1f)
-                gateDropProgress = 1f;
-        } else if (bossFightCompleted) {
-            // Lift up slightly slower (multiplied by 2f means it takes 0.5 seconds to open)
-            gateDropProgress -= delta * 2f;
-            if (gateDropProgress < 0f)
-                gateDropProgress = 0f;
-        }
-    }
-
-    private void checkSpiritCastAttacks() {
-        if (player.combatState == CombatState.CAST && player.triggerSpiritCast) {
-            Vector2 spawnPos = new Vector2(player.position.x,
-                    player.position.y + Constants.PLAYER_HITBOX_HEIGHT / 2 - Constants.PROJECTILE_SIZE / 2);
-            projectiles.add(new PlayerProjectile(spawnPos, player.getDirection(),
-                    player.getSpellDamage(Constants.PROJECTILE_DAMAGE)));
-            player.triggerSpiritCast = false;
-        }
-    }
-
-    private void configureFalseKnightArena(FalseKnight falseKnight) {
-        falseKnight.setArenaWalls(bossDoor, bossRoomRightWall);
-    }
-
-    private void updateProjectiles(float delta) {
-        java.util.Iterator<PlayerProjectile> iterator = projectiles.iterator();
-        while (iterator.hasNext()) {
-            PlayerProjectile proj = iterator.next();
-            proj.update(delta, solidBlocks, enemies);
-            if (proj.isFinished)
-                iterator.remove();
-        }
-    }
-
-    private void checkLaserCollisions() {
-        if (player.getVitals().isDead() || player.isInvinvible())
-            return;
-        Rectangle playerBounds = player.getBounds();
-        for (Enemy enemy : enemies) {
-            if (enemy instanceof CrystalGuardian) {
-                CrystalGuardian guardian = (CrystalGuardian) enemy;
-                Rectangle laserBounds = guardian.getActiveLaserBounds(solidBlocks);
-                if (laserBounds != null && playerBounds.overlaps(laserBounds)) {
-                    player.takeDamage(2, guardian.position.x);
-                    break;
-                }
-            }
         }
     }
 
@@ -413,6 +315,83 @@ public class GameWorld {
         }
     }
 
+    private void updateProjectiles(float delta) {
+        java.util.Iterator<PlayerProjectile> iterator = projectiles.iterator();
+        while (iterator.hasNext()) {
+            PlayerProjectile proj = iterator.next();
+            proj.update(delta, solidBlocks, enemies);
+            if (proj.isFinished)
+                iterator.remove();
+        }
+    }
+
+    // --- Boss Logic ---
+    private void configureFalseKnightArena(FalseKnight falseKnight) {
+        falseKnight.setArenaWalls(bossDoor, bossRoomRightWall);
+    }
+
+    private void updateBossFight(float delta) {
+        // 1. Check Activation Trigger
+        if (activationZone != null && !bossFightActivated && !bossFightCompleted) {
+            if (player.getBounds().overlaps(activationZone)) {
+                bossFightActivated = true;
+
+                if (falseKnightSpawnPoint != null) {
+                    Enemy boss = EnemyFactory.newEnemy(falseKnightSpawnPoint, EnemyType.FALSE_KNIGHT);
+                    if (boss instanceof FalseKnight) {
+                        configureFalseKnightArena((FalseKnight) boss);
+                    }
+                    enemies.add(boss);
+                }
+
+                solidBlocks.add(bossDoor);
+            }
+        }
+
+        // 2. Check Boss Defeat
+        if (bossFightActivated && !bossFightCompleted) {
+            boolean bossIsDead = true;
+            for (Enemy enemy : enemies) {
+                if (enemy instanceof FalseKnight) {
+                    if (!enemy.isDead) {
+                        bossIsDead = false;
+                        break;
+                    }
+                }
+            }
+
+            if (bossIsDead) {
+                bossFightActivated = false;
+                bossFightCompleted = true;
+
+                AchievementManager.getInstance().onBossDefeated();
+                AudioController.getInstance().transitionBgm(GameAssetManager.gameEndMusic, 5f);
+                solidBlocks.remove(bossDoor);
+            }
+        }
+
+        // 3. Check Game End Entry
+        if (bossFightCompleted && !bossJustDefeated && gameEndZone != null) {
+            if (player.getBounds().overlaps(gameEndZone)) {
+                bossJustDefeated = true;
+                float totalTimeInSeconds = totalPassedTime + passedTimeBuffer;
+                AchievementManager.getInstance().onGameCompleted(totalTimeInSeconds);
+            }
+        }
+
+        // 4. Resolve Door Animations
+        if (bossFightActivated) {
+            gateDropProgress += delta * 4f;
+            if (gateDropProgress > 1f)
+                gateDropProgress = 1f;
+        } else if (bossFightCompleted) {
+            gateDropProgress -= delta * 2f;
+            if (gateDropProgress < 0f)
+                gateDropProgress = 0f;
+        }
+    }
+
+    // --- Collision & Combat Validation ---
     private void checkHazards() {
         Rectangle playerBounds = player.getBounds();
         Rectangle attackBounds = player.combatState == CombatState.ATTACK ? player.getAttackHitbox() : null;
@@ -429,44 +408,58 @@ public class GameWorld {
             if (hazard.isInstantDeath()) {
                 player.kill();
             } else {
-                if (!player.isInvinvible()) { // Uses the existing method name from your source
+                if (!player.isInvinvible()) {
                     player.takeDamage(Constants.HAZARD_DAMAGE, hazard.getBounds().x + (hazard.getBounds().width / 2f),
                             false);
-                    player.position.set(player.lastSafePosition); // Teleport to platform
-                    player.velocity.setZero(); // Stop any falling momentum
+                    player.position.set(player.lastSafePosition);
+                    player.velocity.setZero();
                 }
             }
             break;
         }
     }
 
+    private void checkLaserCollisions() {
+        if (player.getVitals().isDead() || player.isInvinvible())
+            return;
+
+        Rectangle playerBounds = player.getBounds();
+        for (Enemy enemy : enemies) {
+            if (enemy instanceof CrystalGuardian) {
+                CrystalGuardian guardian = (CrystalGuardian) enemy;
+                Rectangle laserBounds = guardian.getActiveLaserBounds(solidBlocks);
+                if (laserBounds != null && playerBounds.overlaps(laserBounds)) {
+                    player.takeDamage(2, guardian.position.x);
+                    break;
+                }
+            }
+        }
+    }
+
     private void checkEnemyCollisions() {
         if (player.getVitals().isDead() || player.isInvinvible())
             return;
+
         Rectangle playerBounds = player.getBounds();
 
         for (Enemy enemy : enemies) {
             if (enemy.isDead)
                 continue;
 
-            // Allow False Knight to strike from far away using expanding shockwaves
             if (!(enemy instanceof FalseKnight)
                     && player.position.dst(enemy.position) > Constants.ENEMY_ACTIVE_RADIUS) {
                 continue;
             }
 
-            // Check Boss Specific hitboxes
             if (enemy instanceof FalseKnight) {
                 FalseKnight fk = (FalseKnight) enemy;
 
-                // Melee strike
                 Rectangle attackHitbox = fk.getActiveAttackHitbox();
                 if (attackHitbox != null && playerBounds.overlaps(attackHitbox)) {
                     player.takeDamage(FalseKnight.FALSE_KNIGHT_ATTACK_DAMAGE, fk.position.x);
                     return;
                 }
 
-                // Floor Shockwaves
                 for (FalseKnight.Shockwave wave : fk.shockwaves) {
                     if (playerBounds.overlaps(wave.bounds)) {
                         player.takeDamage(wave.damage, wave.bounds.x);
@@ -475,7 +468,6 @@ public class GameWorld {
                 }
             }
 
-            // Standard Body Contact collision
             if (playerBounds.overlaps(enemy.getBounds())) {
                 if (player.shouldDamageWithDash(enemy)) {
                     player.hitEnemyWithDash(enemy);
@@ -496,6 +488,7 @@ public class GameWorld {
         Rectangle attackBounds = player.getAttackHitbox();
         if (attackBounds == null)
             return;
+
         boolean isDownSlashing = player.animation != null && player.animation.name().contains("DOWN_SLASH");
 
         for (Enemy enemy : enemies) {
@@ -544,10 +537,17 @@ public class GameWorld {
         }
     }
 
-    public boolean isBossFightActivated() {
-        return bossFightActivated && !bossFightCompleted;
+    private void checkSpiritCastAttacks() {
+        if (player.combatState == CombatState.CAST && player.triggerSpiritCast) {
+            Vector2 spawnPos = new Vector2(player.position.x,
+                    player.position.y + Constants.PLAYER_HITBOX_HEIGHT / 2 - Constants.PROJECTILE_SIZE / 2);
+            projectiles.add(new PlayerProjectile(spawnPos, player.getDirection(),
+                    player.getSpellDamage(Constants.PROJECTILE_DAMAGE)));
+            player.triggerSpiritCast = false;
+        }
     }
 
+    // --- Utilities & Accessors ---
     public void triggerShake(float intensity, float duration) {
         this.cameraShakeIntensity = Math.max(this.cameraShakeIntensity, intensity);
         this.cameraShakeTimer = Math.max(this.cameraShakeTimer, duration);
@@ -567,6 +567,10 @@ public class GameWorld {
         }
     }
 
+    public boolean isBossFightActivated() {
+        return bossFightActivated && !bossFightCompleted;
+    }
+
     public String getWorldName() {
         return worldName;
     }
@@ -582,5 +586,4 @@ public class GameWorld {
     public long getTotalPassedTime() {
         return totalPassedTime;
     }
-
 }

@@ -9,25 +9,31 @@ import com.hollowknight.models.player.Player;
 import com.hollowknight.views.GameAssetManager;
 
 public class Zote {
+
+    // --- Core Properties ---
     public Vector2 position;
     public ZoteAnimation animation = ZoteAnimation.IDLE;
     public float animationTime = 0;
+    public final float WIDTH = 64f;
+    public final float HEIGHT = 64f;
+    public boolean isFacingRight = false;
 
-    // Interaction states
+    // --- Interaction States ---
     public boolean playerIsClose = false;
     public boolean isTalking = false;
 
-    // Anger state properties
+    // --- Anger Properties ---
     public boolean isAngry = false;
     public float angryTimer = 0;
-    public final float ANGRY_DURATION = 3.5f * 2f; // Constant time Zote stays angry
+    public final float ANGRY_DURATION = 3.5f * 2f;
     public final float MOVE_SPEED = 150f;
-    public final float WIDTH = 64f; // Adjust to match your Zote sprite's width
-    public final float HEIGHT = 64f; // Adjust to match your Zote sprite's height
-    public boolean isFacingRight = false; // Tracks Zote's facing direction
 
-    // Dialogue properties
+    // --- Dialogue Properties ---
     public int dialogueIndex = 0;
+    public boolean hasCompletedFirstDialogue = false;
+    public int currentRuleIndex = 0;
+    public String currentText = "";
+
     public String[] dialogues = {
             "Look at meeeee!",
             "I'm as helpless as a kitten up a tree",
@@ -35,9 +41,6 @@ public class Zote {
             "I can't understand I get misty just holding your hand",
             "Misty!!!!!!!!"
     };
-
-    public boolean hasCompletedFirstDialogue = false;
-    public int currentRuleIndex = 0;
 
     public final String[] rules = {
             "Precept One: 'Always Win Your Battles'.\nLosing a battle earns you nothing and teaches you nothing. Win your battles, or don't engage in them at all!\n",
@@ -62,77 +65,75 @@ public class Zote {
             "Precept Twenty: 'Speak Only the Truth'.\nWhen speaking to someone, it is courteous and also efficient to speak truthfully. Beware though that speaking truthfully may make you enemies. This is something you'll have to bear."
     };
 
-    public String currentText = "";
-
+    // --- Initialization ---
     public Zote(Vector2 position) {
         this.position = position;
     }
 
+    // --- Core Update Loop ---
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
         animationTime += delta;
 
-        // Calculate distance to player (adjust 100f to fit your game's scale)
         float distance = position.dst(player.position);
         playerIsClose = distance < 200f;
 
         if (isAngry) {
             angryTimer -= delta;
 
-            // Manually loop the ONESHOT attack animation
             if (animationTime >= ZoteAnimation.ATTACK.totalDuration) {
                 animationTime -= ZoteAnimation.ATTACK.totalDuration;
             }
 
             if (angryTimer <= 0) {
-                // Anger duration is complete, return to idle
                 isAngry = false;
                 animation = ZoteAnimation.IDLE;
-
-                // Stop the angry SFX
                 GameAssetManager.zoteAngry.stop();
             } else {
-                // Follow the player
-                float dir = Math.signum(player.position.x - position.x);
-                if (dir != 0) {
-                    // Update facing direction when moving towards the player
-                    isFacingRight = (dir > 0);
-
-                    float nextX = position.x + dir * MOVE_SPEED * delta;
-
-                    boolean hasFloor = false;
-                    boolean hitsWall = false;
-
-                    // Check slightly ahead and below for a floor to avoid falling off
-                    float checkX = dir > 0 ? nextX + WIDTH : nextX;
-                    Rectangle floorCheck = new Rectangle(checkX, position.y - 5f, 1f, 5f);
-                    Rectangle wallCheck = new Rectangle(nextX, position.y, WIDTH, HEIGHT);
-
-                    for (Rectangle block : solidBlocks) {
-                        if (block.overlaps(floorCheck)) {
-                            hasFloor = true;
-                        }
-                        if (block.overlaps(wallCheck)) {
-                            hitsWall = true;
-                        }
-                    }
-
-                    // Only move forward if there is a floor and no wall blocking him
-                    if (hasFloor && !hitsWall) {
-                        position.x = nextX;
-                    }
-                }
+                updateAggressiveMovement(delta, player, solidBlocks);
             }
         } else {
-            // Automatically cancel talking if the player walks away
-            if (!playerIsClose && isTalking) {
-                isTalking = false;
-                animation = ZoteAnimation.IDLE;
-                dialogueIndex = 0;
+            updatePassiveState();
+        }
+    }
+
+    // --- AI & State Management ---
+    private void updateAggressiveMovement(float delta, Player player, List<Rectangle> solidBlocks) {
+        float dir = Math.signum(player.position.x - position.x);
+        if (dir != 0) {
+            isFacingRight = (dir > 0);
+            float nextX = position.x + dir * MOVE_SPEED * delta;
+
+            boolean hasFloor = false;
+            boolean hitsWall = false;
+
+            float checkX = dir > 0 ? nextX + WIDTH : nextX;
+            Rectangle floorCheck = new Rectangle(checkX, position.y - 5f, 1f, 5f);
+            Rectangle wallCheck = new Rectangle(nextX, position.y, WIDTH, HEIGHT);
+
+            for (Rectangle block : solidBlocks) {
+                if (block.overlaps(floorCheck)) {
+                    hasFloor = true;
+                }
+                if (block.overlaps(wallCheck)) {
+                    hitsWall = true;
+                }
             }
-            if (isTalking && animation == ZoteAnimation.IDLE) {
-                animation = ZoteAnimation.TALK;
-                animationTime = 0;
+
+            if (hasFloor && !hitsWall) {
+                position.x = nextX;
             }
+        }
+    }
+
+    private void updatePassiveState() {
+        if (!playerIsClose && isTalking) {
+            isTalking = false;
+            animation = ZoteAnimation.IDLE;
+            dialogueIndex = 0;
+        }
+        if (isTalking && animation == ZoteAnimation.IDLE) {
+            animation = ZoteAnimation.TALK;
+            animationTime = 0;
         }
     }
 
@@ -144,35 +145,27 @@ public class Zote {
         angryTimer = ANGRY_DURATION;
         animation = ZoteAnimation.ATTACK;
         animationTime = 0;
-        isTalking = false; // Cancel dialogue if he was talking
+        isTalking = false;
     }
 
-    public Rectangle getBounds() {
-        return new Rectangle(position.x, position.y, WIDTH, HEIGHT);
-    }
-
+    // --- Interactions ---
     public void interact() {
         if (!hasCompletedFirstDialogue) {
-            // BEHAVIOR 1: First time interacting (cycle through dialogues)
             if (!isTalking) {
                 isTalking = true;
                 dialogueIndex = 0;
             } else {
                 dialogueIndex++;
-                // If we reach the end of his normal dialogue
                 if (dialogueIndex >= dialogues.length) {
                     isTalking = false;
-                    hasCompletedFirstDialogue = true; // Mark first encounter as DONE
+                    hasCompletedFirstDialogue = true;
                 }
             }
         } else {
-            // BEHAVIOR 2: Subsequent interactions (one random rule)
             if (!isTalking) {
                 isTalking = true;
-                // Pick a random rule from index 0 to 19
                 currentRuleIndex = MathUtils.random(0, rules.length - 1);
             } else {
-                // If he is already saying a rule and the player presses 'E', stop talking
                 isTalking = false;
             }
         }
@@ -182,23 +175,27 @@ public class Zote {
         }
     }
 
+    public void advanceDialogue() {
+        if (isTalking) {
+            dialogueIndex++;
+            if (dialogueIndex >= dialogues.length) {
+                isTalking = false;
+                animation = ZoteAnimation.IDLE;
+                dialogueIndex = 0;
+            }
+        }
+    }
+
+    // --- Properties ---
+    public Rectangle getBounds() {
+        return new Rectangle(position.x, position.y, WIDTH, HEIGHT);
+    }
+
     public String getText() {
         if (hasCompletedFirstDialogue) {
             return dialogues[dialogueIndex];
         } else {
             return rules[currentRuleIndex];
-        }
-    }
-
-    public void advanceDialogue() {
-        if (isTalking) {
-            dialogueIndex++;
-            if (dialogueIndex >= dialogues.length) {
-                // End dialogue sequence
-                isTalking = false;
-                animation = ZoteAnimation.IDLE;
-                dialogueIndex = 0;
-            }
         }
     }
 }
