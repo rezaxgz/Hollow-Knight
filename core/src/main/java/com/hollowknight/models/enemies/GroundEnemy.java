@@ -1,54 +1,59 @@
 package com.hollowknight.models.enemies;
 
 import java.util.List;
-
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.hollowknight.models.Constants;
 import com.hollowknight.models.player.Player;
 
 public class GroundEnemy extends Enemy {
-    public GroundEnemyType type;
 
-    // Turning logic variables
+    // --- Properties & State ---
+    public GroundEnemyType type;
     private boolean isTurning = false;
     private float turnTimer = 0f;
 
+    // --- Initialization & Lifecycle ---
     private GroundEnemy(GroundEnemyType type, Vector2 pos) {
         super(pos);
         this.type = type;
         this.velocity = new Vector2(type.speed * facingDirection, Constants.GRAVITY);
-        setAnimation(type.walkAnimation);
         this.hp = Constants.GROUND_ENEMY_HP;
+        setAnimation(type.walkAnimation);
     }
 
     public static GroundEnemy newEnemy(GroundEnemyType type, Vector2 pos) {
         return new GroundEnemy(type, pos);
     }
 
+    @Override
     public void respawn() {
         this.position = respawnPosition;
         this.velocity = new Vector2(type.speed * facingDirection, Constants.GRAVITY);
+        this.facingDirection = Constants.RIGHT_DIRECTION;
+        this.isOnGround = false;
+        this.isDead = false;
+        this.isTurning = false;
+        this.turnTimer = 0f;
         setAnimation(type.walkAnimation);
-
-        facingDirection = Constants.RIGHT_DIRECTION;
-        isOnGround = false;
-        isDead = false;
-
-        // Turning logic variables
-        isTurning = false;
-        turnTimer = 0f;
     }
 
     @Override
+    public void kill() {
+        super.kill();
+        isDead = true;
+        velocity.set(0, 0);
+        setAnimation(type.deathAnimation);
+    }
+
+    // --- Core Update Loop ---
+    @Override
     public void update(float delta, Player player, List<Rectangle> solidBlocks) {
-        // --- 1. HANDLE TIMERS ---
         animationTime += delta;
 
         if (knockbackTimer > 0) {
             knockbackTimer -= delta;
             velocity.y += Constants.GRAVITY * delta;
-
             isOnGround = false;
             moveX(velocity.x * delta, solidBlocks);
             moveY(velocity.y * delta, solidBlocks);
@@ -56,70 +61,63 @@ public class GroundEnemy extends Enemy {
             if (knockbackTimer <= 0) {
                 velocity.x = 0;
             }
-            return; // Intercept and bypass normal AI logic while flying backward
+            return;
         }
 
         if (isDead) {
             velocity.x = 0;
             velocity.y += Constants.GRAVITY * delta;
             moveY(velocity.y * delta, solidBlocks);
-            return; // Allow the dead body to stay pinned to the ground via gravity
+            return;
         }
 
-        // --- 2. HANDLE TURNING STATE ---
         if (isTurning) {
             turnTimer -= delta;
-            velocity.x = 0; // Stop moving horizontally while turning
-
-            // Wait for gravity while turning
+            velocity.x = 0;
             velocity.y += Constants.GRAVITY * delta;
+
             updatePosition(delta, solidBlocks);
 
             if (turnTimer <= 0) {
                 isTurning = false;
-                facingDirection *= -1; // Physically flip direction
-                setAnimation(type.walkAnimation); // Resume walking
+                facingDirection *= -1;
+                setAnimation(type.walkAnimation);
             }
-            return; // Exit early to prevent normal movement logic
+            return;
         }
 
-        // --- 3. CALCULATE VELOCITY (Movement & Gravity) ---
         velocity.x = type.speed * facingDirection;
         velocity.y += Constants.GRAVITY * delta;
 
-        // --- 4. RESOLVE MOVEMENT & COLLISIONS ---
         updatePosition(delta, solidBlocks);
     }
 
+    // --- Movement & Physics ---
     private void updatePosition(float delta, List<Rectangle> solids) {
         isOnGround = false;
 
         boolean hitWall = moveX(velocity.x * delta, solids);
         moveY(velocity.y * delta, solids);
 
-        // --- 5. UPDATE ENEMY STATES ---
         if ((hitWall || isEdgeAhead(solids)) && !isTurning && isOnGround) {
             startTurn();
         }
     }
 
     private boolean isEdgeAhead(List<Rectangle> solids) {
-        // Only check for edges if we are actually standing on the ground
         if (!isOnGround)
             return false;
 
-        // Project a point slightly ahead of the enemy and slightly below the platform
-        // floor
         float width = getBounds().width;
         float checkX = position.x + (facingDirection == 1 ? width + 5 : -5);
         float checkY = position.y - 5;
 
         for (Rectangle solid : solids) {
             if (solid.contains(checkX, checkY)) {
-                return false; // Found solid ground ahead, it is NOT an edge
+                return false;
             }
         }
-        return true; // No ground found ahead, it's an edge!
+        return true;
     }
 
     private void startTurn() {
@@ -128,19 +126,11 @@ public class GroundEnemy extends Enemy {
         setAnimation(type.turnAnimation);
     }
 
-    @Override
-    public void kill() {
-        super.kill();
-        isDead = true;
-        velocity.set(0, 0); // Stop all momentum
-        setAnimation(type.deathAnimation);
-    }
-
-    // --- Centralized Animation Chooser ---
+    // --- Animation & Properties ---
     private void setAnimation(EnemyAnimations newState) {
         if (animation != newState) {
             animation = newState;
-            animationTime = 0; // Reset timer for new animation
+            animationTime = 0;
         }
     }
 

@@ -35,12 +35,14 @@ public class GameController {
     public void update(float delta) {
         if (isPaused)
             return;
+
         world.update(delta);
+
+        // Trigger the victory sequence and UI when a boss is defeated
         if (world.bossJustDefeated) {
-            world.bossJustDefeated = false; // Reset flag so it doesn't loop
+            world.bossJustDefeated = false;
             isPaused = true;
 
-            // Spawn the victory modal and pass the world to read stats
             BossDefeatModal victoryModal = new BossDefeatModal(world);
             victoryModal.show();
         }
@@ -48,7 +50,8 @@ public class GameController {
 
     public boolean handleKeyDown(int keycode) {
         Controls controls = Settings.getInstance().getControls();
-        // debug variables
+
+        // Debug controls: Numpad keys for adjusting spatial layout constants
         boolean isDebug = false;
         if (keycode == Input.Keys.NUMPAD_8) {
             Constants.y++;
@@ -78,9 +81,12 @@ public class GameController {
             Constants.flag = !Constants.flag;
             isDebug = true;
         }
+
         if (isDebug) {
             System.out.printf("(%d, %d, %d, %d)\n", Constants.x, Constants.y, Constants.x1, Constants.y1);
         }
+
+        // Handle UI modals (Pause Menu & Inventory)
         if (keycode == Input.Keys.ESCAPE) {
             if (isPaused)
                 return false;
@@ -98,7 +104,7 @@ public class GameController {
         if (isPaused)
             return false;
 
-        // Only check for and apply cheats if Ctrl is held
+        // Process developer cheats if the modifier key is held
         if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
             GameCheat cheat = controls.getCheat(keycode);
 
@@ -108,6 +114,7 @@ public class GameController {
             }
         }
 
+        // Debug controls: Quick equip charms
         if (keycode <= Input.Keys.NUM_8 && keycode >= Input.Keys.NUM_1) {
             int i = keycode - Input.Keys.NUM_1;
             world.player.charmNotches[0] = CharmType.values()[i];
@@ -116,11 +123,13 @@ public class GameController {
             world.player.charmNotches[0] = null;
         }
 
+        // Process standard gameplay actions
         GameActionType action = controls.getAction(keycode);
         if (action != null) {
             world.player.doAction(action);
         }
 
+        // Handle NPC interactions
         if (world.zote != null) {
             if ((keycode == controls.interact || keycode == Input.Keys.ENTER) && world.zote.playerIsClose) {
                 world.zote.interact();
@@ -132,6 +141,8 @@ public class GameController {
 
     public boolean handleKeyUp(int keycode) {
         Controls controls = Settings.getInstance().getControls();
+
+        // Terminate ongoing player actions upon key release
         if (keycode == controls.right) {
             world.player.stopMoving(Constants.RIGHT_DIRECTION);
         } else if (keycode == controls.left) {
@@ -145,6 +156,7 @@ public class GameController {
         } else if (keycode == controls.jump) {
             world.player.applyJumpCutoff();
         }
+
         return false;
     }
 

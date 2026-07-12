@@ -9,6 +9,8 @@ import com.hollowknight.models.player.Player;
 import com.hollowknight.views.GameAssetManager;
 
 public abstract class Enemy {
+
+    // --- Properties & State ---
     public final Vector2 respawnPosition;
     public Vector2 position;
     public Vector2 velocity;
@@ -19,31 +21,40 @@ public abstract class Enemy {
     public int facingDirection = Constants.RIGHT_DIRECTION;
     public boolean isOnGround = false;
     public boolean isDead = false;
-
-    protected float knockbackTimer = 0f;
-
-    protected int hp;
-
-    private boolean isJustDead = false;
-
     public EnemyType type;
 
+    protected float knockbackTimer = 0f;
+    protected int hp;
+    private boolean isJustDead = false;
+
+    // --- Initialization ---
     public Enemy(Vector2 pos) {
         this.position = new Vector2(pos);
         this.respawnPosition = new Vector2(pos);
         this.velocity = new Vector2(0, Constants.GRAVITY);
     }
 
-    // Every unique enemy must implement these methods
+    // --- Core Abstract Methods ---
     public abstract void update(float delta, Player player, List<Rectangle> solidBlocks);
 
     public abstract Rectangle getBounds();
+
+    // --- Lifecycle Management ---
+    public void respawn() {
+        this.position.set(respawnPosition);
+        this.velocity.set(0, Constants.GRAVITY);
+        this.facingDirection = Constants.RIGHT_DIRECTION;
+        this.isOnGround = false;
+        this.isDead = false;
+        this.animationTime = 0;
+        this.knockbackTimer = 0;
+    }
 
     public void kill() {
         this.hp = 0;
         this.isDead = true;
         this.velocity.set(0, 0);
-        isJustDead = true;
+        this.isJustDead = true;
     }
 
     public boolean hasUnregisteredDeath() {
@@ -51,12 +62,14 @@ public abstract class Enemy {
     }
 
     public void registerDeath() {
-        isJustDead = false;
+        this.isJustDead = false;
     }
 
+    // --- Combat & Stats ---
     public void takeDamage(int damage, float sourceX, boolean knockback, float knockbackMultiplier) {
         this.hp -= damage;
         AudioController.getInstance().playSfx(GameAssetManager.enemyHurtSfx);
+
         if (hp <= 0) {
             this.kill();
         }
@@ -82,17 +95,7 @@ public abstract class Enemy {
         return 1;
     }
 
-    public void respawn() {
-        this.position.set(respawnPosition);
-        this.velocity.set(0, Constants.GRAVITY);
-        this.facingDirection = Constants.RIGHT_DIRECTION;
-        this.isOnGround = false;
-        this.isDead = false;
-        this.animationTime = 0;
-        this.knockbackTimer = 0;
-    }
-
-    // Centralized collision engine: Subclasses inherit these for free!
+    // --- Physics & Collision ---
     protected boolean moveX(float amount, List<Rectangle> solids) {
         if (amount == 0)
             return false;
@@ -127,11 +130,11 @@ public abstract class Enemy {
             if (!enemyBounds.overlaps(solid))
                 continue;
 
-            if (amount < 0) { // Landing
+            if (amount < 0) {
                 position.y = solid.y + solid.height;
                 velocity.y = 0;
                 isOnGround = true;
-            } else { // Ceiling hit
+            } else {
                 position.y = solid.y - enemyBounds.height;
                 velocity.y = 0;
             }

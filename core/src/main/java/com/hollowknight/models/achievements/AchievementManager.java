@@ -16,7 +16,6 @@ public class AchievementManager {
     private final HashMap<String, Achievement> achievements = new HashMap<>();
     private AchievementObserver observer;
 
-    // Set to track unique enemy classes killed
     private final HashSet<EnemyType> killedEnemyTypes = new HashSet<>();
     private final HashSet<GameRegion> regionsExplored = new HashSet<>();
 
@@ -27,6 +26,7 @@ public class AchievementManager {
     }
 
     private AchievementManager() {
+        // Initialize default game achievements
         achievements.put("COMPLETION",
                 new Achievement("COMPLETION", "PURE COMPLETION", "Finish the game by defeating the False Knight.",
                         "achievements/completion.png"));
@@ -84,7 +84,6 @@ public class AchievementManager {
         }
     }
 
-    // Called when the False Knight is killed
     public void onBossDefeated() {
         unlock("FALSE_KNIGHT");
     }
@@ -92,24 +91,25 @@ public class AchievementManager {
     public void onGameCompleted(float totalPlayTimeSeconds) {
         unlock("COMPLETION");
 
-        // 30 minutes = 1800 seconds
+        // Unlock Speedrun achievement if completion time is under 30 minutes (1800
+        // seconds)
         if (totalPlayTimeSeconds <= 1800f) {
             unlock("SPEEDRUN");
         }
     }
 
-    // Called when any enemy is killed
     public void notifyEnemyDeath(Enemy enemy) {
-        // Automatically grabs the class name (e.g., "Crawlid", "CrystalGuardian")
         EnemyType enemyType = enemy.type;
         if (enemyType == EnemyType.FALSE_KNIGHT)
             return;
+
         boolean isNew = killedEnemyTypes.add(enemyType);
         if (isNew) {
             System.out.println("registered " + enemyType.toString());
         }
 
-        // -1 for false knight
+        // Check if all regular enemy types have been defeated (excluding the False
+        // Knight)
         if (killedEnemyTypes.size() >= EnemyType.values().length - 1) {
             unlock("TRUE_HUNTER");
         }
@@ -121,6 +121,7 @@ public class AchievementManager {
             System.out.println("registered " + newRegion.toString());
         }
 
+        // Check if all available map regions have been discovered
         if (regionsExplored.size() >= GameRegion.values().length) {
             unlock("HOT_DESTINATION_TOURIST");
         }

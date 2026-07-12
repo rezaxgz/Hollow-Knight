@@ -7,7 +7,7 @@ public class AudioManager {
 
     public AudioManager() {
         this.musicManager = new MusicManager();
-        this.sfxManager = new SfxManager(); // Fixed: was instantiating AudioManager recursively
+        this.sfxManager = new SfxManager();
     }
 
     public MusicManager music() {
