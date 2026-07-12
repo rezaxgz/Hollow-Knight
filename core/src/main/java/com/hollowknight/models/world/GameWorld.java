@@ -47,6 +47,7 @@ public class GameWorld {
 
     private Rectangle activationZone;
     public Rectangle bossDoor;
+    private Rectangle bossRoomRightWall;
     private Vector2 falseKnightSpawnPoint;
     public boolean bossFightActivated = false;
     public boolean bossFightCompleted = false;
@@ -86,6 +87,11 @@ public class GameWorld {
                 continue;
             Rectangle rect = ((RectangleMapObject) (obj)).getRectangle();
             solidBlocks.add(rect);
+
+            String objectName = obj.getName();
+            if ("BoosRoom RightWall".equals(objectName) || "BossRoom RightWall".equals(objectName)) {
+                bossRoomRightWall = rect;
+            }
         }
 
         MapLayer obsticleLayer = map.getLayers().get("Hazards");
@@ -170,6 +176,7 @@ public class GameWorld {
             // Restore the False Knight
             FalseKnight fk = new FalseKnight(new Vector2(save.bossX, save.bossY));
             fk.setHp(save.bossHp);
+            configureFalseKnightArena(fk);
             try {
                 fk.changeState(FalseKnight.State.valueOf(save.bossState));
             } catch (Exception e) {
@@ -284,7 +291,11 @@ public class GameWorld {
 
                 // Spawn the False Knight boss dynamically
                 if (falseKnightSpawnPoint != null) {
-                    enemies.add(EnemyFactory.newEnemy(falseKnightSpawnPoint, EnemyType.FALSE_KNIGHT));
+                    Enemy boss = EnemyFactory.newEnemy(falseKnightSpawnPoint, EnemyType.FALSE_KNIGHT);
+                    if (boss instanceof FalseKnight) {
+                        configureFalseKnightArena((FalseKnight) boss);
+                    }
+                    enemies.add(boss);
                 }
 
                 // Close the doors by turning them into hard collision blocks
@@ -353,6 +364,10 @@ public class GameWorld {
                     player.getSpellDamage(Constants.PROJECTILE_DAMAGE)));
             player.triggerSpiritCast = false;
         }
+    }
+
+    private void configureFalseKnightArena(FalseKnight falseKnight) {
+        falseKnight.setArenaWalls(bossDoor, bossRoomRightWall);
     }
 
     private void updateProjectiles(float delta) {
