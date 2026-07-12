@@ -416,7 +416,12 @@ public class GameWorld {
             if (hazard.isInstantDeath()) {
                 player.kill();
             } else {
-                player.takeDamage(Constants.HAZARD_DAMAGE, hazard.getBounds().x + (hazard.getBounds().width / 2f));
+                if (!player.isInvinvible()) { // Uses the existing method name from your source
+                    player.takeDamage(Constants.HAZARD_DAMAGE, hazard.getBounds().x + (hazard.getBounds().width / 2f),
+                            false);
+                    player.position.set(player.lastSafePosition); // Teleport to platform
+                    player.velocity.setZero(); // Stop any falling momentum
+                }
             }
             break;
         }

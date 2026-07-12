@@ -27,6 +27,7 @@ public class Player {
     public Vector2 respawnPosition;
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
+    public Vector2 lastSafePosition = new Vector2();
 
     // Timers & Triggers left public for external systems (e.g. GameWorld)
     public float animationTime = 0;
@@ -60,6 +61,7 @@ public class Player {
     public Player(Vector2 position) {
         this.position = new Vector2(position);
         this.respawnPosition = new Vector2(position);
+        this.lastSafePosition = new Vector2(position);
     }
 
     // =========================================================================================
@@ -357,6 +359,10 @@ public class Player {
                 setStateAfterLanding();
             }
 
+            if (combatState != CombatState.HURT && !status.isInvincible()) {
+                lastSafePosition.set(position);
+            }
+
             if (!status.isMovingHorizontally() && movementState != MovementState.IDLE) {
                 movementState = MovementState.IDLE;
             } else if (status.isMovingHorizontally() && movementState != MovementState.RUN) {
@@ -628,7 +634,8 @@ public class Player {
         status.setRemainingJumps(Math.max(status.getJumpsRemaining(), 1));
     }
 
-    public boolean takeDamage(int amount, float sourceX) {
+    // New overloaded method to handle the knockback boolean
+    public boolean takeDamage(int amount, float sourceX, boolean applyKnockback) {
         if (status.isInvincible())
             return false;
 
@@ -649,19 +656,25 @@ public class Player {
             return true;
         }
 
-        // Trigger Knockback
-        combatState = CombatState.HURT;
-        status.setKnockbackTimer(Constants.KNOCKBACK_DURATION);
-        float knockbackDir = (position.x < sourceX) ? -1f : 1f;
+        // Only apply knockback if the flag is true
+        if (applyKnockback) {
+            combatState = CombatState.HURT;
+            status.setKnockbackTimer(Constants.KNOCKBACK_DURATION);
+            float knockbackDir = (position.x < sourceX) ? -1f : 1f;
 
-        velocity.x = Constants.KNOCKBACK_SPEED_X * knockbackDir;
-        velocity.y = Constants.KNOCKBACK_SPEED_Y;
+            velocity.x = Constants.KNOCKBACK_SPEED_X * knockbackDir;
+            velocity.y = Constants.KNOCKBACK_SPEED_Y;
 
-        status.setOnGround(false);
-        status.setJumpCutAvailable(false);
-        movementState = MovementState.FALL;
+            status.setOnGround(false);
+            status.setJumpCutAvailable(false);
+            movementState = MovementState.FALL;
+        }
 
         return false;
+    }
+
+    public boolean takeDamage(int amount, float sourceX) {
+        return takeDamage(amount, sourceX, true);
     }
 
     private boolean canFocus() {
