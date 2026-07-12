@@ -9,6 +9,7 @@ public class PlayerStatus {
     private boolean movingHorizontally = false;
     private int facingDirection = Constants.RIGHT_DIRECTION;
     private boolean movementLocked = false;
+    private boolean jumpCutAvailable = false;
 
     // Directional Holding state
     private boolean holdingUp = false;
@@ -92,7 +93,16 @@ public class PlayerStatus {
         if (onGround) {
             canDash = true;
             jumpsRemaining = 2;
+            jumpCutAvailable = false;
         }
+    }
+
+    public boolean isJumpCutAvailable() {
+        return jumpCutAvailable;
+    }
+
+    public void setJumpCutAvailable(boolean jumpCutAvailable) {
+        this.jumpCutAvailable = jumpCutAvailable;
     }
 
     // -------------------------------------------------

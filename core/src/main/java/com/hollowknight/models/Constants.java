@@ -14,7 +14,7 @@ public class Constants {
     public static final float GRAVITY = -1000f;
     public static final float PLAYER_MOVE_SPEED = 500f;
     public static final float DASH_SPEED = 1300f;
-    public static final float JUMP_SPEED = 470f;
+    public static final float JUMP_SPEED = 530f;
     public static final float DASH_DURATION = 0.2f;
     public static final float DASH_COOLDOWN = 0.4f;
     public static final float INVINCIBILITY_TIME = 1.0f;
@@ -25,6 +25,7 @@ public class Constants {
     public static final float WALL_JUMP_SPEED_X = 120f;
     public static final float WALL_JUMP_SPEED_Y = JUMP_SPEED * 0.9f;
     public static final float WALL_JUMP_DURATION = WALL_JUMP_SPEED_Y / (-GRAVITY);
+    public static final float JUMP_CUTOFF_MULTIPLIER = 0.40f;
 
     // Player Combat
     public static final float SLASH_TIME = 0.5f;

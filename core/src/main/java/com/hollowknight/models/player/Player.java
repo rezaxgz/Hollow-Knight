@@ -455,6 +455,8 @@ public class Player {
             movementState = MovementState.WALL_JUMP;
             status.setWallJumpTimer(Constants.WALL_JUMP_DURATION);
 
+            status.setJumpCutAvailable(true);
+
             velocity.y = Constants.WALL_JUMP_SPEED_Y;
             // Launch horizontally away from the wall
             velocity.x = Constants.WALL_JUMP_SPEED_X * -status.getWallDirection();
@@ -466,6 +468,7 @@ public class Player {
         if (status.canJump() && movementState != MovementState.DASH) {
             velocity.y = Constants.JUMP_SPEED;
             status.useJump();
+            status.setJumpCutAvailable(true);
             movementState = !status.canJump() ? MovementState.DOUBLE_JUMP : MovementState.JUMP;
             if (movementState == MovementState.JUMP) {
                 AudioController.getInstance().playSfx(GameAssetManager.jumpSfx);
@@ -473,6 +476,16 @@ public class Player {
                 AudioController.getInstance().playSfx(GameAssetManager.evadeSfx);
             }
         }
+    }
+
+    public void applyJumpCutoff() {
+        if (!status.isJumpCutAvailable()) {
+            return;
+        }
+        if (velocity.y > 0f) {
+            velocity.y *= Constants.JUMP_CUTOFF_MULTIPLIER;
+        }
+        status.setJumpCutAvailable(false);
     }
 
     public void dash() {
@@ -487,6 +500,7 @@ public class Player {
             float dashSpeed = hasCharm(CharmType.SHARP_SHADOW) ? Constants.DASH_SPEED * 1.2f : Constants.DASH_SPEED;
             velocity.x = dashSpeed * status.getFacingDirection();
             velocity.y = 0;
+            status.setJumpCutAvailable(false);
         }
     }
 
@@ -644,6 +658,7 @@ public class Player {
         velocity.y = Constants.KNOCKBACK_SPEED_Y;
 
         status.setOnGround(false);
+        status.setJumpCutAvailable(false);
         movementState = MovementState.FALL;
 
         return false;
@@ -763,6 +778,7 @@ public class Player {
                 velocity.y = 0;
                 status.setOnGround(true);
             } else { // Hitting ceiling
+                status.setJumpCutAvailable(false);
                 position.y = solid.y - bounds.height;
                 velocity.y = 0;
             }

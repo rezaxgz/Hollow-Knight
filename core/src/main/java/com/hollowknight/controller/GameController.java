@@ -144,6 +144,8 @@ public class GameController {
             world.player.stopVerticalMovement(Constants.UP_DIRECTION);
         } else if (keycode == controls.down) {
             world.player.stopVerticalMovement(Constants.DOWN_DIRECTION);
+        } else if (keycode == controls.jump) {
+            world.player.applyJumpCutoff();
         }
         return false;
     }
