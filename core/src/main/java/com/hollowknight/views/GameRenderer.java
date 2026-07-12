@@ -32,27 +32,37 @@ import com.hollowknight.views.effects.CrossroadsDustEffect;
 import com.hollowknight.views.effects.GreenpathAmbientEffect;
 
 public class GameRenderer {
+
+    // --- Core Rendering Components ---
     SpriteBatch batch;
     OrthographicCamera camera;
     ScreenViewport viewport;
     ShapeRenderer shapeRenderer;
-    GameProcessor gameProcessor;
     Stage stage;
+
+    // --- Game Logic References ---
     GameWorld world;
+    GameProcessor gameProcessor;
+
+    // --- Map & Layers ---
     private OrthogonalTiledMapRenderer mapRenderer;
-    private HUDRenderer hudRenderer;
-    private OrthographicCamera hudCamera;
     private float mapWidth;
     private float mapHeight;
     private int[] backgroundLayers;
     private int[] foregroundLayers;
+
+    // --- UI & HUD ---
+    private HUDRenderer hudRenderer;
+    private OrthographicCamera hudCamera;
+
+    // --- Visual Effects & Flags ---
     private CrossroadsDustEffect crossroadsDustEffect;
     private boolean crossroadsDustWasActive = false;
     private GreenpathAmbientEffect greenpathAmbientEffect;
     private boolean greenpathEffectWasActive = false;
-
     private boolean isCameraInitialized = false;
 
+    // --- Initialization & Lifecycle ---
     public GameRenderer(GameWorld world) {
         this.world = world;
     }
@@ -100,81 +110,28 @@ public class GameRenderer {
         viewport.update(width, height);
     }
 
-    private void setCameraPosition() {
-        Rectangle currentRegion = null;
-        Rectangle playerBounds = world.player.getBounds();
-
-        // Use the center of the player to determine region overlap
-        float playerCenterX = playerBounds.x + playerBounds.width / 2f;
-        float playerCenterY = playerBounds.y + playerBounds.height / 2f;
-
-        // Find which region the player is currently in
-        for (Rectangle region : world.regionBounds.values()) {
-            if (region.contains(playerCenterX, playerCenterY)) {
-                currentRegion = region;
-                break;
-            }
+    public void dispose() {
+        if (crossroadsDustEffect != null) {
+            crossroadsDustEffect.dispose();
+            crossroadsDustEffect = null;
         }
-
-        // Define bounding limits based on the current region, fallback to the entire
-        // map
-        float minX = currentRegion != null ? currentRegion.x : 0;
-        float minY = currentRegion != null ? currentRegion.y : 0;
-        float maxX = currentRegion != null ? currentRegion.x + currentRegion.width : mapWidth;
-        float maxY = currentRegion != null ? currentRegion.y + currentRegion.height : mapHeight;
-
-        float cameraHalfWidth = camera.viewportWidth / 2f;
-        float cameraHalfHeight = camera.viewportHeight / 2f;
-
-        float targetX = world.player.position.x;
-        float targetY = world.player.position.y;
-
-        // Clamp target X to region boundaries
-        if (maxX - minX > camera.viewportWidth) {
-            targetX = MathUtils.clamp(targetX, minX + cameraHalfWidth, maxX - cameraHalfWidth);
-        } else {
-            // Center the camera horizontally if the region is smaller than the viewport
-            targetX = minX + (maxX - minX) / 2f;
-        }
-
-        // Clamp target Y to region boundaries
-        if (maxY - minY > camera.viewportHeight) {
-            targetY = MathUtils.clamp(targetY, minY + cameraHalfHeight, maxY - cameraHalfHeight);
-        } else {
-            // Center the camera vertically if the region is smaller than the viewport
-            targetY = minY + (maxY - minY) / 2f;
-        }
-
-        // Apply smooth camera follow or snap instantly on the very first frame
-        if (!isCameraInitialized) {
-            camera.position.set(targetX, targetY, 0);
-            isCameraInitialized = true;
-        } else {
-            float lerpSpeed = 5.0f;
-            camera.position.x += (targetX - camera.position.x) * lerpSpeed * Gdx.graphics.getDeltaTime();
-            camera.position.y += (targetY - camera.position.y) * lerpSpeed * Gdx.graphics.getDeltaTime();
-        }
-
-        if (world.cameraShakeTimer > 0) {
-            // Apply randomized offset based on current intensity
-            camera.position.x += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
-            camera.position.y += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
+        if (greenpathAmbientEffect != null) {
+            greenpathAmbientEffect.dispose();
+            greenpathAmbientEffect = null;
         }
     }
 
+    // --- Core Render Loops ---
     public void renderWorld(float delta) {
         setCameraPosition();
         camera.update();
 
         float tilePadding = 100;
-
-        // Calculate the expanded view bounds
         float viewX = camera.position.x - (camera.viewportWidth / 2f) - tilePadding;
         float viewY = camera.position.y - (camera.viewportHeight / 2f) - tilePadding;
         float viewWidth = camera.viewportWidth + (tilePadding * 2f);
         float viewHeight = camera.viewportHeight + (tilePadding * 2f);
 
-        // Set the view using the expanded bounds instead of just the camera
         mapRenderer.setView(camera.combined, viewX, viewY, viewWidth, viewHeight);
 
         updateGreenpathAmbient(delta);
@@ -182,7 +139,9 @@ public class GameRenderer {
 
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
+
         renderGreenpathBackground();
+
         batch.begin();
         renderEnemies(batch);
         renderPlayer(batch);
@@ -199,20 +158,72 @@ public class GameRenderer {
         renderGreenpathForeground();
 
         if (Constants.flag) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            shapeRenderer.setColor(Color.GREEN);
-            renderPlayerHitBox(shapeRenderer);
-
-            shapeRenderer.setColor(Color.RED);
-            renderEnemyHitBoxes(shapeRenderer);
-            renderProjectileHitboxes(shapeRenderer);
-
-            shapeRenderer.setColor(Color.ORANGE);
-            renderPlayerAttackHitboxe(shapeRenderer);
-            shapeRenderer.end();
+            renderDebugHitboxes();
         }
     }
 
+    public void renderUI(float delta) {
+        hudCamera.update();
+        hudRenderer.render(hudCamera);
+        renderZoteDialouges(batch);
+        stage.act(delta);
+        stage.draw();
+    }
+
+    // --- Camera Management ---
+    private void setCameraPosition() {
+        Rectangle currentRegion = null;
+        Rectangle playerBounds = world.player.getBounds();
+
+        float playerCenterX = playerBounds.x + playerBounds.width / 2f;
+        float playerCenterY = playerBounds.y + playerBounds.height / 2f;
+
+        for (Rectangle region : world.regionBounds.values()) {
+            if (region.contains(playerCenterX, playerCenterY)) {
+                currentRegion = region;
+                break;
+            }
+        }
+
+        float minX = currentRegion != null ? currentRegion.x : 0;
+        float minY = currentRegion != null ? currentRegion.y : 0;
+        float maxX = currentRegion != null ? currentRegion.x + currentRegion.width : mapWidth;
+        float maxY = currentRegion != null ? currentRegion.y + currentRegion.height : mapHeight;
+
+        float cameraHalfWidth = camera.viewportWidth / 2f;
+        float cameraHalfHeight = camera.viewportHeight / 2f;
+
+        float targetX = world.player.position.x;
+        float targetY = world.player.position.y;
+
+        if (maxX - minX > camera.viewportWidth) {
+            targetX = MathUtils.clamp(targetX, minX + cameraHalfWidth, maxX - cameraHalfWidth);
+        } else {
+            targetX = minX + (maxX - minX) / 2f;
+        }
+
+        if (maxY - minY > camera.viewportHeight) {
+            targetY = MathUtils.clamp(targetY, minY + cameraHalfHeight, maxY - cameraHalfHeight);
+        } else {
+            targetY = minY + (maxY - minY) / 2f;
+        }
+
+        if (!isCameraInitialized) {
+            camera.position.set(targetX, targetY, 0);
+            isCameraInitialized = true;
+        } else {
+            float lerpSpeed = 5.0f;
+            camera.position.x += (targetX - camera.position.x) * lerpSpeed * Gdx.graphics.getDeltaTime();
+            camera.position.y += (targetY - camera.position.y) * lerpSpeed * Gdx.graphics.getDeltaTime();
+        }
+
+        if (world.cameraShakeTimer > 0) {
+            camera.position.x += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
+            camera.position.y += MathUtils.random(-world.cameraShakeIntensity, world.cameraShakeIntensity);
+        }
+    }
+
+    // --- Environment & Effects Rendering ---
     private void renderCrossroadsDust(float delta) {
         if (crossroadsDustEffect == null)
             return;
@@ -231,17 +242,10 @@ public class GameRenderer {
         float playerCenterX = playerBounds.x + playerBounds.width / 2f;
         float playerCenterY = playerBounds.y + playerBounds.height / 2f;
 
-        boolean playerDashing = world.player.animation != null
-                && world.player.animation.name().contains("DASH");
+        boolean playerDashing = world.player.animation != null && world.player.animation.name().contains("DASH");
         boolean playerFacingRight = world.player.getDirection() == Constants.RIGHT_DIRECTION;
 
-        crossroadsDustEffect.update(
-                delta,
-                camera,
-                playerCenterX,
-                playerCenterY,
-                playerDashing,
-                playerFacingRight);
+        crossroadsDustEffect.update(delta, camera, playerCenterX, playerCenterY, playerDashing, playerFacingRight);
 
         batch.setProjectionMatrix(camera.combined);
         batch.enableBlending();
@@ -269,17 +273,10 @@ public class GameRenderer {
         float playerCenterX = playerBounds.x + playerBounds.width / 2f;
         float playerCenterY = playerBounds.y + playerBounds.height / 2f;
 
-        boolean playerDashing = world.player.animation != null
-                && world.player.animation.name().contains("DASH");
+        boolean playerDashing = world.player.animation != null && world.player.animation.name().contains("DASH");
         boolean playerFacingRight = world.player.getDirection() == Constants.RIGHT_DIRECTION;
 
-        greenpathAmbientEffect.update(
-                delta,
-                camera,
-                playerCenterX,
-                playerCenterY,
-                playerDashing,
-                playerFacingRight);
+        greenpathAmbientEffect.update(delta, camera, playerCenterX, playerCenterY, playerDashing, playerFacingRight);
     }
 
     private void renderGreenpathBackground() {
@@ -307,74 +304,66 @@ public class GameRenderer {
         if (world.currentRegion == null || expectedName == null)
             return false;
 
-        String normalizedCurrentName = world.currentRegion.name()
-                .replace("_", "")
-                .replace("-", "")
-                .replace(" ", "");
-        String normalizedExpectedName = expectedName
-                .replace("_", "")
-                .replace("-", "")
-                .replace(" ", "");
+        String normalizedCurrentName = world.currentRegion.name().replace("_", "").replace("-", "").replace(" ", "");
+        String normalizedExpectedName = expectedName.replace("_", "").replace("-", "").replace(" ", "");
 
         return normalizedExpectedName.equalsIgnoreCase(normalizedCurrentName);
     }
 
-    public void renderUI(float delta) {
-        hudCamera.update();
-        hudRenderer.render(hudCamera);
+    // --- Entity Rendering ---
+    private void renderPlayer(SpriteBatch batch) {
+        if (world.player.shouldFlash())
+            return;
 
-        renderZoteDialouges(batch);
+        PlayerAnimation currentAnimation = world.player.animation;
+        Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
+        TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
 
-        stage.act(delta);
-        stage.draw();
+        float spriteWidth = keyFrame.getRegionWidth();
+        float spriteHeight = keyFrame.getRegionHeight();
+        float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
+
+        batch.draw(keyFrame, world.player.position.x - xOffset, world.player.position.y,
+                spriteWidth / 2f, 0, spriteWidth, spriteHeight,
+                -world.player.getDirection(), 1, 0);
     }
 
-    private void renderBossFightEffects(SpriteBatch batch) {
-        Rectangle bossDoor = world.bossDoor;
-        // When progress is 0, visual Y is shifted up by its entire height (hidden in
-        // ceiling)
-        // When progress is 1, visual Y is exactly doorBounds.y (resting on ground)
-        float animatedY = bossDoor.y + (bossDoor.height * (1f - world.gateDropProgress));
+    private void renderPlayerEffects(SpriteBatch batch) {
+        for (ActiveEffect effect : world.player.activeEffects) {
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effect.type);
+            if (animation == null)
+                continue;
 
-        batch.draw(GameAssetManager.gateTexture,
-                bossDoor.x,
-                animatedY,
-                bossDoor.width,
-                bossDoor.height);
+            TextureRegion keyFrame = animation.getKeyFrame(effect.timer);
+            float spriteWidth = keyFrame.getRegionWidth();
+            float spriteHeight = keyFrame.getRegionHeight();
+            float baseOffsetX = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
+
+            float x = world.player.position.x - baseOffsetX + (effect.type.xOffset * effect.direction);
+            float y = world.player.position.y + effect.type.yOffset;
+            float scaleX = (effect.type == PlayerEffectAnimation.BLAST) ? -effect.direction : effect.direction;
+
+            batch.draw(keyFrame, x, y, spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight,
+                    scaleX * effect.type.sclaeX, 1, 0);
+        }
     }
 
-    private void renderShockwaves(SpriteBatch batch) {
-        for (Enemy enemy : world.enemies) {
-            if (enemy instanceof FalseKnight) {
-                FalseKnight fk = (FalseKnight) enemy;
+    private void renderProjectiles(SpriteBatch batch) {
+        for (PlayerProjectile proj : world.projectiles) {
+            PlayerEffectAnimation effectType = world.player.hasCharm(CharmType.VOID_HEART)
+                    ? (proj.isExploding ? PlayerEffectAnimation.SHADOW_BALL_END : PlayerEffectAnimation.SHADOW_BALL)
+                    : (proj.isExploding ? PlayerEffectAnimation.SOUL_BALL_END : PlayerEffectAnimation.SOUL_BALL);
 
-                for (FalseKnight.Shockwave wave : fk.shockwaves) {
-                    Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap
-                            .get(EnemyAnimations.FALSE_KNIGHT_SHOCKWAVE);
+            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
+            TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
 
-                    // Assumes your Shockwave class has an animationTime tracker.
-                    // If it doesn't, you will need to add one to FalseKnight.Shockwave and update
-                    // it in your GameProcessor.
-                    TextureRegion frame = animation.getKeyFrame(wave.lifetime);
+            float spriteWidth = keyFrame.getRegionWidth();
+            float spriteHeight = keyFrame.getRegionHeight();
+            float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) * 0.75f;
+            float yOffset = (spriteHeight - Constants.PROJECTILE_SIZE) / 2f;
 
-                    float spriteWidth = frame.getRegionWidth();
-                    float spriteHeight = frame.getRegionHeight();
-
-                    float x = wave.velocityX < 0f ? wave.bounds.x - 10
-                            : wave.bounds.x + wave.bounds.width - spriteWidth + 10;
-
-                    // Assumes you want to flip the sprite based on travel direction.
-                    // If your wave stores direction (e.g., 1 for right, -1 for left), replace the
-                    // '1' scaleX parameter below with wave.direction
-                    batch.draw(frame,
-                            x,
-                            wave.bounds.y + spriteHeight / 2 - 15,
-                            spriteWidth / 2f, spriteHeight / 2f,
-                            spriteWidth, spriteHeight,
-                            wave.getDir(), 2, 0); // Change the first '1' to -1 or wave.direction to flip
-                                                  // horizontally
-                }
-            }
+            batch.draw(keyFrame, proj.position.x - xOffset, proj.position.y - yOffset,
+                    spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, proj.direction, 1, 0);
         }
     }
 
@@ -394,55 +383,10 @@ public class GameRenderer {
 
             float xOffset = (spriteWidth - enemy.getBounds().width) / 2f;
             float yOffset = (enemy instanceof FalseKnight) ? -30 : 0;
+
             batch.draw(frame, enemy.position.x - xOffset, enemy.position.y + yOffset,
                     spriteWidth / 2f, 0, spriteWidth, spriteHeight,
                     -enemy.facingDirection, 1, 0);
-        }
-    }
-
-    private void renderEnemyHitBoxes(ShapeRenderer shapeRenderer) {
-        for (Enemy enemy : world.enemies) {
-            if (enemy instanceof CrystalGuardian) {
-                Rectangle laserBounds = ((CrystalGuardian) enemy).getActiveLaserBounds(world.solidBlocks);
-                if (laserBounds != null) {
-                    shapeRenderer.rect(laserBounds.x, laserBounds.y, laserBounds.width, laserBounds.height);
-                }
-            }
-
-            if (enemy instanceof FalseKnight) {
-                FalseKnight fk = (FalseKnight) enemy;
-
-                // 1. Render Melee Attack Hitbox (Magenta)
-                Rectangle mace = fk.getActiveAttackHitbox();
-                if (mace != null) {
-                    shapeRenderer.setColor(Color.MAGENTA);
-                    shapeRenderer.rect(mace.x, mace.y, mace.width, mace.height);
-                }
-
-                // 2. Render Floor Shockwaves (Yellow)
-                shapeRenderer.setColor(Color.YELLOW);
-                for (FalseKnight.Shockwave wave : fk.shockwaves) {
-                    shapeRenderer.rect(wave.bounds.x, wave.bounds.y, wave.bounds.width, wave.bounds.height);
-                }
-
-                // Reset color back to Red for the main body hitboxes
-                shapeRenderer.setColor(Color.RED);
-            }
-
-            Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
-            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
-            float width = frame.getRegionWidth();
-            float height = frame.getRegionHeight();
-
-            if (enemy.position.x + width < camera.position.x - viewport.getWorldWidth() / 2f ||
-                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
-                    enemy.position.y + height < camera.position.y - viewport.getWorldHeight() / 2f ||
-                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
-                continue;
-            }
-
-            Rectangle bounds = enemy.getBounds();
-            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
 
@@ -463,87 +407,6 @@ public class GameRenderer {
         }
     }
 
-    private void renderPlayer(SpriteBatch batch) {
-        if (world.player.shouldFlash())
-            return;
-        PlayerAnimation currentAnimation = world.player.animation;
-        Animation<TextureRegion> animation = GameAssetManager.playerAnimationMap.get(currentAnimation);
-        TextureRegion keyFrame = animation.getKeyFrame(world.player.animationTime);
-        float spriteWidth = keyFrame.getRegionWidth();
-        float spriteHeight = keyFrame.getRegionHeight();
-        float xOffset = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-        batch.draw(keyFrame, world.player.position.x - xOffset, world.player.position.y,
-                spriteWidth / 2f, 0, spriteWidth, spriteHeight,
-                -world.player.getDirection(), 1, 0);
-    }
-
-    private void renderPlayerEffects(SpriteBatch batch) {
-        for (ActiveEffect effect : world.player.activeEffects) {
-            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effect.type);
-            if (animation == null)
-                continue;
-
-            TextureRegion keyFrame = animation.getKeyFrame(effect.timer);
-            float spriteWidth = keyFrame.getRegionWidth();
-            float spriteHeight = keyFrame.getRegionHeight();
-
-            // Calculate base offset
-            float baseOffsetX = (spriteWidth - Constants.PLAYER_HITBOX_WIDTH) / 2f;
-
-            // Apply direction to the effect's specific xOffset
-            float x = world.player.position.x - baseOffsetX + (effect.type.xOffset * effect.direction);
-            float y = world.player.position.y + effect.type.yOffset;
-
-            // Preserve original Blast inverted scaling, otherwise scale based on direction
-            float scaleX = (effect.type == PlayerEffectAnimation.BLAST) ? -effect.direction : effect.direction;
-
-            batch.draw(keyFrame, x, y, spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight,
-                    scaleX * effect.type.sclaeX, 1, 0);
-        }
-    }
-
-    private void renderProjectiles(SpriteBatch batch) {
-        for (PlayerProjectile proj : world.projectiles) {
-            PlayerEffectAnimation effectType = world.player.hasCharm(CharmType.VOID_HEART)
-                    ? (proj.isExploding ? PlayerEffectAnimation.SHADOW_BALL_END : PlayerEffectAnimation.SHADOW_BALL)
-                    : (proj.isExploding ? PlayerEffectAnimation.SOUL_BALL_END
-                            : PlayerEffectAnimation.SOUL_BALL);
-            Animation<TextureRegion> animation = GameAssetManager.playerEffectAnimationMap.get(effectType);
-            TextureRegion keyFrame = animation.getKeyFrame(proj.animationTime);
-            float spriteWidth = keyFrame.getRegionWidth();
-            float spriteHeight = keyFrame.getRegionHeight();
-            float xOffset = (spriteWidth - Constants.PROJECTILE_SIZE) * 0.75f;
-            float yOffset = (spriteHeight - Constants.PROJECTILE_SIZE) / 2f;
-            batch.draw(keyFrame, proj.position.x - xOffset, proj.position.y - yOffset,
-                    spriteWidth / 2f, spriteHeight / 2f, spriteWidth, spriteHeight, proj.direction, 1, 0);
-        }
-    }
-
-    private void renderPlayerHitBox(ShapeRenderer shapeRenderer) {
-        Rectangle bounds = world.player.getBounds();
-        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-    }
-
-    private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
-        Rectangle attackBounds = world.player.getAttackHitbox();
-        if (attackBounds != null) {
-            shapeRenderer.rect(attackBounds.x, attackBounds.y, attackBounds.width, attackBounds.height);
-        }
-        Rectangle screamBounds = world.player.getScreamHitbox();
-        if (screamBounds != null) {
-            shapeRenderer.rect(screamBounds.x, screamBounds.y, screamBounds.width, screamBounds.height);
-        }
-    }
-
-    private void renderProjectileHitboxes(ShapeRenderer shapeRenderer) {
-        for (PlayerProjectile proj : world.projectiles) {
-            if (proj.isExploding)
-                continue;
-            Rectangle bounds = proj.getBounds();
-            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        }
-    }
-
     private void renderZote(SpriteBatch batch) {
         if (world.zote == null)
             return;
@@ -552,7 +415,6 @@ public class GameRenderer {
         TextureRegion frame = animation.getKeyFrame(world.zote.animationTime);
 
         boolean shouldFaceLeft = world.zote.isFacingRight;
-
         if (frame.isFlipX() != shouldFaceLeft) {
             frame.flip(true, false);
         }
@@ -581,7 +443,6 @@ public class GameRenderer {
                 float height = 369f / 3f;
                 batch.draw(button, Gdx.graphics.getWidth() / 2f - width / 2f,
                         Gdx.graphics.getHeight() / 2f - 300f, width, height);
-                font.getData().setScale(1f);
                 font.draw(batch, "Press E to interact", 0,
                         Gdx.graphics.getHeight() / 2f - 300f, Gdx.graphics.getWidth(), Align.center, false);
             }
@@ -589,15 +450,119 @@ public class GameRenderer {
         batch.end();
     }
 
-    public void dispose() {
-        if (crossroadsDustEffect != null) {
-            crossroadsDustEffect.dispose();
-            crossroadsDustEffect = null;
-        }
-        if (greenpathAmbientEffect != null) {
-            greenpathAmbientEffect.dispose();
-            greenpathAmbientEffect = null;
+    private void renderBossFightEffects(SpriteBatch batch) {
+        Rectangle bossDoor = world.bossDoor;
+        float animatedY = bossDoor.y + (bossDoor.height * (1f - world.gateDropProgress));
+
+        batch.draw(GameAssetManager.gateTexture, bossDoor.x, animatedY, bossDoor.width, bossDoor.height);
+    }
+
+    private void renderShockwaves(SpriteBatch batch) {
+        for (Enemy enemy : world.enemies) {
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+
+                for (FalseKnight.Shockwave wave : fk.shockwaves) {
+                    Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap
+                            .get(EnemyAnimations.FALSE_KNIGHT_SHOCKWAVE);
+                    TextureRegion frame = animation.getKeyFrame(wave.lifetime);
+
+                    float spriteWidth = frame.getRegionWidth();
+                    float spriteHeight = frame.getRegionHeight();
+                    float x = wave.velocityX < 0f ? wave.bounds.x - 10
+                            : wave.bounds.x + wave.bounds.width - spriteWidth + 10;
+
+                    batch.draw(frame, x, wave.bounds.y + spriteHeight / 2 - 15,
+                            spriteWidth / 2f, spriteHeight / 2f,
+                            spriteWidth, spriteHeight,
+                            wave.getDir(), 2, 0);
+                }
+            }
         }
     }
 
+    // --- Debug Rendering ---
+    private void renderDebugHitboxes() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        shapeRenderer.setColor(Color.GREEN);
+        renderPlayerHitBox(shapeRenderer);
+
+        shapeRenderer.setColor(Color.RED);
+        renderEnemyHitBoxes(shapeRenderer);
+        renderProjectileHitboxes(shapeRenderer);
+
+        shapeRenderer.setColor(Color.ORANGE);
+        renderPlayerAttackHitboxe(shapeRenderer);
+
+        shapeRenderer.end();
+    }
+
+    private void renderPlayerHitBox(ShapeRenderer shapeRenderer) {
+        Rectangle bounds = world.player.getBounds();
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
+
+    private void renderPlayerAttackHitboxe(ShapeRenderer shapeRenderer) {
+        Rectangle attackBounds = world.player.getAttackHitbox();
+        if (attackBounds != null) {
+            shapeRenderer.rect(attackBounds.x, attackBounds.y, attackBounds.width, attackBounds.height);
+        }
+        Rectangle screamBounds = world.player.getScreamHitbox();
+        if (screamBounds != null) {
+            shapeRenderer.rect(screamBounds.x, screamBounds.y, screamBounds.width, screamBounds.height);
+        }
+    }
+
+    private void renderProjectileHitboxes(ShapeRenderer shapeRenderer) {
+        for (PlayerProjectile proj : world.projectiles) {
+            if (proj.isExploding)
+                continue;
+            Rectangle bounds = proj.getBounds();
+            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
+    }
+
+    private void renderEnemyHitBoxes(ShapeRenderer shapeRenderer) {
+        for (Enemy enemy : world.enemies) {
+            if (enemy instanceof CrystalGuardian) {
+                Rectangle laserBounds = ((CrystalGuardian) enemy).getActiveLaserBounds(world.solidBlocks);
+                if (laserBounds != null) {
+                    shapeRenderer.rect(laserBounds.x, laserBounds.y, laserBounds.width, laserBounds.height);
+                }
+            }
+
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+
+                Rectangle mace = fk.getActiveAttackHitbox();
+                if (mace != null) {
+                    shapeRenderer.setColor(Color.MAGENTA);
+                    shapeRenderer.rect(mace.x, mace.y, mace.width, mace.height);
+                }
+
+                shapeRenderer.setColor(Color.YELLOW);
+                for (FalseKnight.Shockwave wave : fk.shockwaves) {
+                    shapeRenderer.rect(wave.bounds.x, wave.bounds.y, wave.bounds.width, wave.bounds.height);
+                }
+
+                shapeRenderer.setColor(Color.RED);
+            }
+
+            Animation<TextureRegion> animation = GameAssetManager.enemyAnimationMap.get(enemy.animation);
+            TextureRegion frame = animation.getKeyFrame(enemy.animationTime);
+            float width = frame.getRegionWidth();
+            float height = frame.getRegionHeight();
+
+            if (enemy.position.x + width < camera.position.x - viewport.getWorldWidth() / 2f ||
+                    enemy.position.x > camera.position.x + viewport.getWorldWidth() / 2f ||
+                    enemy.position.y + height < camera.position.y - viewport.getWorldHeight() / 2f ||
+                    enemy.position.y > camera.position.y + viewport.getWorldHeight() / 2f) {
+                continue;
+            }
+
+            Rectangle bounds = enemy.getBounds();
+            shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
+    }
 }
