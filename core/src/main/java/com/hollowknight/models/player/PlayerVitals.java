@@ -8,10 +8,13 @@ import com.hollowknight.models.Constants;
 import com.hollowknight.views.GameAssetManager;
 
 public class PlayerVitals {
+
+    // --- Properties ---
     private List<HealthMask> health;
     private int souls = 80;
     private SoulsAnimation soulsAnimation = null;
 
+    // --- Initialization ---
     public PlayerVitals() {
         this.health = new ArrayList<>();
         for (int i = 0; i < Constants.MAX_PLAYER_HEALTH; i++) {
@@ -19,6 +22,57 @@ public class PlayerVitals {
         }
     }
 
+    // --- Core Update Loop ---
+    public void update(float delta) {
+        for (HealthMask h : health) {
+            h.update(delta);
+        }
+
+        if (soulsAnimation != null) {
+            soulsAnimation.update(delta);
+            if (soulsAnimation.isOver()) {
+                soulsAnimation = null;
+            }
+        }
+    }
+
+    // --- Damage & Healing Logic ---
+    public void takeDamage(int amount) {
+        for (int i = 0; i < amount; i++) {
+            takeDamage();
+        }
+    }
+
+    public void takeDamage() {
+        for (int i = Constants.MAX_PLAYER_HEALTH - 1; i >= 0; i--) {
+            HealthMask h = health.get(i);
+            if (h.isFull()) {
+                h.breakMask();
+                break;
+            }
+        }
+    }
+
+    public boolean canHeal() {
+        for (HealthMask h : health) {
+            if (!h.isFull() && h.state != HealthMaskState.HEALING)
+                return true;
+        }
+        return false;
+    }
+
+    public void heal(int amount) {
+        for (HealthMask h : health) {
+            if (h.state == HealthMaskState.EMPTY || h.state == HealthMaskState.BREAKING) {
+                h.set(HealthMaskState.HEALING);
+                amount--;
+                if (amount == 0)
+                    break;
+            }
+        }
+    }
+
+    // --- Accessors & Visuals ---
     public int getHealth() {
         int i = 0;
         for (HealthMask h : health) {
@@ -53,54 +107,6 @@ public class PlayerVitals {
         souls = target;
         if (target > souls)
             AudioController.getInstance().playRandomSfx(GameAssetManager.soulSfxs);
-    }
-
-    public void update(float delta) {
-        for (HealthMask h : health) {
-            h.update(delta);
-        }
-
-        if (soulsAnimation != null) {
-            soulsAnimation.update(delta);
-            if (soulsAnimation.isOver()) {
-                soulsAnimation = null;
-            }
-        }
-    }
-
-    public void takeDamage(int amount) {
-        for (int i = 0; i < amount; i++) {
-            takeDamage();
-        }
-    }
-
-    public void takeDamage() {
-        for (int i = Constants.MAX_PLAYER_HEALTH - 1; i >= 0; i--) {
-            HealthMask h = health.get(i);
-            if (h.isFull()) {
-                h.breakMask();
-                break;
-            }
-        }
-    }
-
-    public boolean canHeal() {
-        for (HealthMask h : health) {
-            if (!h.isFull() && h.state != HealthMaskState.HEALING)
-                return true;
-        }
-        return false;
-    }
-
-    public void heal(int amount) {
-        for (HealthMask h : health) {
-            if (h.state == HealthMaskState.EMPTY || h.state == HealthMaskState.BREAKING) {
-                h.set(HealthMaskState.HEALING);
-                amount--;
-                if (amount == 0)
-                    break;
-            }
-        }
     }
 
     public void setNewAnimation(int from, int to, float time) {

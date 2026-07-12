@@ -4,29 +4,27 @@ import com.hollowknight.models.Constants;
 
 public class PlayerStatus {
 
-    // Movement
+    // --- Movement Flags ---
     private boolean onGround = true;
     private boolean movingHorizontally = false;
     private int facingDirection = Constants.RIGHT_DIRECTION;
     private boolean movementLocked = false;
     private boolean jumpCutAvailable = false;
 
-    // Directional Holding state
+    // --- Directional Holding State ---
     private boolean holdingUp = false;
     private boolean holdingDown = false;
     private boolean holdingLeft = false;
     private boolean holdingRight = false;
 
-    // Abilities
+    // --- Abilities & Combat ---
     private boolean canDash = true;
     private int jumpsRemaining = 2;
-
-    // Damage
     private boolean godMode = false;
     private boolean invincible = false;
     private float invincibilityTimer = 0;
 
-    // Ability Timers
+    // --- Ability Timers ---
     private float dashTimer = 0.0f;
     private float dashCooldownTimer = 0.0f;
     private float attackTimer = 0.0f;
@@ -36,12 +34,12 @@ public class PlayerStatus {
     private int screamTicksApplied = 0;
     private float castTimer = 0.0f;
 
-    // Spectator
+    // --- Spectator ---
     private boolean spectatorMode = false;
     private boolean movingVertically = false;
     private int verticalDir = 0;
 
-    // Wall Slide and Wall Jump
+    // --- Wall Mechanics ---
     private boolean touchingWall = false;
     private int wallDirection = 0;
     private float wallJumpTimer = 0.0f;
@@ -49,18 +47,15 @@ public class PlayerStatus {
     // -------------------------------------------------
     // Core Update
     // -------------------------------------------------
-
     public void update(float delta) {
         if (invincible) {
             invincibilityTimer -= delta;
-
             if (invincibilityTimer <= 0f) {
                 invincible = false;
                 invincibilityTimer = 0f;
             }
         }
 
-        // Update generic ability/combat timers
         if (wallJumpTimer > 0)
             wallJumpTimer -= delta;
         if (dashCooldownTimer > 0)
@@ -80,16 +75,14 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // Ground
+    // Ground & Air States
     // -------------------------------------------------
-
     public boolean isOnGround() {
         return onGround;
     }
 
     public void setOnGround(boolean onGround) {
         this.onGround = onGround;
-
         if (onGround) {
             canDash = true;
             jumpsRemaining = 2;
@@ -105,10 +98,14 @@ public class PlayerStatus {
         this.jumpCutAvailable = jumpCutAvailable;
     }
 
+    public void resetAirAbilities() {
+        resetDash();
+        resetJumps();
+    }
+
     // -------------------------------------------------
     // Movement & Locks
     // -------------------------------------------------
-
     public boolean isMovingHorizontally() {
         return movingHorizontally;
     }
@@ -134,9 +131,8 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // Directional Holding Setters & Getters
+    // Directional Holding
     // -------------------------------------------------
-
     public boolean isHoldingUp() {
         return holdingUp;
     }
@@ -170,9 +166,8 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // Timers Getters & Setters
+    // Combat Timers Getters/Setters
     // -------------------------------------------------
-
     public float getDashTimer() {
         return dashTimer;
     }
@@ -238,9 +233,8 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // Jump
+    // Jump & Dash Utilities
     // -------------------------------------------------
-
     public int getJumpsRemaining() {
         return jumpsRemaining;
     }
@@ -262,10 +256,6 @@ public class PlayerStatus {
         jumpsRemaining = n;
     }
 
-    // -------------------------------------------------
-    // Dash
-    // -------------------------------------------------
-
     public boolean canDash() {
         return canDash;
     }
@@ -281,7 +271,6 @@ public class PlayerStatus {
     // -------------------------------------------------
     // Invincibility
     // -------------------------------------------------
-
     public void toggleGodMode() {
         godMode = !godMode;
     }
@@ -296,29 +285,15 @@ public class PlayerStatus {
     }
 
     public boolean shouldFlash() {
-        // Only flash if the player is actually in their post-damage invincibility
-        // window
         if (invincible && invincibilityTimer > 0) {
-            // 0.2f is the total cycle time. < 0.1f means it will be invisible 50% of the
-            // time.
             return (invincibilityTimer % 0.2f) < 0.1f;
         }
         return false;
     }
 
     // -------------------------------------------------
-    // Utility
-    // -------------------------------------------------
-
-    public void resetAirAbilities() {
-        resetDash();
-        resetJumps();
-    }
-
-    // -------------------------------------------------
     // Spectator
     // -------------------------------------------------
-
     public void toggleSpectatorMode() {
         spectatorMode = !spectatorMode;
         godMode = spectatorMode;
@@ -347,9 +322,8 @@ public class PlayerStatus {
     }
 
     // -------------------------------------------------
-    // wall utils
+    // Wall Mechanics
     // -------------------------------------------------
-
     public boolean isTouchingWall() {
         return touchingWall;
     }

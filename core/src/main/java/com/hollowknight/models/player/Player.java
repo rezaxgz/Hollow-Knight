@@ -20,23 +20,18 @@ import com.hollowknight.views.GameAssetManager;
 
 public class Player {
 
-    // =========================================================================================
-    // FIELDS & PROPERTIES
-    // =========================================================================================
-
+    // --- Properties & State ---
     public Vector2 respawnPosition;
     public Vector2 position = new Vector2();
     public Vector2 velocity = new Vector2();
     public Vector2 lastSafePosition = new Vector2();
 
-    // Timers & Triggers left public for external systems (e.g. GameWorld)
     public float animationTime = 0;
     public boolean triggerSpiritCast = false;
     public boolean triggerScreamDamage = false;
-    public boolean triggerDamageShake = false; // From previous step
-    public boolean triggerSpellShake = false; // --- ADD THIS LINE ---
+    public boolean triggerDamageShake = false;
+    public boolean triggerSpellShake = false;
 
-    // States & Vitals
     public PlayerAnimation animation = PlayerAnimation.IDLE;
     private PlayerAnimation currentAttackAnimation = PlayerAnimation.IDLE;
     public PlayerStatus status = new PlayerStatus();
@@ -44,41 +39,67 @@ public class Player {
     public CombatState combatState = CombatState.NONE;
     private PlayerVitals vitals = new PlayerVitals();
 
-    // Effects
     public List<ActiveEffect> activeEffects = new ArrayList<>();
-
-    // Inventory & Charms
     public CharmType[] charmNotches = { null, null, null };
     private Set<Enemy> hitEnemiesThisDash = new HashSet<Enemy>();
 
-    // Data
     private boolean isJustDead = false;
 
-    // =========================================================================================
-    // CONSTRUCTOR
-    // =========================================================================================
-
+    // --- Initialization & Lifecycle ---
     public Player(Vector2 position) {
         this.position = new Vector2(position);
         this.respawnPosition = new Vector2(position);
         this.lastSafePosition = new Vector2(position);
     }
 
-    // =========================================================================================
-    // CORE GAME LOOP (UPDATE)
-    // =========================================================================================
+    public void kill() {
+        if (status.isInvincible() && !vitals.isDead())
+            return;
+        if (combatState == CombatState.DEAD)
+            return;
 
+        AudioController.getInstance().playSfx(GameAssetManager.deathSfx);
+        status.setMovementLocked(true);
+        status.stopVerticalMovement();
+        status.setMovingHorizontally(false);
+        velocity.x = 0;
+        velocity.y = 0;
+        combatState = CombatState.DEAD;
+        isJustDead = true;
+    }
+
+    private void respawn() {
+        position.set(respawnPosition);
+        velocity.setZero();
+        vitals.heal(Constants.MAX_PLAYER_HEALTH);
+        combatState = CombatState.NONE;
+        status.setFacingDirection(Constants.RIGHT_DIRECTION);
+        status.setMovingHorizontally(false);
+        status.setMovementLocked(false);
+    }
+
+    public boolean isDead() {
+        return combatState == CombatState.DEAD;
+    }
+
+    public boolean hasUnregisteredDeath() {
+        return isJustDead;
+    }
+
+    public void registerDeath() {
+        isJustDead = false;
+    }
+
+    // --- Core Update Loop ---
     public void update(float delta, List<Rectangle> solidBlocks) {
         vitals.update(delta);
-        status.update(delta); // Updates all ability/combat timers and invincibility
+        status.update(delta);
         updateTimers(delta);
-
         updateEffects(delta);
+
         if (checkDeathAndRespawn())
             return;
 
-        // State handlers - if any of these return true, they override normal
-        // movement/physics
         if (handleSpectatorMode(delta))
             return;
         if (handleHurtState(delta, solidBlocks))
@@ -94,21 +115,14 @@ public class Player {
         if (handleWallJumpState(delta, solidBlocks))
             return;
 
-        // Normal movement & gravity
         applyNormalPhysics(delta);
         updatePosition(delta, solidBlocks);
         resolveMovementStates();
-
         updateAnimation();
     }
 
-    // =========================================================================================
-    // UPDATE HANDLERS
-    // =========================================================================================
-
     private void updateTimers(float delta) {
         animationTime += delta;
-
         if (status.getAttackTimer() <= 0 && combatState == CombatState.ATTACK) {
             combatState = CombatState.NONE;
         }
@@ -134,12 +148,12 @@ public class Player {
         return false;
     }
 
+    // --- State Handlers ---
     private boolean handleSpectatorMode(float delta) {
         if (!status.isSpectatorMode())
             return false;
 
         float spectatorSpeed = Constants.PLAYER_MOVE_SPEED * 3.0f;
-
         velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * spectatorSpeed : 0;
         velocity.y = status.isMovingVertically() ? status.getVerticalDirection() * spectatorSpeed : 0;
 
@@ -148,7 +162,6 @@ public class Player {
 
         setAnimation(PlayerAnimation.IDLE);
         animationTime = 0;
-
         return true;
     }
 
@@ -156,13 +169,12 @@ public class Player {
         if (combatState != CombatState.HURT)
             return false;
 
-        // Apply gravity for a clean backwards arc
         velocity.y += Constants.GRAVITY * delta;
         updatePosition(delta, solidBlocks);
 
         if (status.getKnockbackTimer() <= 0) {
             combatState = CombatState.NONE;
-            velocity.x = 0; // Stop horizontal slide
+            velocity.x = 0;
         }
 
         updateAnimation();
@@ -175,7 +187,7 @@ public class Player {
 
         float dashSpeed = hasCharm(CharmType.SHARP_SHADOW) ? Constants.DASH_SPEED * 1.2f : Constants.DASH_SPEED;
         velocity.x = dashSpeed * status.getFacingDirection();
-        velocity.y = 0; // Ignore gravity while dashing
+        velocity.y = 0;
 
         updatePosition(delta, solidBlocks);
 
@@ -194,7 +206,6 @@ public class Player {
         if (combatState != CombatState.FOCUS)
             return false;
 
-        // Keep player grounded while locked
         velocity.y += Constants.GRAVITY * delta;
         updatePosition(delta, solidBlocks);
 
@@ -204,14 +215,13 @@ public class Player {
         if (animationTime >= healTime) {
             if (vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
                     && vitals.getHealth() < Constants.MAX_PLAYER_HEALTH) {
-
                 vitals.addSouls(-Constants.HEALING_COST_IN_SOULS);
                 vitals.heal(1);
                 AudioController.getInstance().playSfx(GameAssetManager.focusHealSfx);
                 AudioController.getInstance().playSfx(GameAssetManager.focusReadySfx);
 
                 if (canFocus()) {
-                    animationTime = 0; // Reset focus timer loop
+                    animationTime = 0;
                     vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS,
                             healTime);
                 } else {
@@ -230,20 +240,15 @@ public class Player {
         if (combatState != CombatState.SCREAM)
             return false;
 
-        // Player is suspended in air while screaming (X lock is handled by
-        // lockMovement)
         velocity.y = 0;
-
-        // "Damage is dealt in 3 ticks"
         float tickInterval = Constants.SOUL_SCREAM_TIME / 3.0f;
         int expectedTicks = 3 - (int) (status.getScreamTimer() / tickInterval);
 
         if (expectedTicks > status.getScreamTicksApplied() && expectedTicks <= 3) {
             status.setScreamTicksApplied(status.getScreamTicksApplied() + 1);
-            triggerScreamDamage = true; // Flips to true for exactly one frame per tick
+            triggerScreamDamage = true;
         }
 
-        // End Scream
         if (status.getScreamTimer() <= 0) {
             combatState = CombatState.NONE;
             movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
@@ -258,9 +263,7 @@ public class Player {
         if (combatState != CombatState.CAST)
             return false;
 
-        // Player is suspended in air while casting (X lock is handled by lockMovement)
         velocity.y = 0;
-
         if (status.getCastTimer() <= 0) {
             combatState = CombatState.NONE;
             movementState = status.isOnGround() ? MovementState.IDLE : MovementState.FALL;
@@ -275,14 +278,11 @@ public class Player {
         if (movementState != MovementState.WALL_JUMP)
             return false;
 
-        // Cancel arc if player stops holding the key OR actively pulls away from the
-        // wall
         boolean pullingAway = (status.getWallDirection() == Constants.RIGHT_DIRECTION && status.isHoldingLeft()) ||
                 (status.getWallDirection() == Constants.LEFT_DIRECTION && status.isHoldingRight());
 
         if (!status.isMovingHorizontally() || pullingAway) {
             movementState = velocity.y > 0 ? MovementState.JUMP : MovementState.FALL;
-            // Restore facing direction to the actively held key
             if (status.isHoldingRight())
                 status.setFacingDirection(Constants.RIGHT_DIRECTION);
             if (status.isHoldingLeft())
@@ -290,10 +290,7 @@ public class Player {
             return false;
         }
 
-        // Apply normal gravity vertically
         velocity.y += Constants.GRAVITY * delta;
-
-        // Calculate dynamic horizontal acceleration
         float initialVelX = Constants.WALL_JUMP_SPEED_X;
         float accelerationX = (2 * initialVelX) / Constants.WALL_JUMP_DURATION;
         float timePassed = Constants.WALL_JUMP_DURATION - status.getWallJumpTimer();
@@ -303,19 +300,15 @@ public class Player {
 
         updatePosition(delta, solidBlocks);
 
-        // Check end conditions
         if (status.getWallJumpTimer() <= 0 || status.isOnGround() || status.isTouchingWall()) {
             if (status.isTouchingWall() && status.isMovingHorizontally()) {
                 movementState = MovementState.WALL_SLIDE;
                 AudioController.getInstance().playSfx(GameAssetManager.wallSlideSfx);
-                // CRITICAL FIX: Snap facing direction back to the wall so physics push you
-                // inward
                 status.setFacingDirection(status.getWallDirection());
             } else if (status.isOnGround()) {
                 setStateAfterLanding();
             } else {
                 movementState = velocity.y > 0 ? MovementState.JUMP : MovementState.FALL;
-                // Restore facing direction to the actively held key
                 if (status.isHoldingRight())
                     status.setFacingDirection(Constants.RIGHT_DIRECTION);
                 if (status.isHoldingLeft())
@@ -327,9 +320,9 @@ public class Player {
         return true;
     }
 
+    // --- Physics & Movement Controllers ---
     private void applyNormalPhysics(float delta) {
         if (movementState == MovementState.WALL_SLIDE) {
-            // Apply 15% of normal gravity to simulate wall friction
             velocity.y += (Constants.GRAVITY * 0.15f) * delta;
             velocity.x = status.isMovingHorizontally() ? status.getFacingDirection() * Constants.PLAYER_MOVE_SPEED : 0;
         } else {
@@ -339,20 +332,18 @@ public class Player {
     }
 
     private void resolveMovementStates() {
-        // Prevent floating double jump if walking off a ledge
         if (movementState == MovementState.FALL && status.getJumpsRemaining() == 2) {
             status.setRemainingJumps(1);
         }
         if (movementState != MovementState.WALL_SLIDE) {
             GameAssetManager.wallSlideSfx.stop();
         }
-
         if (movementState != MovementState.RUN) {
             GameAssetManager.walkSfx.stop();
         }
 
         if (status.isOnGround()) {
-            status.resetAirAbilities(); // Also resets dash/jumps
+            status.resetAirAbilities();
             velocity.y = 0;
 
             if (movementState == MovementState.FALL || movementState == MovementState.WALL_SLIDE) {
@@ -369,16 +360,14 @@ public class Player {
                 movementState = MovementState.RUN;
             }
         } else {
-            // --- WALL SLIDE LOGIC ---
             if (status.isTouchingWall() && status.isMovingHorizontally()
                     && status.getFacingDirection() == status.getWallDirection()) {
-                if (velocity.y < 0) { // Only slide when falling downwards
+                if (velocity.y < 0) {
                     movementState = MovementState.WALL_SLIDE;
                     AudioController.getInstance().playSfx(GameAssetManager.wallSlideSfx);
-                    status.resetAirAbilities(); // Allow dashing/jumping off the wall
+                    status.resetAirAbilities();
                 }
             } else if (movementState == MovementState.WALL_SLIDE) {
-                // Player let go of the movement key or slid off the bottom of the wall
                 movementState = MovementState.FALL;
             } else if (velocity.y < 0 && movementState != MovementState.FALL
                     && movementState != MovementState.WALL_JUMP) {
@@ -387,10 +376,64 @@ public class Player {
         }
     }
 
-    // =========================================================================================
-    // ACTION CONTROLLERS (Input handling)
-    // =========================================================================================
+    private void updatePosition(float delta, List<Rectangle> solids) {
+        status.setOnGround(false);
+        status.setTouchingWall(false);
+        moveX(velocity.x * delta, solids);
+        moveY(velocity.y * delta, solids);
+    }
 
+    private void moveX(float amount, List<Rectangle> solids) {
+        position.x += amount;
+        Rectangle player = getBounds();
+
+        for (Rectangle solid : solids) {
+            if (player.overlaps(solid)) {
+                position.x = (amount > 0) ? solid.x - player.width : solid.x + solid.width;
+                velocity.x = 0;
+                status.setTouchingWall(true);
+                status.setWallDirection((amount > 0) ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION);
+                break;
+            }
+        }
+    }
+
+    private void moveY(float amount, List<Rectangle> solids) {
+        position.y += amount;
+        Rectangle bounds = getBounds();
+
+        for (Rectangle solid : solids) {
+            if (!bounds.overlaps(solid))
+                continue;
+
+            if (amount < 0) {
+                position.y = solid.y + solid.height;
+                velocity.y = 0;
+                status.setOnGround(true);
+            } else {
+                status.setJumpCutAvailable(false);
+                position.y = solid.y - bounds.height;
+                velocity.y = 0;
+            }
+            return;
+        }
+    }
+
+    private void setStateAfterDash() {
+        if (status.isOnGround() && !status.isMovingHorizontally()) {
+            movementState = MovementState.IDLE;
+        } else if (status.isMovingHorizontally()) {
+            movementState = MovementState.RUN;
+        } else {
+            movementState = MovementState.FALL;
+        }
+    }
+
+    private void setStateAfterLanding() {
+        movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
+    }
+
+    // --- Input Handlers ---
     public void doAction(GameActionType action) {
         switch (action) {
             case MOVE_LEFT -> moveLeft();
@@ -411,7 +454,6 @@ public class Player {
             movementState = MovementState.RUN;
             AudioController.getInstance().playSfxLoop(GameAssetManager.walkSfx);
         }
-
         status.setMovingHorizontally(true);
     }
 
@@ -457,25 +499,24 @@ public class Player {
     public void jump() {
         if (status.isMovementLocked())
             return;
+
         if (movementState == MovementState.WALL_SLIDE) {
             movementState = MovementState.WALL_JUMP;
             status.setWallJumpTimer(Constants.WALL_JUMP_DURATION);
-
             status.setJumpCutAvailable(true);
-
             velocity.y = Constants.WALL_JUMP_SPEED_Y;
-            // Launch horizontally away from the wall
             velocity.x = Constants.WALL_JUMP_SPEED_X * -status.getWallDirection();
             status.setFacingDirection(-status.getWallDirection());
-
             AudioController.getInstance().playSfx(GameAssetManager.wallJumpSfx);
             return;
         }
+
         if (status.canJump() && movementState != MovementState.DASH) {
             velocity.y = Constants.JUMP_SPEED;
             status.useJump();
             status.setJumpCutAvailable(true);
             movementState = !status.canJump() ? MovementState.DOUBLE_JUMP : MovementState.JUMP;
+
             if (movementState == MovementState.JUMP) {
                 AudioController.getInstance().playSfx(GameAssetManager.jumpSfx);
             } else {
@@ -485,24 +526,24 @@ public class Player {
     }
 
     public void applyJumpCutoff() {
-        if (!status.isJumpCutAvailable()) {
+        if (!status.isJumpCutAvailable())
             return;
-        }
-        if (velocity.y > 0f) {
+        if (velocity.y > 0f)
             velocity.y *= Constants.JUMP_CUTOFF_MULTIPLIER;
-        }
         status.setJumpCutAvailable(false);
     }
 
     public void dash() {
         if (status.isMovementLocked())
             return;
+
         if (movementState != MovementState.DASH && status.canDash() && status.getDashCooldownTimer() <= 0) {
             movementState = MovementState.DASH;
             status.consumeDash();
             status.setDashTimer(Constants.DASH_DURATION);
             addEffect(PlayerEffectAnimation.DASH);
             AudioController.getInstance().playSfx(GameAssetManager.dashSfx);
+
             float dashSpeed = hasCharm(CharmType.SHARP_SHADOW) ? Constants.DASH_SPEED * 1.2f : Constants.DASH_SPEED;
             velocity.x = dashSpeed * status.getFacingDirection();
             velocity.y = 0;
@@ -515,7 +556,6 @@ public class Player {
             status.setHoldingUp(true);
         if (dir == Constants.DOWN_DIRECTION)
             status.setHoldingDown(true);
-
         if (status.isSpectatorMode())
             status.moveVertically(-dir);
     }
@@ -528,16 +568,11 @@ public class Player {
 
         if (!status.isSpectatorMode())
             return;
-
         if (releasedDir == -status.getVerticalDirection()) {
             status.stopVerticalMovement();
             velocity.y = 0;
         }
     }
-
-    // =========================================================================================
-    // MOVEMENT LOCK UTILS
-    // =========================================================================================
 
     public void lockMovement() {
         status.setMovementLocked(true);
@@ -549,24 +584,15 @@ public class Player {
         status.setMovementLocked(false);
     }
 
-    // =========================================================================================
-    // COMBAT & DAMAGE
-    // =========================================================================================
-
-    public void addEffect(PlayerEffectAnimation effectType) {
-        activeEffects.add(new ActiveEffect(effectType, status.getFacingDirection()));
-    }
-
+    // --- Combat & Abilities ---
     private void attack() {
         if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.ATTACK
-                || status.getAttackCooldownTimer() > 0) {
+                || status.getAttackCooldownTimer() > 0)
             return;
-        }
 
         combatState = CombatState.ATTACK;
         float slashTime = hasCharm(CharmType.QUICK_SLASH) ? Constants.SLASH_TIME * 0.6f : Constants.SLASH_TIME;
         status.setAttackTimer(slashTime);
-
         AudioController.getInstance().playRandomSfx(GameAssetManager.slashSfxs);
 
         if (status.isHoldingUp()) {
@@ -587,14 +613,12 @@ public class Player {
     }
 
     public void soulScream() {
-        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.SCREAM) {
+        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.SCREAM)
             return;
-        }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
             triggerSpellShake = true;
             vitals.addSouls(-Constants.ABILITY_COST);
-
             lockMovement();
             combatState = CombatState.SCREAM;
             status.setScreamTimer(Constants.SOUL_SCREAM_TIME);
@@ -605,36 +629,31 @@ public class Player {
             } else {
                 addEffect(PlayerEffectAnimation.SOUL_SCREAM);
             }
-
             triggerScreamDamage = false;
         }
     }
 
     public void spiritCast() {
-        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.CAST) {
+        if (combatState == CombatState.DEAD || status.isMovementLocked() || combatState == CombatState.CAST)
             return;
-        }
 
         if (vitals.getSouls() >= Constants.ABILITY_COST) {
             triggerSpellShake = true;
             vitals.addSouls(-Constants.ABILITY_COST);
-
             lockMovement();
             combatState = CombatState.CAST;
             status.setCastTimer(Constants.SPIRIT_CAST_TIME);
             addEffect(PlayerEffectAnimation.BLAST);
-            triggerSpiritCast = true; // Signals GameWorld to spawn exactly one projectile
+            triggerSpiritCast = true;
         }
     }
 
     public void pogo() {
         velocity.y = Constants.JUMP_SPEED;
         status.resetDash();
-        // Give the player exactly 1 jump to use in mid-air (avoids resetting to 2)
         status.setRemainingJumps(Math.max(status.getJumpsRemaining(), 1));
     }
 
-    // New overloaded method to handle the knockback boolean
     public boolean takeDamage(int amount, float sourceX, boolean applyKnockback) {
         if (status.isInvincible())
             return false;
@@ -644,7 +663,6 @@ public class Player {
         AudioController.getInstance().playSfx(GameAssetManager.knightHurtSfx);
         status.makeInvincible(Constants.INVINCIBILITY_TIME);
 
-        // Break out of locks cleanly
         if (combatState == CombatState.FOCUS) {
             stopFocus();
         } else {
@@ -656,7 +674,6 @@ public class Player {
             return true;
         }
 
-        // Only apply knockback if the flag is true
         if (applyKnockback) {
             combatState = CombatState.HURT;
             status.setKnockbackTimer(Constants.KNOCKBACK_DURATION);
@@ -669,7 +686,6 @@ public class Player {
             status.setJumpCutAvailable(false);
             movementState = MovementState.FALL;
         }
-
         return false;
     }
 
@@ -679,8 +695,7 @@ public class Player {
 
     private boolean canFocus() {
         return status.isOnGround() && movementState != MovementState.DASH &&
-                vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS
-                && vitals.canHeal();
+                vitals.getSouls() >= Constants.HEALING_COST_IN_SOULS && vitals.canHeal();
     }
 
     private void focus() {
@@ -692,7 +707,7 @@ public class Player {
             float healTime = hasCharm(CharmType.QUICK_FOCUS) ? Constants.HEALTH_REFIL_TIME * 0.8f
                     : Constants.HEALTH_REFIL_TIME;
             vitals.setNewAnimation(vitals.getSouls(), vitals.getSouls() - Constants.HEALING_COST_IN_SOULS, healTime);
-            animationTime = 0; // Essential for subsequent loop checks
+            animationTime = 0;
             AudioController.getInstance().playSfx(GameAssetManager.focusChargingSfx);
         }
     }
@@ -708,114 +723,63 @@ public class Player {
             } else {
                 movementState = MovementState.FALL;
             }
-
             vitals.resetSouls();
         }
     }
 
-    public void kill() {
-        // Don't allow instant death on god mode
-        if (status.isInvincible() && !vitals.isDead())
-            return;
-        if (combatState == CombatState.DEAD)
-            return;
-        AudioController.getInstance().playSfx(GameAssetManager.deathSfx);
-        status.setMovementLocked(true);
-        status.stopVerticalMovement();
-        status.setMovingHorizontally(false);
-        velocity.x = 0;
-        velocity.y = 0;
-        combatState = CombatState.DEAD;
-        isJustDead = true;
-    }
-
-    public boolean hasUnregisteredDeath() {
-        return isJustDead;
-    }
-
-    public void registerDeath() {
-        isJustDead = false;
-    }
-
-    public boolean isDead() {
-        return combatState == CombatState.DEAD;
-    }
-
-    private void respawn() {
-        position.set(respawnPosition);
-        velocity.setZero();
-        vitals.heal(Constants.MAX_PLAYER_HEALTH);
-        combatState = CombatState.NONE;
-        status.setFacingDirection(Constants.RIGHT_DIRECTION);
-        status.setMovingHorizontally(false);
-        status.setMovementLocked(false);
-    }
-
-    // =========================================================================================
-    // COLLISION & PHYSICS HELPERS
-    // =========================================================================================
-
-    private void updatePosition(float delta, List<Rectangle> solids) {
-        status.setOnGround(false);
-        status.setTouchingWall(false);
-        moveX(velocity.x * delta, solids);
-        moveY(velocity.y * delta, solids);
-    }
-
-    private void moveX(float amount, List<Rectangle> solids) {
-        position.x += amount;
-        Rectangle player = getBounds();
-
-        for (Rectangle solid : solids) {
-            if (player.overlaps(solid)) {
-                position.x = (amount > 0) ? solid.x - player.width : solid.x + solid.width;
-                velocity.x = 0;
-                // Mark that we hit a wall and register the direction
-                status.setTouchingWall(true);
-                status.setWallDirection((amount > 0) ? Constants.RIGHT_DIRECTION : Constants.LEFT_DIRECTION);
-                break;
-            }
+    // --- Charms & Stats ---
+    public boolean hasCharm(CharmType charmType) {
+        for (CharmType charm : charmNotches) {
+            if (charm != null && charm == charmType)
+                return true;
         }
+        return false;
     }
 
-    private void moveY(float amount, List<Rectangle> solids) {
-        position.y += amount;
-        Rectangle bounds = getBounds();
-
-        for (Rectangle solid : solids) {
-            if (!bounds.overlaps(solid))
-                continue;
-
-            if (amount < 0) { // Landing
-                position.y = solid.y + solid.height;
-                velocity.y = 0;
-                status.setOnGround(true);
-            } else { // Hitting ceiling
-                status.setJumpCutAvailable(false);
-                position.y = solid.y - bounds.height;
-                velocity.y = 0;
-            }
-            return;
-        }
+    public boolean shouldDamageWithDash(Enemy enemy) {
+        return hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH
+                && !hitEnemiesThisDash.contains(enemy);
     }
 
-    private void setStateAfterDash() {
-        if (status.isOnGround() && !status.isMovingHorizontally()) {
-            movementState = MovementState.IDLE;
-        } else if (status.isMovingHorizontally()) {
-            movementState = MovementState.RUN;
-        } else {
-            movementState = MovementState.FALL;
-        }
+    public boolean shouldTakeDamageWithCollision() {
+        return !(hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH);
     }
 
-    private void setStateAfterLanding() {
-        movementState = status.isMovingHorizontally() ? MovementState.RUN : MovementState.IDLE;
+    public void hitEnemyWithDash(Enemy enemy) {
+        hitEnemiesThisDash.add(enemy);
+        enemy.takeDamage(Constants.SHARP_SHADOW_DASH_DAMAGE, position.x, true, 0.3f);
     }
 
-    // =========================================================================================
-    // ANIMATION & UTILITY
-    // =========================================================================================
+    public int getNailDamage() {
+        return hasCharm(CharmType.UNBREAKABLE_STRENGHT) ? (int) (Constants.PLAYER_SLASH_DAMAGE * 1.5f)
+                : Constants.PLAYER_SLASH_DAMAGE;
+    }
+
+    public int getSoulHitBonus() {
+        return hasCharm(CharmType.SOUL_CATCHER) ? (int) (Constants.SUCCESSFUL_ATTACK_SOUL_BONUS * 1.5f)
+                : Constants.SUCCESSFUL_ATTACK_SOUL_BONUS;
+    }
+
+    public float getKnockbackMultiplier() {
+        return hasCharm(CharmType.HEAVY_BLOW) ? 1.5f : 1.0f;
+    }
+
+    public int getSpellDamage(int baseDamage) {
+        return hasCharm(CharmType.VOID_HEART) ? (int) (baseDamage * 1.5f) : baseDamage;
+    }
+
+    public PlayerEffectAnimation getProjectileAnimation() {
+        return hasCharm(CharmType.VOID_HEART) ? PlayerEffectAnimation.SHADOW_BALL : PlayerEffectAnimation.SOUL_BALL;
+    }
+
+    public PlayerEffectAnimation getProjectileEndAnimation() {
+        return hasCharm(CharmType.VOID_HEART) ? null : PlayerEffectAnimation.SOUL_BALL_END;
+    }
+
+    // --- Utility & Animations ---
+    public void addEffect(PlayerEffectAnimation effectType) {
+        activeEffects.add(new ActiveEffect(effectType, status.getFacingDirection()));
+    }
 
     private void updateAnimation() {
         PlayerAnimation targetAnimation = animation;
@@ -825,11 +789,7 @@ public class Player {
         } else if (combatState == CombatState.DEAD) {
             targetAnimation = PlayerAnimation.DEAD;
         } else if (combatState == CombatState.FOCUS) {
-            if (hasCharm(CharmType.QUICK_FOCUS)) {
-                targetAnimation = PlayerAnimation.QUICK_FOCUS;
-            } else {
-                targetAnimation = PlayerAnimation.FOCUS;
-            }
+            targetAnimation = hasCharm(CharmType.QUICK_FOCUS) ? PlayerAnimation.QUICK_FOCUS : PlayerAnimation.FOCUS;
         } else if (combatState == CombatState.ATTACK) {
             targetAnimation = currentAttackAnimation;
         } else if (combatState == CombatState.HURT) {
@@ -840,9 +800,8 @@ public class Player {
             targetAnimation = PlayerAnimation.CAST;
         } else {
             switch (movementState) {
-                case DASH ->
-                    targetAnimation = hasCharm(CharmType.SHARP_SHADOW) ? PlayerAnimation.SHARP_SHADOW_DASH
-                            : PlayerAnimation.DASH;
+                case DASH -> targetAnimation = hasCharm(CharmType.SHARP_SHADOW) ? PlayerAnimation.SHARP_SHADOW_DASH
+                        : PlayerAnimation.DASH;
                 case DOUBLE_JUMP -> targetAnimation = PlayerAnimation.DOUBLE_JUMP;
                 case JUMP -> targetAnimation = PlayerAnimation.JUMP;
                 case FALL -> targetAnimation = PlayerAnimation.FALL;
@@ -852,7 +811,6 @@ public class Player {
                 case WALL_JUMP -> targetAnimation = PlayerAnimation.WALL_JUMP;
             }
         }
-
         setAnimation(targetAnimation);
     }
 
@@ -901,11 +859,9 @@ public class Player {
         float width = Constants.SOUL_SCREAM_HITBOX_WIDTH;
         float height = Constants.SOUL_SCREAM_HITBOX_HEIGHT;
 
-        return new Rectangle(
-                position.x - (width - Constants.PLAYER_HITBOX_WIDTH) / 2f, // Centered on X
-                position.y + Constants.PLAYER_HITBOX_HEIGHT, // Placed directly above head
-                width,
-                height);
+        return new Rectangle(position.x - (width - Constants.PLAYER_HITBOX_WIDTH) / 2f,
+                position.y + Constants.PLAYER_HITBOX_HEIGHT,
+                width, height);
     }
 
     public boolean shouldFlash() {
@@ -942,58 +898,5 @@ public class Player {
             case TP_TO_BOSS -> {
             }
         }
-    }
-
-    // =========================================================================================
-    // CHARM EFFECTS & STATS
-    // =========================================================================================
-
-    public boolean hasCharm(CharmType charmType) {
-        for (CharmType charm : charmNotches) {
-            if (charm != null && charm == charmType) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean shouldDamageWithDash(Enemy enemy) {
-        return hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH
-                && !hitEnemiesThisDash.contains(enemy);
-    }
-
-    public boolean shouldTakeDamageWithCollision() {
-        return !(hasCharm(CharmType.SHARP_SHADOW) && movementState == MovementState.DASH);
-    }
-
-    public void hitEnemyWithDash(Enemy enemy) {
-        hitEnemiesThisDash.add(enemy);
-        enemy.takeDamage(Constants.SHARP_SHADOW_DASH_DAMAGE, position.x, true, 0.3f);
-    }
-
-    public int getNailDamage() {
-        return hasCharm(CharmType.UNBREAKABLE_STRENGHT) ? (int) (Constants.PLAYER_SLASH_DAMAGE * 1.5f)
-                : Constants.PLAYER_SLASH_DAMAGE;
-    }
-
-    public int getSoulHitBonus() {
-        return hasCharm(CharmType.SOUL_CATCHER) ? (int) (Constants.SUCCESSFUL_ATTACK_SOUL_BONUS * 1.5f)
-                : Constants.SUCCESSFUL_ATTACK_SOUL_BONUS;
-    }
-
-    public float getKnockbackMultiplier() {
-        return hasCharm(CharmType.HEAVY_BLOW) ? 1.5f : 1.0f;
-    }
-
-    public int getSpellDamage(int baseDamage) {
-        return hasCharm(CharmType.VOID_HEART) ? (int) (baseDamage * 1.5f) : baseDamage;
-    }
-
-    public PlayerEffectAnimation getProjectileAnimation() {
-        return hasCharm(CharmType.VOID_HEART) ? PlayerEffectAnimation.SHADOW_BALL : PlayerEffectAnimation.SOUL_BALL;
-    }
-
-    public PlayerEffectAnimation getProjectileEndAnimation() {
-        return hasCharm(CharmType.VOID_HEART) ? null : PlayerEffectAnimation.SOUL_BALL_END;
     }
 }
