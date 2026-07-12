@@ -91,7 +91,7 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
             blurFbo.begin();
             Gdx.gl.glClearColor(0, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-            renderer.renderWorld();
+            renderer.renderWorld(0f);
             blurFbo.end();
 
             // 3. Draw the tiny FBO upscaled to the full screen (Creates the blur)
@@ -109,7 +109,7 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
 
         } else {
             // Normal unpaused rendering
-            renderer.renderWorld();
+            renderer.renderWorld(cappedDelta);
         }
 
         // UI is always rendered at full resolution on top
@@ -136,6 +136,7 @@ public class GameScreen extends AbstractScreen implements AchievementObserver {
         if (blurFbo != null)
             blurFbo.dispose();
         fboBatch.dispose();
+        renderer.dispose();
     }
 
     @Override

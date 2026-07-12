@@ -215,7 +215,7 @@ public class GameWorld {
     private void updateCurrentRegion() {
         Rectangle playerBounds = player.getBounds();
         for (Map.Entry<String, Rectangle> entry : regionBounds.entrySet()) {
-            if (entry.getValue().contains(playerBounds)) {
+            if (entry.getValue().overlaps(playerBounds)) {
                 GameRegion newRegion = GameRegion.fromId(entry.getKey());
                 if (this.currentRegion != newRegion) {
                     AudioController.getInstance().transitionBgm(newRegion.music, 1.5f);

@@ -21,12 +21,14 @@ import com.hollowknight.models.enemies.CrystalGuardian;
 import com.hollowknight.models.enemies.Enemy;
 import com.hollowknight.models.enemies.EnemyAnimations;
 import com.hollowknight.models.enemies.FalseKnight;
+import com.hollowknight.models.enums.GameRegion;
 import com.hollowknight.models.player.ActiveEffect;
 import com.hollowknight.models.player.CharmType;
 import com.hollowknight.models.player.PlayerAnimation;
 import com.hollowknight.models.player.PlayerEffectAnimation;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.models.world.PlayerProjectile;
+import com.hollowknight.views.effects.CrossroadsDustEffect;
 
 public class GameRenderer {
     SpriteBatch batch;
@@ -43,6 +45,8 @@ public class GameRenderer {
     private float mapHeight;
     private int[] backgroundLayers;
     private int[] foregroundLayers;
+    private CrossroadsDustEffect crossroadsDustEffect;
+    private boolean crossroadsDustWasActive = false;
 
     private boolean isCameraInitialized = false;
 
@@ -64,6 +68,7 @@ public class GameRenderer {
         Gdx.input.setInputProcessor(inputMultiplexer);
 
         mapRenderer = new OrthogonalTiledMapRenderer(world.map);
+        crossroadsDustEffect = new CrossroadsDustEffect();
 
         int tileWidth = world.map.getProperties().get("tilewidth", Integer.class);
         int tileHeight = world.map.getProperties().get("tileheight", Integer.class);
@@ -153,7 +158,7 @@ public class GameRenderer {
         }
     }
 
-    public void renderWorld() {
+    public void renderWorld(float delta) {
         setCameraPosition();
         camera.update();
 
@@ -184,6 +189,7 @@ public class GameRenderer {
         batch.end();
 
         mapRenderer.render(foregroundLayers);
+        renderCrossroadsDust(delta);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.GREEN);
@@ -196,6 +202,44 @@ public class GameRenderer {
         shapeRenderer.setColor(Color.ORANGE);
         renderPlayerAttackHitboxe(shapeRenderer);
         shapeRenderer.end();
+    }
+
+    private void renderCrossroadsDust(float delta) {
+        if (crossroadsDustEffect == null)
+            return;
+
+        boolean isInForgottenCrossroads = world.currentRegion == GameRegion.FORGOTTEN_CROSSROADS;
+        if (!isInForgottenCrossroads) {
+            if (crossroadsDustWasActive)
+                crossroadsDustEffect.reset();
+            crossroadsDustWasActive = false;
+            return;
+        }
+
+        crossroadsDustWasActive = true;
+
+        Rectangle playerBounds = world.player.getBounds();
+        float playerCenterX = playerBounds.x + playerBounds.width / 2f;
+        float playerCenterY = playerBounds.y + playerBounds.height / 2f;
+
+        boolean playerDashing = world.player.animation != null
+                && world.player.animation.name().contains("DASH");
+        boolean playerFacingRight = world.player.getDirection() == Constants.RIGHT_DIRECTION;
+
+        crossroadsDustEffect.update(
+                delta,
+                camera,
+                playerCenterX,
+                playerCenterY,
+                playerDashing,
+                playerFacingRight);
+
+        batch.setProjectionMatrix(camera.combined);
+        batch.enableBlending();
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        batch.begin();
+        crossroadsDustEffect.draw(batch);
+        batch.end();
     }
 
     public void renderUI(float delta) {
@@ -467,4 +511,12 @@ public class GameRenderer {
         }
         batch.end();
     }
+
+    public void dispose() {
+        if (crossroadsDustEffect != null) {
+            crossroadsDustEffect.dispose();
+            crossroadsDustEffect = null;
+        }
+    }
+
 }
