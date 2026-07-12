@@ -17,7 +17,6 @@ import com.hollowknight.views.actors.modals.PauseModal;
 public class GameController {
     private static GameController instance;
     public GameWorld world;
-    PlayerController playerController;
     public boolean isPaused = false;
 
     public static GameController init(GameWorld world) {
@@ -31,7 +30,6 @@ public class GameController {
 
     private GameController(GameWorld world) {
         this.world = world;
-        this.playerController = new PlayerController(world.player);
     }
 
     public void update(float delta) {
