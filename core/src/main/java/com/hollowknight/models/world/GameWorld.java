@@ -311,7 +311,7 @@ public class GameWorld {
                 // bossJustDefeated = true;
 
                 AchievementManager.getInstance().onBossDefeated();
-                AudioController.getInstance().playBgm(GameAssetManager.gameEndMusic);
+                AudioController.getInstance().transitionBgm(GameAssetManager.gameEndMusic, 5f);
 
                 // Open the room by clearing out the door solid fields
                 solidBlocks.remove(bossDoor);

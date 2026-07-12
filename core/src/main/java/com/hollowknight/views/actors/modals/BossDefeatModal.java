@@ -5,10 +5,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.hollowknight.controller.GameController;
-import com.hollowknight.models.settings.Settings;
+import com.hollowknight.models.gamedata.GameSave;
 import com.hollowknight.models.gamedata.SaveManager;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.views.UiManager;
+import com.hollowknight.views.screens.GameScreen;
 import com.hollowknight.views.screens.MainMenuScreen;
 
 public class BossDefeatModal extends Modal {
@@ -27,29 +28,38 @@ public class BossDefeatModal extends Modal {
         add(new Label("Enemies Killed: " + world.getNumberOfEnemiesKilled(), skin)).colspan(2).row();
         add(new Label("Total Time Played: " + world.getTotalPassedTime(), skin)).padBottom(30).colspan(2).row();
 
-        TextButton saveRestartBtn = new TextButton("Save and Restart", skin);
+        TextButton restartBtn = new TextButton("Restart", skin);
         TextButton mainMenuBtn = new TextButton("Return to Main Menu", skin);
 
-        add(saveRestartBtn).width(250).colspan(2).row();
+        add(restartBtn).width(250).colspan(2).row();
         add(mainMenuBtn).width(250).colspan(2).row();
 
-        saveRestartBtn.addListener(new ChangeListener() {
+        restartBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Completely save progress and settings
-                SaveManager.saveGame(world);
-                SaveManager.saveSettings(Settings.getInstance());
+                // Get the current save slot
+                int slot = world.saveLoadedFrom.slot;
 
-                System.out.println("Game Saved! Restarting...");
+                // Delete the existing save data for this slot
+                SaveManager.deleteSave(slot);
+
+                // Create a fresh save for the identical slot and load it into a new world
+                GameSave newSave = GameSave.gameStart(slot);
+                GameWorld newWorld = new GameWorld(newSave);
+
                 GameController.getInstance().isPaused = false;
                 hide();
-                UiManager.setScreen(new MainMenuScreen());
+
+                // Immediately transition back to the game screen to start playing
+                UiManager.setScreen(new GameScreen(newWorld));
             }
         });
 
         mainMenuBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                int slot = world.saveLoadedFrom.slot;
+                SaveManager.deleteSave(slot);
                 GameController.getInstance().isPaused = false;
                 hide();
                 UiManager.setScreen(new MainMenuScreen());
