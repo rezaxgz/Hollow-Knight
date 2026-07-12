@@ -5,7 +5,8 @@ import com.hollowknight.models.Constants;
 public enum PlayerEffectAnimation {
     SLASH("animation/Effects/SlashEffect.png", 6, Constants.SLASH_TIME, 50, 0, -1),
     SLASH_ALT("animation/Effects/SlashEffectAlt.png", 6, Constants.SLASH_TIME, 0, 0, -1),
-    DOWN_SLASH("animation/Effects/DownSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
+    DOWN_SLASH("animation/Effects/DownSlashEffect.png", 6, Constants.SLASH_TIME, 0,
+            -(int) Constants.DOWN_SLASH_HITBOX_HEIGHT),
     UP_SLASH("animation/Effects/UpSlashEffect.png", 6, Constants.SLASH_TIME, 0, 0),
     SOUL_SCREAM("animation/Effects/SoulScream.png", 13, Constants.SOUL_SCREAM_TIME, 0,
             Constants.PLAYER_HITBOX_HEIGHT - 20),

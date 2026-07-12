@@ -37,6 +37,15 @@ public class Constants {
     public static final int ATTACK_HIT_SOULS_BONUS = 11;
     public static final int SHARP_SHADOW_DASH_DAMAGE = 7;
 
+    // Attack Hitboxes
+    public static final float DOWN_SLASH_HITBOX_HEIGHT = 50;
+    public static final float DOWN_SLASH_HITBOX_WIDTH = PLAYER_HITBOX_WIDTH + 50;
+    public static final float DOWN_SLASH_HITBOX_OVERLAP_HEIGHT = PLAYER_HITBOX_HEIGHT / 2;
+
+    public static final float UP_SLASH_HITBOX_HEIGHT = 60;
+    public static final float UP_SLASH_HITBOX_WIDTH = PLAYER_HITBOX_WIDTH + 70;
+    public static final float UP_SLASH_HITBOX_OVERLAP_HEIGHT = PLAYER_HITBOX_HEIGHT / 2;
+
     // Player Vitals
     public static final int MAX_PLAYER_HEALTH = 5;
     public static final int MAX_PLAYER_SOULS = 99;

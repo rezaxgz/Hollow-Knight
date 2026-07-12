@@ -874,15 +874,22 @@ public class Player {
         float width = Constants.PLAYER_HITBOX_WIDTH;
         float height = Constants.PLAYER_HITBOX_HEIGHT;
         float attackRangeX = width * 1.5f;
-        float attackRangeY = height * 1.2f;
 
+        Rectangle playerBounds = getBounds();
         if (currentAttackAnimation == PlayerAnimation.UP_SLASH) {
-            return new Rectangle(position.x, position.y + height, width, attackRangeY);
+            return new Rectangle(position.x - (Constants.UP_SLASH_HITBOX_WIDTH - playerBounds.width) / 2,
+                    position.y - Constants.UP_SLASH_HITBOX_OVERLAP_HEIGHT + playerBounds.height,
+                    Constants.UP_SLASH_HITBOX_WIDTH,
+                    Constants.UP_SLASH_HITBOX_HEIGHT + Constants.UP_SLASH_HITBOX_OVERLAP_HEIGHT);
         } else if (currentAttackAnimation == PlayerAnimation.DOWN_SLASH) {
-            return new Rectangle(position.x, position.y - attackRangeY, width, attackRangeY);
+            return new Rectangle(position.x - (Constants.DOWN_SLASH_HITBOX_WIDTH - playerBounds.width) / 2f,
+                    position.y - Constants.DOWN_SLASH_HITBOX_HEIGHT,
+                    Constants.DOWN_SLASH_HITBOX_WIDTH,
+                    Constants.DOWN_SLASH_HITBOX_HEIGHT + Constants.DOWN_SLASH_HITBOX_OVERLAP_HEIGHT);
         } else {
+            float yOffset = (playerBounds.height - height) / 2f;
             return status.getFacingDirection() == Constants.RIGHT_DIRECTION
-                    ? new Rectangle(position.x + width, position.y, attackRangeX, height)
+                    ? new Rectangle(position.x + width, position.y + yOffset, attackRangeX, height)
                     : new Rectangle(position.x - attackRangeX, position.y, attackRangeX, height);
         }
     }
