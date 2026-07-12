@@ -29,6 +29,7 @@ import com.hollowknight.models.player.PlayerEffectAnimation;
 import com.hollowknight.models.world.GameWorld;
 import com.hollowknight.models.world.PlayerProjectile;
 import com.hollowknight.views.effects.CrossroadsDustEffect;
+import com.hollowknight.views.effects.GreenpathAmbientEffect;
 
 public class GameRenderer {
     SpriteBatch batch;
@@ -47,6 +48,8 @@ public class GameRenderer {
     private int[] foregroundLayers;
     private CrossroadsDustEffect crossroadsDustEffect;
     private boolean crossroadsDustWasActive = false;
+    private GreenpathAmbientEffect greenpathAmbientEffect;
+    private boolean greenpathEffectWasActive = false;
 
     private boolean isCameraInitialized = false;
 
@@ -69,6 +72,7 @@ public class GameRenderer {
 
         mapRenderer = new OrthogonalTiledMapRenderer(world.map);
         crossroadsDustEffect = new CrossroadsDustEffect();
+        greenpathAmbientEffect = new GreenpathAmbientEffect();
 
         int tileWidth = world.map.getProperties().get("tilewidth", Integer.class);
         int tileHeight = world.map.getProperties().get("tileheight", Integer.class);
@@ -173,10 +177,12 @@ public class GameRenderer {
         // Set the view using the expanded bounds instead of just the camera
         mapRenderer.setView(camera.combined, viewX, viewY, viewWidth, viewHeight);
 
+        updateGreenpathAmbient(delta);
         mapRenderer.render(backgroundLayers);
 
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
+        renderGreenpathBackground();
         batch.begin();
         renderEnemies(batch);
         renderPlayer(batch);
@@ -190,6 +196,7 @@ public class GameRenderer {
 
         mapRenderer.render(foregroundLayers);
         renderCrossroadsDust(delta);
+        renderGreenpathForeground();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.GREEN);
@@ -240,6 +247,74 @@ public class GameRenderer {
         batch.begin();
         crossroadsDustEffect.draw(batch);
         batch.end();
+    }
+
+    private void updateGreenpathAmbient(float delta) {
+        if (greenpathAmbientEffect == null)
+            return;
+
+        boolean isInGreenpath = isCurrentRegionNamed("GREENPATH");
+        if (!isInGreenpath) {
+            if (greenpathEffectWasActive)
+                greenpathAmbientEffect.reset();
+            greenpathEffectWasActive = false;
+            return;
+        }
+
+        greenpathEffectWasActive = true;
+
+        Rectangle playerBounds = world.player.getBounds();
+        float playerCenterX = playerBounds.x + playerBounds.width / 2f;
+        float playerCenterY = playerBounds.y + playerBounds.height / 2f;
+
+        boolean playerDashing = world.player.animation != null
+                && world.player.animation.name().contains("DASH");
+        boolean playerFacingRight = world.player.getDirection() == Constants.RIGHT_DIRECTION;
+
+        greenpathAmbientEffect.update(
+                delta,
+                camera,
+                playerCenterX,
+                playerCenterY,
+                playerDashing,
+                playerFacingRight);
+    }
+
+    private void renderGreenpathBackground() {
+        if (!greenpathEffectWasActive || greenpathAmbientEffect == null)
+            return;
+
+        batch.enableBlending();
+        batch.begin();
+        greenpathAmbientEffect.drawBackground(batch);
+        batch.end();
+    }
+
+    private void renderGreenpathForeground() {
+        if (!greenpathEffectWasActive || greenpathAmbientEffect == null)
+            return;
+
+        batch.setProjectionMatrix(camera.combined);
+        batch.enableBlending();
+        batch.begin();
+        greenpathAmbientEffect.drawForeground(batch);
+        batch.end();
+    }
+
+    private boolean isCurrentRegionNamed(String expectedName) {
+        if (world.currentRegion == null || expectedName == null)
+            return false;
+
+        String normalizedCurrentName = world.currentRegion.name()
+                .replace("_", "")
+                .replace("-", "")
+                .replace(" ", "");
+        String normalizedExpectedName = expectedName
+                .replace("_", "")
+                .replace("-", "")
+                .replace(" ", "");
+
+        return normalizedExpectedName.equalsIgnoreCase(normalizedCurrentName);
     }
 
     public void renderUI(float delta) {
@@ -516,6 +591,10 @@ public class GameRenderer {
         if (crossroadsDustEffect != null) {
             crossroadsDustEffect.dispose();
             crossroadsDustEffect = null;
+        }
+        if (greenpathAmbientEffect != null) {
+            greenpathAmbientEffect.dispose();
+            greenpathAmbientEffect = null;
         }
     }
 
