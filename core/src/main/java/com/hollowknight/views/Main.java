@@ -21,4 +21,10 @@ public class Main extends Game {
         ScreenUtils.clear(0, 0, 0, 0);
         super.render();
     }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        GeneralController.exitApp();
+    }
 }
