@@ -198,17 +198,19 @@ public class GameRenderer {
         renderCrossroadsDust(delta);
         renderGreenpathForeground();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.GREEN);
-        renderPlayerHitBox(shapeRenderer);
+        if (Constants.flag) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.GREEN);
+            renderPlayerHitBox(shapeRenderer);
 
-        shapeRenderer.setColor(Color.RED);
-        renderEnemyHitBoxes(shapeRenderer);
-        renderProjectileHitboxes(shapeRenderer);
+            shapeRenderer.setColor(Color.RED);
+            renderEnemyHitBoxes(shapeRenderer);
+            renderProjectileHitboxes(shapeRenderer);
 
-        shapeRenderer.setColor(Color.ORANGE);
-        renderPlayerAttackHitboxe(shapeRenderer);
-        shapeRenderer.end();
+            shapeRenderer.setColor(Color.ORANGE);
+            renderPlayerAttackHitboxe(shapeRenderer);
+            shapeRenderer.end();
+        }
     }
 
     private void renderCrossroadsDust(float delta) {

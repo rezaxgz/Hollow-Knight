@@ -189,8 +189,6 @@ public class GameWorld {
     }
 
     public void update(float delta) {
-        if (Constants.flag)
-            return;
         AudioController.getInstance().update(delta);
         updateTimers(delta);
         manageCameraShakes();
